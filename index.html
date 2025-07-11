@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paper Trading Simulator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .ticker-symbol { font-variant-caps: all-small-caps; }
+        .nav-link-active { 
+            background-color: #0891b2 !important; 
+            color: white !important; 
+            border-bottom-color: #22d3ee; 
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white antialiased">
+    <div id="app" class="max-w-6xl mx-auto p-4 sm:p-6 lg:p-8">
+        <!-- Loading state -->
+        <div id="loading" class="flex items-center justify-center min-h-screen">
+            <div class="text-center">
+                <div class="w-12 h-12 border-4 border-cyan-400 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                <p class="text-gray-400">Loading Paper Trading Simulator...</p>
+            </div>
+        </div>
+
+        <!-- Main app content (hidden initially) -->
+        <div id="app-content" class="hidden">
+            <!-- Header will be injected here -->
+            <header id="header"></header>
+            
+            <!-- Navigation will be injected here -->
+            <nav id="navigation"></nav>
+            
+            <!-- Main content area -->
+            <main id="main-content"></main>
+        </div>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script type="module" src="/src/main.js"></script>
+</body>
+</html>
