@@ -12,6 +12,8 @@ class App {
         this.authService = new AuthService();
         this.currentUser = null;
         this.isInitialized = false;
+        this.headerComponent = null;
+        this.navigationComponent = null;
     }
 
     async initialize() {
@@ -19,6 +21,9 @@ class App {
             // Initialize Firebase
             await initializeApp();
             console.log('Firebase initialized');
+
+            // Initialize auth service
+            await this.authService.initialize();
 
             // Initialize components
             this.setupComponents();
@@ -44,12 +49,12 @@ class App {
 
     setupComponents() {
         // Initialize header component
-        const header = new HeaderComponent();
-        header.render(document.getElementById('header'));
+        this.headerComponent = new HeaderComponent();
+        this.headerComponent.render(document.getElementById('header'));
 
         // Initialize navigation component
-        const navigation = new NavigationComponent();
-        navigation.render(document.getElementById('navigation'));
+        this.navigationComponent = new NavigationComponent();
+        this.navigationComponent.render(document.getElementById('navigation'));
     }
 
     setupRouting() {
@@ -65,6 +70,18 @@ class App {
     }
 
     async loadView(viewName) {
+        // Check if user is authenticated for protected routes
+        if (viewName !== 'auth' && !this.currentUser) {
+            this.router.navigate('/auth');
+            return;
+        }
+
+        // If user is authenticated and trying to access auth page, redirect to dashboard
+        if (viewName === 'auth' && this.currentUser) {
+            this.router.navigate('/');
+            return;
+        }
+
         try {
             const mainContent = document.getElementById('main-content');
             
@@ -97,41 +114,34 @@ class App {
     }
 
     updateNavigationActive(viewName) {
-        // Remove active class from all nav links
-        document.querySelectorAll('.nav-link').forEach(link => {
-            link.classList.remove('nav-link-active');
-        });
-
-        // Add active class to current view
-        const activeLink = document.querySelector(`[data-route="${viewName}"]`);
-        if (activeLink) {
-            activeLink.classList.add('nav-link-active');
+        if (this.navigationComponent) {
+            this.navigationComponent.setActiveRoute(viewName);
         }
     }
 
     handleAuthStateChange(user) {
+        console.log('Auth state changed:', user ? `Signed in as ${user.email}` : 'Signed out');
+        
         this.currentUser = user;
         
+        // Update header with user info
+        if (this.headerComponent) {
+            this.headerComponent.updateAuthState(user);
+        }
+
+        // Handle routing after initialization
         if (!this.isInitialized) return;
 
         if (user) {
-            console.log('User signed in:', user.email);
-            // Redirect to dashboard if on auth page
+            // User signed in - redirect to dashboard if on auth page
             if (window.location.pathname === '/auth') {
                 this.router.navigate('/');
             }
         } else {
-            console.log('User signed out');
-            // Redirect to auth page if not already there
+            // User signed out - redirect to auth page if not already there
             if (window.location.pathname !== '/auth') {
                 this.router.navigate('/auth');
             }
-        }
-
-        // Update header to show/hide user info
-        const headerComponent = document.querySelector('#header .header-component');
-        if (headerComponent) {
-            headerComponent.updateAuthState(user);
         }
     }
 

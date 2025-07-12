@@ -18,6 +18,7 @@ export class AuthService {
     // Initialize auth service
     async initialize() {
         this.auth = getFirebaseAuth();
+        console.log('AuthService initialized');
     }
 
     // Sign in with email and password
