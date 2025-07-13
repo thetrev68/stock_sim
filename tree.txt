@@ -18,7 +18,9 @@
 │   │   └── simulation
 │   │       ├── CreateSimulationModal.js
 │   │       ├── EmailInviteModal.js
-│   │       └── JoinSimulationModal.js
+│   │       ├── JoinSimulationModal.js
+│   │       ├── LeaderboardOverview.js
+│   │       └── LeaderboardTable.js
 │   ├── counter.js
 │   ├── javascript.svg
 │   ├── main.js
@@ -26,6 +28,7 @@
 │   │   ├── activity.js
 │   │   ├── auth.js
 │   │   ├── firebase.js
+│   │   ├── leaderboard.js
 │   │   ├── simulation.js
 │   │   ├── stocks.js
 │   │   └── trading.js

@@ -1,8 +1,11 @@
-// src/views/simulation.js - Enhanced with Member Management - Session 8
-// Simulation view with member management and activity tracking
+// src/views/simulation.js - Enhanced with Leaderboards - Session 9
+// Simulation view with member management, activity tracking, and leaderboards
 import { SimulationService } from '../services/simulation.js';
 import { AuthService } from '../services/auth.js';
 import { ActivityService } from '../services/activity.js';
+import { LeaderboardService } from '../services/leaderboard.js';
+import { LeaderboardOverview } from '../components/simulation/LeaderboardOverview.js';
+import { LeaderboardTable } from '../components/simulation/LeaderboardTable.js';
 import { getPortfolio, initializePortfolio, getRecentTrades } from '../services/trading.js';
 
 export default class SimulationView {
@@ -11,13 +14,18 @@ export default class SimulationView {
         this.simulationService = new SimulationService();
         this.authService = new AuthService();
         this.activityService = new ActivityService();
+        this.leaderboardService = new LeaderboardService();
+        this.leaderboardOverview = new LeaderboardOverview();
+        this.leaderboardTable = new LeaderboardTable();
         this.currentSimulation = null;
         this.currentUser = null;
         this.simulationId = null;
         this.simulationPortfolio = null;
         this.simulationMembers = [];
         this.simulationActivities = [];
+        this.leaderboardData = null;
         this.refreshInterval = null;
+        this.leaderboardRefreshInterval = null;
     }
 
     async render(container) {
@@ -89,7 +97,7 @@ export default class SimulationView {
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
                                     </svg>
-                                    Leaderboard
+                                    <span id="leaderboard-btn-text">Leaderboard</span>
                                 </button>
                                 <button 
                                     id="trade-in-sim-btn"
@@ -150,6 +158,9 @@ export default class SimulationView {
                             <button id="tab-portfolio" class="tab-btn flex-1 py-4 px-6 text-center font-medium transition-colors duration-200 border-b-2 border-cyan-500 text-cyan-400 bg-gray-750">
                                 Portfolio & Trades
                             </button>
+                            <button id="tab-leaderboard" class="tab-btn flex-1 py-4 px-6 text-center font-medium transition-colors duration-200 border-b-2 border-transparent text-gray-400 hover:text-white">
+                                Leaderboard
+                            </button>
                             <button id="tab-members" class="tab-btn flex-1 py-4 px-6 text-center font-medium transition-colors duration-200 border-b-2 border-transparent text-gray-400 hover:text-white">
                                 Members & Activity
                             </button>
@@ -208,6 +219,16 @@ export default class SimulationView {
                                 </div>
                             </div>
 
+                            <div id="content-leaderboard" class="tab-content hidden">
+                                <div id="leaderboard-overview-container">
+                                    <!-- Leaderboard Overview Component will be rendered here -->
+                                </div>
+                                
+                                <div id="leaderboard-table-container" class="mt-8">
+                                    <!-- Leaderboard Table Component will be rendered here -->
+                                </div>
+                            </div>
+
                             <div id="content-members" class="tab-content hidden">
                                 <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 gap-4">
                                     <div>
@@ -242,7 +263,7 @@ export default class SimulationView {
                                             <svg class="w-12 h-12 mx-auto mb-3 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                                             </svg>
-                                            <p>Activity feed coming soon!</p>
+                                            <p>Activity feed loading...</p>
                                         </div>
                                     </div>
                                 </div>
@@ -287,18 +308,16 @@ export default class SimulationView {
             }
         });
 
-        // Members button
+        // Navigation buttons
         const membersBtn = container.querySelector('#view-members-btn');
+        const leaderboardBtn = container.querySelector('#view-leaderboard-btn');
+        
         if (membersBtn) {
             membersBtn.addEventListener('click', () => this.showMembersTab());
         }
 
-        // Leaderboard button (placeholder for Session 9)
-        const leaderboardBtn = container.querySelector('#view-leaderboard-btn');
         if (leaderboardBtn) {
-            leaderboardBtn.addEventListener('click', () => {
-                alert('Leaderboards will be available in Session 9!');
-            });
+            leaderboardBtn.addEventListener('click', () => this.showLeaderboardTab());
         }
 
         // Tab navigation
@@ -328,8 +347,10 @@ export default class SimulationView {
         }
 
         try {
+            // Initialize services
             this.simulationService.initialize();
             this.activityService.initialize();
+            this.leaderboardService.initialize();
             
             // Load simulation details
             this.currentSimulation = await this.simulationService.getSimulation(this.simulationId);
@@ -347,14 +368,13 @@ export default class SimulationView {
                 return;
             }
 
-            // Load simulation members
-            await this.loadSimulationMembers();
-
-            // Load simulation activities
-            await this.loadSimulationActivities();
-
-            // Initialize and load simulation portfolio
-            await this.loadSimulationPortfolio();
+            // Load all data in parallel for better performance
+            await Promise.all([
+                this.loadSimulationMembers(),
+                this.loadSimulationActivities(),
+                this.loadSimulationPortfolio(),
+                this.loadLeaderboard()
+            ]);
 
             // Display simulation data
             this.displaySimulation();
@@ -362,6 +382,92 @@ export default class SimulationView {
         } catch (error) {
             console.error('Error loading simulation:', error);
             this.showError();
+        }
+    }
+
+    async loadLeaderboard() {
+        try {
+            console.log('Loading leaderboard...');
+            this.leaderboardData = await this.leaderboardService.getLeaderboard(
+                this.simulationId, 
+                false, // Don't force refresh on initial load
+                this.currentSimulation
+            );
+            
+            // Update user rank in header
+            this.updateUserRankDisplay();
+            
+            console.log('Leaderboard loaded:', this.leaderboardData);
+        } catch (error) {
+            console.error('Error loading leaderboard:', error);
+            // Don't fail the entire view if leaderboard fails
+        }
+    }
+
+    async refreshLeaderboard() {
+        try {
+            console.log('Refreshing leaderboard...');
+            this.leaderboardData = await this.leaderboardService.getLeaderboard(
+                this.simulationId, 
+                true, // Force refresh
+                this.currentSimulation
+            );
+            
+            // Update displays
+            this.updateUserRankDisplay();
+            this.renderLeaderboardComponents();
+            
+            console.log('Leaderboard refreshed successfully');
+        } catch (error) {
+            console.error('Error refreshing leaderboard:', error);
+            throw error; // Re-throw so UI can handle error state
+        }
+    }
+
+    updateUserRankDisplay() {
+        if (!this.leaderboardData || !this.currentUser) return;
+
+        const userRanking = this.leaderboardData.rankings?.find(r => r.userId === this.currentUser.uid);
+        
+        // Update rank in header cards
+        const yourRankEl = document.getElementById('your-rank');
+        const totalParticipantsEl = document.getElementById('total-participants');
+        
+        if (yourRankEl && userRanking) {
+            yourRankEl.textContent = `#${userRanking.rank}`;
+        }
+        
+        if (totalParticipantsEl && this.leaderboardData.totalParticipants) {
+            totalParticipantsEl.textContent = this.leaderboardData.totalParticipants;
+        }
+    }
+
+    renderLeaderboardComponents() {
+        if (!this.leaderboardData) return;
+
+        // Render leaderboard overview
+        const overviewContainer = document.getElementById('leaderboard-overview-container');
+        if (overviewContainer) {
+            this.leaderboardOverview.render(
+                overviewContainer,
+                this.leaderboardData,
+                this.currentUser?.uid,
+                () => this.refreshLeaderboard()
+            );
+        }
+
+        // Render leaderboard table
+        const tableContainer = document.getElementById('leaderboard-table-container');
+        if (tableContainer && this.leaderboardData.rankings) {
+            this.leaderboardTable.render(
+                tableContainer,
+                this.leaderboardData.rankings,
+                this.currentUser?.uid,
+                (userId, userName) => {
+                    console.log(`View details for user: ${userName}`);
+                    // Could show user detail modal here
+                }
+            );
         }
     }
 
@@ -376,6 +482,157 @@ export default class SimulationView {
         }
     }
 
+    async loadSimulationActivities() {
+        try {
+            this.simulationActivities = await this.activityService.getSimulationActivities(this.simulationId, 15);
+            console.log('Loaded simulation activities:', this.simulationActivities);
+            this.displayActivities();
+        } catch (error) {
+            console.error('Error loading simulation activities:', error);
+            this.showActivitiesError();
+        }
+    }
+
+    async loadSimulationPortfolio() {
+        try {
+            // Initialize portfolio if it doesn't exist
+            await initializePortfolio(
+                this.currentUser.uid, 
+                this.currentSimulation.startingBalance, 
+                this.simulationId, 
+                this.currentSimulation
+            );
+
+            // Load portfolio data
+            this.simulationPortfolio = await getPortfolio(this.currentUser.uid, this.simulationId);
+            
+            // Load UI components
+            setTimeout(() => {
+                this.loadHoldings();
+                this.loadRecentTrades();
+            }, 0);
+            
+        } catch (error) {
+            console.error('Error loading simulation portfolio:', error);
+            this.showPortfolioError();
+        }
+    }
+
+    switchTab(tabId) {
+        // Update tab buttons
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.remove('border-cyan-500', 'text-cyan-400', 'bg-gray-750');
+            btn.classList.add('border-transparent', 'text-gray-400');
+        });
+
+        // Hide all tab content
+        document.querySelectorAll('.tab-content').forEach(content => {
+            content.classList.add('hidden');
+        });
+
+        // Show selected tab
+        const activeBtn = document.getElementById(tabId);
+        const contentId = tabId.replace('tab-', 'content-');
+        const activeContent = document.getElementById(contentId);
+
+        if (activeBtn) {
+            activeBtn.classList.add('border-cyan-500', 'text-cyan-400', 'bg-gray-750');
+            activeBtn.classList.remove('border-transparent', 'text-gray-400');
+        }
+
+        if (activeContent) {
+            activeContent.classList.remove('hidden');
+        }
+
+        // Render leaderboard components when tab is shown
+        if (tabId === 'tab-leaderboard') {
+            this.renderLeaderboardComponents();
+        }
+
+        // Update button text based on active tab
+        this.updateNavigationButtonText(tabId);
+    }
+
+    updateNavigationButtonText(activeTabId) {
+        const membersBtnText = document.getElementById('members-btn-text');
+        const leaderboardBtnText = document.getElementById('leaderboard-btn-text');
+        
+        if (membersBtnText && leaderboardBtnText) {
+            // Reset to default text
+            membersBtnText.textContent = 'Members';
+            leaderboardBtnText.textContent = 'Leaderboard';
+            
+            // Update based on current tab
+            if (activeTabId === 'tab-members') {
+                membersBtnText.textContent = 'Portfolio';
+            } else if (activeTabId === 'tab-leaderboard') {
+                leaderboardBtnText.textContent = 'Portfolio';
+            }
+        }
+    }
+
+    showLeaderboardTab() {
+        this.switchTab('tab-leaderboard');
+    }
+
+    showMembersTab() {
+        this.switchTab('tab-members');
+    }
+
+    startAutoRefresh() {
+        // Refresh member data and activities every 30 seconds
+        this.refreshInterval = setInterval(async () => {
+            try {
+                await Promise.all([
+                    this.loadSimulationMembers(),
+                    this.loadSimulationActivities()
+                ]);
+            } catch (error) {
+                console.error('Auto-refresh error:', error);
+            }
+        }, 30000);
+
+        // Refresh leaderboard every 2 minutes (less frequent since it's more expensive)
+        this.leaderboardRefreshInterval = setInterval(async () => {
+            try {
+                await this.loadLeaderboard();
+                
+                // Re-render if leaderboard tab is active
+                const activeTab = document.querySelector('.tab-btn.border-cyan-500');
+                if (activeTab && activeTab.id === 'tab-leaderboard') {
+                    this.renderLeaderboardComponents();
+                }
+            } catch (error) {
+                console.error('Leaderboard auto-refresh error:', error);
+            }
+        }, 120000); // 2 minutes
+    }
+
+    stopAutoRefresh() {
+        if (this.refreshInterval) {
+            clearInterval(this.refreshInterval);
+            this.refreshInterval = null;
+        }
+        if (this.leaderboardRefreshInterval) {
+            clearInterval(this.leaderboardRefreshInterval);
+            this.leaderboardRefreshInterval = null;
+        }
+    }
+
+    // Clean up when view is destroyed
+    destroy() {
+        this.stopAutoRefresh();
+    }
+
+    // [Include all the existing methods from the original simulation.js file]
+    // displayMembers, createMemberCard, getTimeAgo, isCurrentUserCreator, 
+    // handleKickMember, handleMemberManagement, displayActivities, createActivityElement,
+    // showActivitiesError, showMembersError, loadHoldings, createHoldingElement,
+    // loadRecentTrades, createTradeElement, displaySimulation, updatePortfolioStats,
+    // updateSimulationRules, showPortfolioError, handleTradeNavigation, showNotFound, showError
+
+    // [Copy all existing methods here - keeping them exactly the same]
+    
     displayMembers() {
         const membersLoading = document.getElementById('members-loading');
         const membersList = document.getElementById('members-list');
@@ -483,15 +740,8 @@ export default class SimulationView {
         if (!confirmed) return;
 
         try {
-            // In a real implementation, this would call a simulation service method
-            // await this.simulationService.removeMember(this.simulationId, userId);
-            
-            // For now, show a placeholder message
             alert(`Feature coming soon: Remove ${userName} from simulation`);
-            
-            // Refresh members list
             await this.loadSimulationMembers();
-            
         } catch (error) {
             console.error('Error removing member:', error);
             alert('Failed to remove member. Please try again.');
@@ -499,42 +749,29 @@ export default class SimulationView {
     }
 
     handleMemberManagement() {
-        // Show member management modal or expanded view
         alert('Advanced member management features coming soon!\n\n• Bulk member actions\n• Member statistics\n• Invitation history\n• Activity logs');
     }
 
-    async loadSimulationActivities() {
-        try {
-            this.simulationActivities = await this.activityService.getSimulationActivities(this.simulationId, 15);
-            console.log('Loaded simulation activities:', this.simulationActivities);
-            this.displayActivities();
-        } catch (error) {
-            console.error('Error loading simulation activities:', error);
-            this.showActivitiesError();
-        }
-    }
-
     displayActivities() {
-        const activityLoading = document.getElementById('activity-loading');
-        const activityEmpty = document.getElementById('activity-empty');
-        const activityList = document.getElementById('activity-list');
+        const activityFeed = document.getElementById('activity-feed');
         
-        if (activityLoading) activityLoading.classList.add('hidden');
-        
-        if (this.simulationActivities.length === 0) {
-            if (activityEmpty) activityEmpty.classList.remove('hidden');
-            if (activityList) activityList.classList.add('hidden');
-        } else {
-            if (activityEmpty) activityEmpty.classList.add('hidden');
-            if (activityList) {
-                activityList.classList.remove('hidden');
-                activityList.innerHTML = '';
+        if (!activityFeed) return;
 
-                this.simulationActivities.forEach(activity => {
-                    const activityElement = this.createActivityElement(activity);
-                    activityList.appendChild(activityElement);
-                });
-            }
+        if (this.simulationActivities.length === 0) {
+            activityFeed.innerHTML = `
+                <div class="text-center py-6 text-gray-400">
+                    <svg class="w-12 h-12 mx-auto mb-3 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
+                    <p>No recent activity</p>
+                </div>
+            `;
+        } else {
+            activityFeed.innerHTML = '';
+            this.simulationActivities.forEach(activity => {
+                const activityElement = this.createActivityElement(activity);
+                activityFeed.appendChild(activityElement);
+            });
         }
     }
 
@@ -558,12 +795,9 @@ export default class SimulationView {
     }
 
     showActivitiesError() {
-        const activityLoading = document.getElementById('activity-loading');
-        const activityList = document.getElementById('activity-list');
-        
-        if (activityLoading) activityLoading.classList.add('hidden');
-        if (activityList) {
-            activityList.innerHTML = `
+        const activityFeed = document.getElementById('activity-feed');
+        if (activityFeed) {
+            activityFeed.innerHTML = `
                 <div class="text-center py-6">
                     <svg class="w-12 h-12 mx-auto mb-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -572,11 +806,10 @@ export default class SimulationView {
                     <p class="text-gray-400">Unable to load recent activity</p>
                 </div>
             `;
-            activityList.classList.remove('hidden');
         }
     }
 
-    showMembersError() { // This method was prematurely closed
+    showMembersError() {
         const membersLoading = document.getElementById('members-loading');
         const membersList = document.getElementById('members-list');
         
@@ -592,103 +825,6 @@ export default class SimulationView {
                 </div>
             `;
             membersList.classList.remove('hidden');
-        }
-    }
-
-    switchTab(tabId) {
-        // Update tab buttons
-        document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.classList.remove('border-cyan-500', 'text-cyan-400', 'bg-gray-750');
-            btn.classList.add('border-transparent', 'text-gray-400');
-        });
-
-        // Hide all tab content
-        document.querySelectorAll('.tab-content').forEach(content => {
-            content.classList.add('hidden');
-        });
-
-        // Show selected tab
-        const activeBtn = document.getElementById(tabId);
-        const contentId = tabId.replace('tab-', 'content-');
-        const activeContent = document.getElementById(contentId);
-
-        if (activeBtn) {
-            activeBtn.classList.add('border-cyan-500', 'text-cyan-400', 'bg-gray-750');
-            activeBtn.classList.remove('border-transparent', 'text-gray-400');
-        }
-
-        if (activeContent) {
-            activeContent.classList.remove('hidden');
-        }
-
-        // Update members button text
-        const membersBtnText = document.getElementById('members-btn-text');
-        if (membersBtnText) {
-            if (tabId === 'tab-members') {
-                membersBtnText.textContent = 'Portfolio';
-            } else {
-                membersBtnText.textContent = 'Members';
-            }
-        }
-    }
-
-    showMembersTab() {
-        this.switchTab('tab-members');
-    }
-
-    startAutoRefresh() {
-        // Refresh member data and activities every 30 seconds
-        this.refreshInterval = setInterval(async () => {
-            try {
-                await this.loadSimulationMembers();
-                await this.loadSimulationActivities();
-            } catch (error) {
-                console.error('Auto-refresh error:', error);
-            }
-        }, 30000);
-    }
-
-    stopAutoRefresh() {
-        if (this.refreshInterval) {
-            clearInterval(this.refreshInterval);
-            this.refreshInterval = null;
-        }
-    }
-
-    // Clean up when view is destroyed
-    destroy() {
-        this.stopAutoRefresh();
-    }
-
-    async loadSimulationPortfolio() {
-        try {
-            // Initialize portfolio if it doesn't exist (non-blocking)
-            const initPromise = initializePortfolio(
-                this.currentUser.uid, 
-                this.currentSimulation.startingBalance, 
-                this.simulationId, 
-                this.currentSimulation
-            );
-
-            // Load portfolio data (can run in parallel)
-            const portfolioPromise = getPortfolio(this.currentUser.uid, this.simulationId);
-
-            // Wait for both operations
-            await initPromise;
-            this.simulationPortfolio = await portfolioPromise;
-            
-            // Load UI components asynchronously to avoid blocking
-            setTimeout(() => {
-                this.loadHoldings();
-            }, 0);
-            
-            setTimeout(() => {
-                this.loadRecentTrades();
-            }, 0);
-            
-        } catch (error) {
-            console.error('Error loading simulation portfolio:', error);
-            this.showPortfolioError();
         }
     }
 
@@ -730,7 +866,6 @@ export default class SimulationView {
         const element = document.createElement('div');
         element.className = 'bg-gray-700 p-4 rounded-lg flex justify-between items-center';
         
-        // Calculate current value (using avg price as fallback)
         const currentValue = holding.quantity * holding.avgPrice;
         
         element.innerHTML = `
@@ -877,12 +1012,6 @@ export default class SimulationView {
         // Update simulation rules
         this.updateSimulationRules();
 
-        // Update other stats
-        const totalParticipantsEl = document.getElementById('total-participants');
-        if (totalParticipantsEl) {
-            totalParticipantsEl.textContent = this.currentSimulation.memberCount;
-        }
-
         // Calculate days remaining
         const daysRemainingEl = document.getElementById('days-remaining');
         if (daysRemainingEl) {
@@ -899,7 +1028,6 @@ export default class SimulationView {
     updatePortfolioStats() {
         if (!this.simulationPortfolio) return;
 
-        // Portfolio value
         const portfolioValueEl = document.getElementById('sim-portfolio-value');
         const portfolioChangeEl = document.getElementById('sim-portfolio-change');
         
@@ -907,7 +1035,6 @@ export default class SimulationView {
             const cash = this.simulationPortfolio.cash;
             let holdingsValue = 0;
             
-            // Calculate holdings value (using avg price as estimate)
             const holdings = this.simulationPortfolio.holdings || {};
             for (const ticker in holdings) {
                 if (holdings.hasOwnProperty(ticker)) {
@@ -918,7 +1045,6 @@ export default class SimulationView {
             const totalValue = cash + holdingsValue;
             portfolioValueEl.textContent = `${totalValue.toLocaleString()}`;
             
-            // Calculate change from starting balance
             if (portfolioChangeEl) {
                 const startingBalance = this.currentSimulation.startingBalance;
                 const change = totalValue - startingBalance;
@@ -980,16 +1106,13 @@ export default class SimulationView {
             return;
         }
 
-        // Show immediate feedback
         const tradeBtnTextEl = document.getElementById('trade-btn-text');
         if (tradeBtnTextEl) {
             tradeBtnTextEl.textContent = 'Loading...';
         }
 
-        // Navigate to trade view with simulation context (non-blocking)
         const tradeUrl = `/trade?sim=${this.simulationId}`;
         
-        // Use requestAnimationFrame to ensure smooth UI transition
         requestAnimationFrame(() => {
             if (window.app && window.app.router) {
                 window.app.router.navigate(tradeUrl);
