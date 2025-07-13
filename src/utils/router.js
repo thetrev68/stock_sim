@@ -1,4 +1,4 @@
-// Simple client-side router
+// Simple client-side router with query parameter support
 export class Router {
     constructor() {
         this.routes = new Map();
@@ -18,26 +18,29 @@ export class Router {
     }
 
     handleRoute(path) {
-        const handler = this.routes.get(path);
+        // Extract the base path without query parameters
+        const basePath = path.split('?')[0];
+        const handler = this.routes.get(basePath);
         
         if (handler) {
-            this.currentRoute = path;
+            this.currentRoute = basePath;
             handler();
         } else {
             // Default to dashboard for unknown routes
-            console.warn(`No handler found for route: ${path}`);
+            console.warn(`No handler found for route: ${path} (base path: ${basePath})`);
             this.navigate('/');
         }
     }
 
     start() {
         // Handle initial page load
-        const currentPath = window.location.pathname;
+        const currentPath = window.location.pathname + window.location.search;
         this.handleRoute(currentPath);
 
         // Handle browser back/forward buttons
         window.addEventListener('popstate', () => {
-            this.handleRoute(window.location.pathname);
+            const currentPath = window.location.pathname + window.location.search;
+            this.handleRoute(currentPath);
         });
 
         // Handle navigation clicks

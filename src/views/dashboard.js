@@ -1,8 +1,7 @@
-// Enhanced Dashboard view with simulation management - Session 6
+// Enhanced Dashboard view with simulation management - Session 7
 import { SimulationService } from '../services/simulation.js';
 import { AuthService } from '../services/auth.js';
 import { CreateSimulationModal } from '../components/simulation/CreateSimulationModal.js';
-import { JoinSimulationModal } from '../components/simulation/JoinSimulationModal.js';
 
 export default class DashboardView {
     constructor() {
@@ -373,9 +372,21 @@ export default class DashboardView {
             viewBtn.addEventListener('click', (e) => {
                 const simId = e.currentTarget.dataset.simId;
                 console.log(`Viewing simulation: ${simId}`);
-                // TODO: Navigate to simulation view (Session 7)
-                alert('Simulation view coming in Session 7!');
+                this.navigateToSimulation(simId);
             });
+        }
+    }
+
+    navigateToSimulation(simulationId) {
+        // Navigate to simulation view with the simulation ID
+        const simulationUrl = `/simulation?sim=${simulationId}`;
+        
+        // Check if we have access to the app router
+        if (window.app && window.app.router) {
+            window.app.router.navigate(simulationUrl);
+        } else {
+            // Fallback to direct navigation
+            window.location.href = simulationUrl;
         }
     }
 
@@ -413,15 +424,17 @@ export default class DashboardView {
         });
     }
 
-        handleJoinSimulation() {
-            if (!this.joinSimModal) {
-                this.joinSimModal = new JoinSimulationModal();
-            }
-            
-            this.joinSimModal.show((simulation) => {
-                console.log('Joined simulation:', simulation);
-                // Refresh the simulations list
-                this.loadData();
-            });
-        }
+    handleJoinSimulation() {
+        // For now, show a placeholder message until JoinSimulationModal is set up
+        alert('Join Simulation modal will be available once JoinSimulationModal component is set up. For now, you can join simulations through the simulation service directly.');
+        
+        // TODO: Uncomment when JoinSimulationModal is ready
+        // if (!this.joinSimModal) {
+        //     this.joinSimModal = new JoinSimulationModal();
+        // }
+        // this.joinSimModal.show((simulation) => {
+        //     console.log('Joined simulation:', simulation);
+        //     this.loadData();
+        // });
     }
+}

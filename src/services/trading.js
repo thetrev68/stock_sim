@@ -1,110 +1,235 @@
-// src/services/trading.js
-import { getFirestoreDb } from './firebase'; // Import getFirestoreDb, not db
-import { doc, getDoc, setDoc, updateDoc, runTransaction } from 'firebase/firestore';
-
-
+// src/services/trading.js - Enhanced for Session 7 Simulation Trading
+import { getFirestoreDb } from './firebase';
+import { doc, getDoc, setDoc, updateDoc, runTransaction, collection, query, where, getDocs } from 'firebase/firestore';
 
 const PORTFOLIOS_COLLECTION = 'portfolios';
-const USERS_COLLECTION = 'users'; 
+const SIMULATIONS_COLLECTION = 'simulations';
 
-// Function to get a user's portfolio document reference (for their primary/default portfolio)
-export function getUserPortfolioRef(userId) {
-    // IMPORTANT FIX: Get the Firestore DB instance here, inside the function,
-    // ensuring it's called AFTER Firebase has been initialized by initializeApp()
+/**
+ * Get portfolio document reference for user's portfolio
+ * @param {string} userId - The user ID
+ * @param {string|null} simulationId - Simulation ID (null for solo portfolio)
+ * @returns {DocumentReference} Firestore document reference
+ */
+export function getPortfolioRef(userId, simulationId = null) {
     const db = getFirestoreDb();
-    return doc(db, PORTFOLIOS_COLLECTION, userId);
+    
+    if (simulationId) {
+        // For simulation portfolios, use composite ID: userId_simulationId
+        const portfolioId = `${userId}_${simulationId}`;
+        return doc(db, PORTFOLIOS_COLLECTION, portfolioId);
+    } else {
+        // For solo portfolios, use just userId (backwards compatibility)
+        return doc(db, PORTFOLIOS_COLLECTION, userId);
+    }
 }
 
 /**
- * Initializes a new portfolio for a user if one does not exist.
- * This is intended for the primary user portfolio (e.g., solo practice).
- * For multi-simulation, a different initialization for simulation-specific portfolios would be used.
- * @param {string} userId - The ID of the user.
- * @param {number} [initialBalance=10000] - The starting cash balance for the portfolio.
- * @returns {Promise<object>} The initialized or existing portfolio data.
+ * Get user's solo portfolio reference (backwards compatibility)
+ * @param {string} userId - The user ID
+ * @returns {DocumentReference} Firestore document reference
  */
-export async function initializePortfolio(userId, initialBalance = 10000) {
-    const portfolioRef = getUserPortfolioRef(userId);
+export function getUserPortfolioRef(userId) {
+    return getPortfolioRef(userId, null);
+}
+
+/**
+ * Initialize portfolio for user (solo or simulation)
+ * @param {string} userId - The user ID
+ * @param {number} initialBalance - Starting cash balance
+ * @param {string|null} simulationId - Simulation ID (null for solo)
+ * @param {object} simulationInfo - Simulation details for context
+ * @returns {Promise<object>} The initialized or existing portfolio data
+ */
+export async function initializePortfolio(userId, initialBalance = 10000, simulationId = null, simulationInfo = null) {
+    const portfolioRef = getPortfolioRef(userId, simulationId);
     const portfolioSnap = await getDoc(portfolioRef);
 
     if (!portfolioSnap.exists()) {
         const newPortfolio = {
             userId: userId,
-            simulationId: null, // Null indicates this is a primary/solo portfolio, not part of a specific simulation
+            simulationId: simulationId,
             cash: initialBalance,
-            holdings: {}, // Ticker: { quantity, avgPrice }
-            trades: [], // Array of trade objects
+            holdings: {},
+            trades: [],
             createdAt: new Date(),
-            updatedAt: new Date()
+            updatedAt: new Date(),
+            // Additional fields for simulation portfolios
+            ...(simulationId && simulationInfo && {
+                simulationName: simulationInfo.name,
+                startingBalance: initialBalance,
+                currentRank: null,
+                lastRankUpdate: null
+            })
         };
+
         await setDoc(portfolioRef, newPortfolio);
-        console.log(`Initialized NEW portfolio for user ${userId} with balance $${initialBalance}`);
+        console.log(`Initialized NEW portfolio for user ${userId}${simulationId ? ` in simulation ${simulationId}` : ' (solo)'} with balance $${initialBalance}`);
         return newPortfolio;
     } else {
-        // CASE 2: Portfolio already EXISTS - ensure it has all required fields
+        // Portfolio exists - ensure it has all required fields
         const currentPortfolioData = portfolioSnap.data();
         let needsUpdate = false;
         const updateData = {};
 
-        // Ensure 'holdings' field exists and is an object
-        if (currentPortfolioData.holdings === undefined || typeof currentPortfolioData.holdings !== 'object' || currentPortfolioData.holdings === null) {
+        // Ensure basic fields exist
+        if (!currentPortfolioData.holdings || typeof currentPortfolioData.holdings !== 'object') {
             updateData.holdings = {};
             needsUpdate = true;
         }
-
-        // Ensure 'trades' field exists and is an array
-        if (currentPortfolioData.trades === undefined || !Array.isArray(currentPortfolioData.trades)) {
+        if (!Array.isArray(currentPortfolioData.trades)) {
             updateData.trades = [];
             needsUpdate = true;
         }
-
-        // Ensure 'cash' field exists. If not, set it to initial balance.
         if (currentPortfolioData.cash === undefined) {
             updateData.cash = initialBalance;
             needsUpdate = true;
         }
 
-        // Always update the 'updatedAt' timestamp
+        // Update timestamp
         updateData.updatedAt = new Date();
-        needsUpdate = true; // Mark for update if anything changed or just for timestamp
+        needsUpdate = true;
 
         if (needsUpdate) {
             await updateDoc(portfolioRef, updateData);
-            console.log(`Updated EXISTING portfolio for user ${userId} to ensure correct structure.`);
-            // Fetch the updated data to return the latest state
+            console.log(`Updated EXISTING portfolio for user ${userId}${simulationId ? ` in simulation ${simulationId}` : ' (solo)'}`);
             const updatedSnap = await getDoc(portfolioRef);
             return updatedSnap.data();
         }
 
-        console.log(`Portfolio already exists for user ${userId}. Current balance: $${currentPortfolioData.cash}`);
-        return currentPortfolioData; // Return existing data if no update was needed
+        return currentPortfolioData;
     }
 }
 
 /**
- * Retrieves a user's primary portfolio.
- * @param {string} userId - The ID of the user.
- * @returns {Promise<object|null>} The portfolio data or null if not found.
+ * Get user's portfolio (solo or simulation)
+ * @param {string} userId - The user ID
+ * @param {string|null} simulationId - Simulation ID (null for solo)
+ * @returns {Promise<object|null>} The portfolio data or null if not found
  */
-export async function getPortfolio(userId) {
-    const portfolioRef = getUserPortfolioRef(userId);
+export async function getPortfolio(userId, simulationId = null) {
+    const portfolioRef = getPortfolioRef(userId, simulationId);
     const portfolioSnap = await getDoc(portfolioRef);
+    
     if (portfolioSnap.exists()) {
         return portfolioSnap.data();
     }
-    return null; // Portfolio not found
+    return null;
 }
 
 /**
- * Executes a buy or sell trade and updates the user's portfolio in Firestore.
- * Uses a transaction for atomicity and consistency.
- * @param {string} userId - The ID of the user.
- * @param {object} tradeDetails - Details of the trade (ticker, quantity, price, type: 'buy'|'sell').
- * @returns {Promise<{success: boolean, message: string}>} Result of the trade execution.
+ * Get all portfolios for a user (solo + all simulations)
+ * @param {string} userId - The user ID
+ * @returns {Promise<Array>} Array of portfolio objects with metadata
  */
-export async function executeTrade(userId, tradeDetails) {
+export async function getUserPortfolios(userId) {
     const db = getFirestoreDb();
-    const portfolioRef = getUserPortfolioRef(userId);
+    
+    try {
+        // Query all portfolios for this user
+        const portfoliosQuery = query(
+            collection(db, PORTFOLIOS_COLLECTION),
+            where('userId', '==', userId)
+        );
+        const portfolioSnaps = await getDocs(portfoliosQuery);
+        
+        const portfolios = [];
+        
+        portfolioSnaps.forEach(docSnap => {
+            const portfolio = docSnap.data();
+            portfolios.push({
+                ...portfolio,
+                id: docSnap.id,
+                type: portfolio.simulationId ? 'simulation' : 'solo'
+            });
+        });
+        
+        // Sort: solo first, then simulations by creation date
+        portfolios.sort((a, b) => {
+            if (a.type === 'solo' && b.type !== 'solo') return -1;
+            if (a.type !== 'solo' && b.type === 'solo') return 1;
+            
+            const aTime = a.createdAt?.toDate?.() || new Date(a.createdAt);
+            const bTime = b.createdAt?.toDate?.() || new Date(b.createdAt);
+            return bTime.getTime() - aTime.getTime();
+        });
+        
+        return portfolios;
+        
+    } catch (error) {
+        console.error('Error getting user portfolios:', error);
+        throw error;
+    }
+}
+
+/**
+ * Validate trade against simulation rules
+ * @param {object} tradeDetails - Trade details
+ * @param {object} simulation - Simulation data
+ * @param {object} portfolio - Current portfolio
+ * @returns {Promise<{valid: boolean, error?: string}>}
+ */
+export async function validateSimulationTrade(tradeDetails, simulation, portfolio) {
+    try {
+        // Check simulation status - allow trading in pending simulations for testing
+        if (simulation.status === 'ended') {
+            return { valid: false, error: 'Simulation has ended' };
+        }
+        
+        // Check simulation dates
+        const now = new Date();
+        const startDate = simulation.startDate.toDate ? simulation.startDate.toDate() : new Date(simulation.startDate);
+        const endDate = simulation.endDate.toDate ? simulation.endDate.toDate() : new Date(simulation.endDate);
+        
+        if (now > endDate) {
+            return { valid: false, error: 'Simulation has ended' };
+        }
+        
+        // Allow trading even if simulation hasn't officially started (for testing)
+        // Original check: if (now < startDate) { return { valid: false, error: 'Simulation has not started yet' }; }
+        
+        // Check trading hours (if restricted to market hours)
+        if (simulation.rules?.tradingHours === 'market') {
+            const currentHour = now.getUTCHours(); // Use UTC for simplicity
+            const currentDay = now.getUTCDay(); // 0 = Sunday, 6 = Saturday
+            
+            // Basic market hours check: Monday-Friday, 9:30 AM - 4:00 PM ET (approx 14:30-21:00 UTC)
+            if (currentDay === 0 || currentDay === 6) {
+                return { valid: false, error: 'Trading is only allowed during market hours (Monday-Friday)' };
+            }
+            
+            if (currentHour < 14 || currentHour >= 21) {
+                return { valid: false, error: 'Trading is only allowed during market hours (9:30 AM - 4:00 PM ET)' };
+            }
+        }
+        
+        // Check short selling rules
+        if (tradeDetails.type === 'sell' && simulation.rules?.allowShortSelling === false) {
+            const currentHolding = portfolio.holdings?.[tradeDetails.ticker];
+            if (!currentHolding || currentHolding.quantity < tradeDetails.quantity) {
+                return { valid: false, error: 'Short selling is not allowed in this simulation' };
+            }
+        }
+        
+        // All validations passed
+        return { valid: true };
+        
+    } catch (error) {
+        console.error('Error validating simulation trade:', error);
+        return { valid: false, error: 'Error validating trade. Please try again.' };
+    }
+}
+
+/**
+ * Execute trade in portfolio (solo or simulation)
+ * @param {string} userId - The user ID
+ * @param {object} tradeDetails - Trade details (ticker, quantity, price, type)
+ * @param {string|null} simulationId - Simulation ID (null for solo)
+ * @returns {Promise<{success: boolean, message: string}>}
+ */
+export async function executeTrade(userId, tradeDetails, simulationId = null) {
+    const db = getFirestoreDb();
+    const portfolioRef = getPortfolioRef(userId, simulationId);
 
     // Validate trade details
     if (!tradeDetails.ticker || !tradeDetails.quantity || !tradeDetails.price || !tradeDetails.type) {
@@ -124,19 +249,38 @@ export async function executeTrade(userId, tradeDetails) {
     const cost = quantity * price;
 
     try {
+        // If this is a simulation trade, validate against simulation rules
+        if (simulationId) {
+            const simulationRef = doc(db, SIMULATIONS_COLLECTION, simulationId);
+            const simulationSnap = await getDoc(simulationRef);
+            
+            if (!simulationSnap.exists()) {
+                throw new Error('Simulation not found.');
+            }
+            
+            const simulation = simulationSnap.data();
+            const portfolio = await getPortfolio(userId, simulationId);
+            
+            if (!portfolio) {
+                throw new Error('Simulation portfolio not found. Please initialize your portfolio first.');
+            }
+            
+            const validation = await validateSimulationTrade(tradeDetails, simulation, portfolio);
+            if (!validation.valid) {
+                throw new Error(validation.error);
+            }
+        }
+
         await runTransaction(db, async (transaction) => {
             const portfolioDoc = await transaction.get(portfolioRef);
 
             if (!portfolioDoc.exists()) {
-                // If a portfolio doesn't exist, we can optionally create it here,
-                // or ensure it's initialized during user sign-up/login.
-                // For now, let's throw an error to enforce explicit initialization.
                 throw new Error('Portfolio not found. Please initialize your portfolio first.');
             }
 
             const currentPortfolio = portfolioDoc.data();
             let newCash = currentPortfolio.cash;
-            const currentHoldings = { ...currentPortfolio.holdings }; // Create a mutable copy
+            const currentHoldings = { ...currentPortfolio.holdings };
 
             if (type === 'buy') {
                 if (newCash < cost) {
@@ -145,7 +289,7 @@ export async function executeTrade(userId, tradeDetails) {
                 newCash -= cost;
 
                 if (currentHoldings[ticker]) {
-                    // Update existing holding (average down/up)
+                    // Update existing holding
                     const existingHolding = currentHoldings[ticker];
                     const totalQuantity = existingHolding.quantity + quantity;
                     const totalCost = (existingHolding.quantity * existingHolding.avgPrice) + cost;
@@ -162,16 +306,13 @@ export async function executeTrade(userId, tradeDetails) {
                 }
             } else if (type === 'sell') {
                 if (!currentHoldings[ticker] || currentHoldings[ticker].quantity < quantity) {
-                    throw new Error('Insufficient shares of ' + ticker.toUpperCase() + ' to execute this sell trade.');
+                    throw new Error(`Insufficient shares of ${ticker.toUpperCase()} to execute this sell trade.`);
                 }
-                newCash += cost; // Cash received from sale
+                newCash += cost;
                 currentHoldings[ticker].quantity -= quantity;
                 if (currentHoldings[ticker].quantity === 0) {
-                    delete currentHoldings[ticker]; // Remove holding if quantity is zero
+                    delete currentHoldings[ticker];
                 }
-            } else {
-                // This case should ideally be caught by initial validation
-                throw new Error('Invalid trade type. Must be "buy" or "sell".');
             }
 
             // Record the trade
@@ -180,13 +321,12 @@ export async function executeTrade(userId, tradeDetails) {
                 quantity: quantity,
                 price: price,
                 type: type,
-                timestamp: new Date().toISOString(), // ISO string for better date handling
+                timestamp: new Date().toISOString(),
                 userId: userId,
-                portfolioValueAtTrade: newCash + calculateHoldingsValue(currentHoldings, price), // Placeholder - actual calculation needs current prices for all holdings
-                tradeCost: cost // Store the cost/revenue of this specific trade
+                simulationId: simulationId,
+                tradeCost: cost
             };
 
-            // Ensure the trades array exists before pushing
             const updatedTrades = Array.isArray(currentPortfolio.trades) ? [...currentPortfolio.trades] : [];
             updatedTrades.push(tradeRecord);
 
@@ -195,67 +335,60 @@ export async function executeTrade(userId, tradeDetails) {
                 cash: newCash,
                 holdings: currentHoldings,
                 trades: updatedTrades,
-                updatedAt: new Date() // Update timestamp for the portfolio document itself
+                updatedAt: new Date()
             });
         });
-        console.log(`Trade executed successfully for user ${userId}: ${type} ${quantity} ${ticker} at $${price.toFixed(2)}`);
+
+        const contextMsg = simulationId ? `in simulation ${simulationId}` : 'in solo mode';
+        console.log(`Trade executed successfully for user ${userId} ${contextMsg}: ${type} ${quantity} ${ticker} at $${price.toFixed(2)}`);
         return { success: true, message: 'Trade executed successfully.' };
+
     } catch (error) {
         console.error('Error executing trade:', error.message);
-        throw error; // Re-throw to be handled by the calling function/UI
+        throw error;
     }
 }
-
-// Helper function to calculate current value of holdings (simplified, needs real-time prices for accuracy)
-function calculateHoldingsValue(holdings, currentPriceOfTradedStock) {
-    let totalValue = 0;
-    // This is a simplified calculation. For true portfolio value, you'd need current prices for *all* holdings.
-    // For now, we'll just factor in the stock being traded for a rough estimate.
-    // In Session 4, with live prices, this will be properly implemented.
-    for (const ticker in holdings) {
-        if (holdings.hasOwnProperty(ticker)) {
-            const holding = holdings[ticker];
-            if (ticker === currentPriceOfTradedStock.ticker) { // Crude check
-                 totalValue += holding.quantity * currentPriceOfTradedStock.price;
-            } else {
-                totalValue += holding.quantity * holding.avgPrice; // Fallback to avgPrice if not the traded stock
-            }
-        }
-    }
-    return totalValue;
-}
-
 
 /**
- * Fetches a user's recent trades from their primary portfolio.
- * @param {string} userId - The ID of the user.
- * @param {number} [limit=10] - The maximum number of trades to return.
- * @returns {Promise<Array<object>>} An array of trade objects.
+ * Get recent trades from portfolio
+ * @param {string} userId - The user ID
+ * @param {number} limit - Maximum number of trades to return
+ * @param {string|null} simulationId - Simulation ID (null for solo)
+ * @returns {Promise<Array<object>>} Array of trade objects
  */
-export async function getRecentTrades(userId, limit = 10) {
-    const portfolioRef = getUserPortfolioRef(userId);
+export async function getRecentTrades(userId, limit = 10, simulationId = null) {
+    const portfolioRef = getPortfolioRef(userId, simulationId);
     const portfolioSnap = await getDoc(portfolioRef);
+    
     if (portfolioSnap.exists()) {
         const trades = portfolioSnap.data().trades || [];
-        // Sort by timestamp (assuming ISO string can be compared or convert to Date objects)
         return trades
-            .map(trade => ({ ...trade, timestamp: new Date(trade.timestamp) })) // Convert timestamp string back to Date for sorting
-            .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime()) // Most recent first
+            .map(trade => ({ ...trade, timestamp: new Date(trade.timestamp) }))
+            .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
             .slice(0, limit);
     }
     return [];
 }
 
-// Optionally, add a function to update initial balance for a user's portfolio
-// This could be used by an admin or for specific simulation settings later
-export async function updatePortfolioInitialBalance(userId, newBalance) {
-    const portfolioRef = getUserPortfolioRef(userId);
+/**
+ * Update portfolio initial balance
+ * @param {string} userId - The user ID
+ * @param {number} newBalance - New balance amount
+ * @param {string|null} simulationId - Simulation ID (null for solo)
+ * @returns {Promise<{success: boolean, message: string}>}
+ */
+export async function updatePortfolioInitialBalance(userId, newBalance, simulationId = null) {
+    const portfolioRef = getPortfolioRef(userId, simulationId);
+    
     try {
         await updateDoc(portfolioRef, {
             cash: newBalance,
+            startingBalance: newBalance,
             updatedAt: new Date()
         });
-        console.log(`Portfolio initial balance updated for user ${userId} to $${newBalance}`);
+        
+        const contextMsg = simulationId ? `in simulation ${simulationId}` : 'for solo portfolio';
+        console.log(`Portfolio initial balance updated for user ${userId} ${contextMsg} to $${newBalance}`);
         return { success: true, message: 'Initial balance updated.' };
     } catch (error) {
         console.error('Error updating initial balance:', error);

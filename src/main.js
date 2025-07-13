@@ -1,4 +1,4 @@
-// Main application entry point
+// Main application entry point - Updated for Session 7
 import './style.css'; // Import global styles
 import { initializeApp } from './services/firebase.js';
 import { Router } from './utils/router.js';
@@ -66,7 +66,7 @@ class App {
         this.router.addRoute('/research', () => this.loadView('research'));
         this.router.addRoute('/auth', () => this.loadView('auth'));
         
-        // New simulation routes for Session 6
+        // Simulation routes for Session 7
         this.router.addRoute('/simulation', () => this.loadView('simulation'));
         this.router.addRoute('/simulation/create', () => this.loadView('simulation-create'));
         this.router.addRoute('/simulation/join', () => this.loadView('simulation-join'));
@@ -130,10 +130,10 @@ class App {
         if (user) {
             console.log('User signed in:', user.email);
             this.headerComponent.updateAuthState(user);
-            // this.navigationComponent.updateAuthState(user); // If you have this method
             
-            // CRITICAL: Initialize or ensure portfolio structure upon login
-            await initializePortfolio(user.uid); 
+            // CRITICAL: Initialize or ensure solo portfolio structure upon login
+            // Pass null as simulationId and simulation info for solo portfolio
+            await initializePortfolio(user.uid, 10000, null, null); 
 
             if (window.location.pathname === '/auth') {
                 this.router.navigate('/');
@@ -172,6 +172,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const app = new App();
     app.initialize();
     
-    // Make app globally available for debugging
+    // Make app globally available for debugging and navigation
     window.app = app;
 });

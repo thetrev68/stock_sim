@@ -7,7 +7,7 @@ export class CreateSimulationModal {
         this.simulationService = new SimulationService();
         this.authService = new AuthService();
         this.isVisible = false;
-        this.onSimulationCreated = null; // Callback for when simulation is created
+        this.onSimulationCreated = null;
     }
 
     show(onCreatedCallback = null) {
@@ -16,7 +16,6 @@ export class CreateSimulationModal {
         this.render();
         this.attachEventListeners();
         
-        // Focus on name input
         setTimeout(() => {
             const nameInput = document.getElementById('sim-name');
             if (nameInput) nameInput.focus();
@@ -32,25 +31,21 @@ export class CreateSimulationModal {
     }
 
     render() {
-        // Remove existing modal if any
         const existingModal = document.getElementById('create-simulation-modal');
         if (existingModal) {
             existingModal.remove();
         }
 
-        // Get today's date for min date
         const today = new Date();
         const todayStr = today.toISOString().split('T')[0];
         
-        // Default end date (30 days from now)
         const defaultEndDate = new Date();
-        defaultEndDate.setDate(defaultEndDate.getDate() + 30);
+        defaultEndDate.setDate(defaultEndDate.getDate() + 7);
         const defaultEndStr = defaultEndDate.toISOString().split('T')[0];
 
         const modalHTML = `
             <div id="create-simulation-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
                 <div class="bg-gray-800 rounded-xl shadow-2xl w-full max-w-2xl border border-gray-700 max-h-[90vh] overflow-y-auto">
-                    <!-- Header -->
                     <div class="flex justify-between items-center p-6 border-b border-gray-700">
                         <div>
                             <h2 class="text-2xl font-bold text-white">Create New Simulation</h2>
@@ -63,9 +58,7 @@ export class CreateSimulationModal {
                         </button>
                     </div>
 
-                    <!-- Form -->
                     <form id="create-simulation-form" class="p-6 space-y-6">
-                        <!-- Basic Info -->
                         <div class="space-y-4">
                             <h3 class="text-lg font-semibold text-white">Basic Information</h3>
                             
@@ -99,7 +92,6 @@ export class CreateSimulationModal {
                             </div>
                         </div>
 
-                        <!-- Dates & Money -->
                         <div class="space-y-4">
                             <h3 class="text-lg font-semibold text-white">Timeline & Budget</h3>
                             
@@ -171,7 +163,6 @@ export class CreateSimulationModal {
                             </div>
                         </div>
 
-                        <!-- Advanced Rules -->
                         <div class="space-y-4">
                             <h3 class="text-lg font-semibold text-white">Advanced Rules</h3>
                             
@@ -204,12 +195,10 @@ export class CreateSimulationModal {
                             </div>
                         </div>
 
-                        <!-- Error Message -->
                         <div id="create-sim-error" class="hidden bg-red-900/20 border border-red-500 rounded-lg p-4">
                             <p class="text-red-400 text-sm"></p>
                         </div>
 
-                        <!-- Form Actions -->
                         <div class="flex flex-col sm:flex-row gap-3 pt-4 border-t border-gray-700">
                             <button 
                                 type="button" 
@@ -241,27 +230,22 @@ export class CreateSimulationModal {
         const closeBtn = document.getElementById('close-modal-btn');
         const cancelBtn = document.getElementById('cancel-create-btn');
 
-        // Close modal events
         closeBtn?.addEventListener('click', () => this.hide());
         cancelBtn?.addEventListener('click', () => this.hide());
         
-        // Close on outside click
         modal?.addEventListener('click', (e) => {
             if (e.target === modal) this.hide();
         });
 
-        // Close on Escape key
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' && this.isVisible) this.hide();
         });
 
-        // Form submission
         form?.addEventListener('submit', (e) => {
             e.preventDefault();
             this.handleCreateSimulation();
         });
 
-        // Date validation
         const startDateInput = document.getElementById('sim-start-date');
         const endDateInput = document.getElementById('sim-end-date');
         
@@ -269,10 +253,9 @@ export class CreateSimulationModal {
             const startDate = startDateInput.value;
             if (startDate) {
                 endDateInput.min = startDate;
-                // If end date is before start date, update it
                 if (endDateInput.value && endDateInput.value < startDate) {
                     const newEndDate = new Date(startDate);
-                    newEndDate.setDate(newEndDate.getDate() + 7); // Add 7 days
+                    newEndDate.setDate(newEndDate.getDate() + 7);
                     endDateInput.value = newEndDate.toISOString().split('T')[0];
                 }
             }
@@ -282,7 +265,7 @@ export class CreateSimulationModal {
     async handleCreateSimulation() {
         const formData = this.getFormData();
         
-        if (!formData) return; // Validation failed
+        if (!formData) return;
 
         this.setLoading(true);
         this.hideError();
@@ -293,24 +276,19 @@ export class CreateSimulationModal {
                 throw new Error('You must be signed in to create a simulation');
             }
 
-            // Initialize simulation service
             this.simulationService.initialize();
 
-            // Create the simulation
             const result = await this.simulationService.createSimulation(user.uid, formData);
             
             if (result.success) {
                 console.log('Simulation created successfully:', result);
                 
-                // Show success message briefly
                 this.showSuccess(result.inviteCode);
                 
-                // Call callback if provided
                 if (this.onSimulationCreated) {
                     this.onSimulationCreated(result);
                 }
                 
-                // Close modal after brief delay
                 setTimeout(() => {
                     this.hide();
                 }, 2000);
@@ -334,7 +312,6 @@ export class CreateSimulationModal {
         const allowShortSelling = document.getElementById('sim-short-selling')?.checked;
         const tradingHours = document.querySelector('input[name="trading-hours"]:checked')?.value;
 
-        // Validation
         if (!name) {
             this.showError('Simulation name is required');
             return null;
@@ -364,7 +341,7 @@ export class CreateSimulationModal {
             maxMembers: maxMembers || 20,
             allowShortSelling,
             tradingHours,
-            commissionPerTrade: 0 // Fixed for now
+            commissionPerTrade: 0
         };
     }
 

@@ -1,6 +1,7 @@
-// Trade view
+// Enhanced Trade view with simulation support - Session 7
 import { StockService } from '../services/stocks.js';
-import { initializePortfolio, getPortfolio, executeTrade, getRecentTrades } from '../services/trading.js';
+import { initializePortfolio, getPortfolio, executeTrade, getRecentTrades, getUserPortfolios } from '../services/trading.js';
+import { SimulationService } from '../services/simulation.js';
 import { AuthService } from '../services/auth.js';
 
 export default class TradeView {
@@ -8,25 +9,62 @@ export default class TradeView {
         this.name = 'trade';
         this.authService = new AuthService();
         this.stockService = new StockService();
+        this.simulationService = new SimulationService();
         this.currentUser = null;
         this.currentStockPrice = 0;
         this.currentPortfolio = null;
-        this.viewContainer = null; // Store the main container element for consistent access
+        this.userPortfolios = [];
+        this.activePortfolioContext = null; // { type: 'solo'|'simulation', simulationId: null|string, simulation: object|null }
+        this.viewContainer = null;
     }
 
     async render(container) {
+        // Check for simulation context from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const simulationId = urlParams.get('sim');
+        
         container.innerHTML = this.getTemplate();
-        this.viewContainer = container; // Store the container when the view is rendered
+        this.viewContainer = container;
         this.attachEventListeners(container);
-        // CRITICAL FIX: Add a small delay to ensure DOM elements are fully parsed and available
+        
         setTimeout(async () => {
-            await this.loadInitialData(); 
-        }, 0); // Use 0ms for immediate execution after current task, allowing DOM to update
+            await this.loadInitialData(simulationId);
+        }, 0);
     }
 
     getTemplate() {
         return `
             <div class="trade-view">
+                <!-- Portfolio Context Selector -->
+                <div id="portfolio-context-section" class="bg-gray-800 p-4 rounded-lg shadow-lg mb-6 border border-gray-700">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                        <div>
+                            <h3 class="text-lg font-semibold text-white mb-1">Trading Context</h3>
+                            <p class="text-gray-400 text-sm">Choose which portfolio you want to trade with</p>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <label for="portfolio-selector" class="text-sm font-medium text-gray-300">Portfolio:</label>
+                            <select 
+                                id="portfolio-selector" 
+                                class="bg-gray-700 text-white rounded-lg px-4 py-2 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-cyan-500 min-w-48"
+                            >
+                                <option value="">Loading portfolios...</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Context Info -->
+                    <div id="context-info" class="mt-4 p-3 bg-gray-700 rounded-lg hidden">
+                        <div class="flex items-center gap-3">
+                            <div id="context-indicator" class="w-3 h-3 bg-cyan-400 rounded-full"></div>
+                            <div>
+                                <p id="context-title" class="text-white font-medium">Solo Practice Mode</p>
+                                <p id="context-description" class="text-gray-400 text-sm">Trade with your personal portfolio</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     <!-- Trading Form -->
                     <div class="lg:col-span-1">
@@ -63,14 +101,16 @@ export default class TradeView {
                                     <button 
                                         type="button" 
                                         id="buy-btn" 
-                                        class="flex-1 bg-green-600 hover:bg-green-500 text-white font-bold py-2 px-4 rounded-md transition-colors duration-300"
+                                        class="flex-1 bg-green-600 hover:bg-green-500 text-white font-bold py-2 px-4 rounded-md transition-colors duration-300 disabled:bg-gray-600 disabled:cursor-not-allowed"
+                                        disabled
                                     >
                                         Buy
                                     </button>
                                     <button 
                                         type="button" 
                                         id="sell-btn" 
-                                        class="flex-1 bg-red-600 hover:bg-red-500 text-white font-bold py-2 px-4 rounded-md transition-colors duration-300"
+                                        class="flex-1 bg-red-600 hover:bg-red-500 text-white font-bold py-2 px-4 rounded-md transition-colors duration-300 disabled:bg-gray-600 disabled:cursor-not-allowed"
+                                        disabled
                                     >
                                         Sell
                                     </button>
@@ -80,11 +120,11 @@ export default class TradeView {
                         </div>
                     </div>
 
-                    <!-- Portfolio Summary and Recent Trades (Holdings moved to PortfolioView) -->
+                    <!-- Portfolio Summary and Recent Trades -->
                     <div class="lg:col-span-2 space-y-6">
-                        <!-- Current Cash and Portfolio Value -->
+                        <!-- Current Portfolio Summary -->
                         <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
-                            <h3 class="text-xl font-semibold mb-4 text-white">Your Portfolio Summary</h3>
+                            <h3 class="text-xl font-semibold mb-4 text-white">Portfolio Summary</h3>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div class="bg-gray-700 p-4 rounded-md">
                                     <p class="text-sm font-medium text-gray-400">Available Cash</p>
@@ -103,7 +143,6 @@ export default class TradeView {
                             <h3 class="text-xl font-semibold mb-4 text-white">Recent Trades</h3>
                             <div id="recent-trades-list" class="space-y-3 text-sm">
                                 <p class="text-gray-500 text-center">No recent trades.</p>
-                                <!-- Trades will be injected here -->
                             </div>
                         </div>
                     </div>
@@ -117,47 +156,242 @@ export default class TradeView {
         const quantityInput = container.querySelector('#quantity');
         const buyBtn = container.querySelector('#buy-btn');
         const sellBtn = container.querySelector('#sell-btn');
+        const portfolioSelector = container.querySelector('#portfolio-selector');
 
+        // Portfolio context switching
+        portfolioSelector.addEventListener('change', this.handlePortfolioSwitch.bind(this));
+
+        // Trade form inputs
         tickerInput.addEventListener('input', this.updatePriceAndCost.bind(this));
         quantityInput.addEventListener('input', this.updatePriceAndCost.bind(this));
         
+        // Trade buttons
         buyBtn.addEventListener('click', () => this.handleTrade('buy'));
         sellBtn.addEventListener('click', () => this.handleTrade('sell'));
     }
 
-    async loadInitialData() {
+    async loadInitialData(requestedSimulationId = null) {
         this.currentUser = this.authService.getCurrentUser();
-        if (this.currentUser) {
-            try {
-                await initializePortfolio(this.currentUser.uid);
-                this.currentPortfolio = await getPortfolio(this.currentUser.uid);
-                if (this.currentPortfolio) {
-                    this.updatePortfolioSummary(); // Renamed from updatePortfolioDisplay for clarity
-                    await this.updateRecentTrades(); 
-                } else {
-                    this.showFeedback('Failed to load portfolio data. Please try again.', 'text-red-400');
-                }
-            } catch (error) {
-                console.error('Error loading initial trade data:', error);
-                this.showFeedback('Failed to load initial trade data. Please check console.', 'text-red-400');
-            }
-        } else {
+        if (!this.currentUser) {
             this.showFeedback('Please sign in to make trades.', 'text-yellow-400');
+            return;
+        }
+
+        try {
+            // Initialize services
+            this.simulationService.initialize();
+
+            // Load all user portfolios
+            this.userPortfolios = await getUserPortfolios(this.currentUser.uid);
+            console.log('Loaded user portfolios:', this.userPortfolios);
+
+            // If no portfolios exist yet, we need to initialize at least the simulation ones
+            if (requestedSimulationId && !this.userPortfolios.find(p => p.simulationId === requestedSimulationId)) {
+                console.log('Requested simulation portfolio not found, initializing...');
+                await this.initializeSimulationPortfolio(requestedSimulationId);
+                // Reload portfolios after initialization
+                this.userPortfolios = await getUserPortfolios(this.currentUser.uid);
+                console.log('Reloaded portfolios after initialization:', this.userPortfolios);
+            }
+
+            // Populate portfolio selector
+            this.populatePortfolioSelector();
+
+            // Set initial context
+            if (requestedSimulationId) {
+                // Try to switch to requested simulation
+                const simPortfolio = this.userPortfolios.find(p => p.simulationId === requestedSimulationId);
+                if (simPortfolio) {
+                    await this.switchToPortfolio(requestedSimulationId);
+                } else {
+                    // Simulation not found, initialize it
+                    await this.initializeSimulationPortfolio(requestedSimulationId);
+                }
+            } else {
+                // Default to solo portfolio
+                await this.switchToPortfolio(null);
+            }
+
+        } catch (error) {
+            console.error('Error loading initial trade data:', error);
+            this.showFeedback('Failed to load trading data. Please try again.', 'text-red-400');
         }
     }
 
-    // Renamed to updatePortfolioSummary as it now only handles summary, not holdings table
+    populatePortfolioSelector() {
+        const selector = this.viewContainer.querySelector('#portfolio-selector');
+        if (!selector) return;
+
+        selector.innerHTML = '';
+
+        // Add solo portfolio option
+        const soloOption = document.createElement('option');
+        soloOption.value = 'solo';
+        soloOption.textContent = 'Solo Practice Mode';
+        selector.appendChild(soloOption);
+
+        // Add simulation portfolio options
+        this.userPortfolios.forEach(portfolio => {
+            if (portfolio.type === 'simulation' && portfolio.simulationId) {
+                const option = document.createElement('option');
+                option.value = portfolio.simulationId;
+                option.textContent = portfolio.simulationName || `Simulation ${portfolio.simulationId}`;
+                selector.appendChild(option);
+            }
+        });
+
+        console.log('Portfolio selector populated with:', this.userPortfolios.length, 'portfolios');
+        console.log('Simulation portfolios:', this.userPortfolios.filter(p => p.type === 'simulation'));
+    }
+
+    async handlePortfolioSwitch() {
+        const selector = this.viewContainer.querySelector('#portfolio-selector');
+        const selectedValue = selector.value;
+
+        if (selectedValue === 'solo') {
+            await this.switchToPortfolio(null);
+        } else if (selectedValue) {
+            await this.switchToPortfolio(selectedValue);
+        }
+    }
+
+    async switchToPortfolio(simulationId) {
+        try {
+            this.showFeedback('Switching portfolio...', 'text-cyan-400');
+
+            // Get simulation info if needed
+            let simulation = null;
+            if (simulationId) {
+                simulation = await this.simulationService.getSimulation(simulationId);
+                if (!simulation) {
+                    throw new Error('Simulation not found');
+                }
+            }
+
+            // Initialize portfolio if needed
+            const startingBalance = simulation ? simulation.startingBalance : 10000;
+            await initializePortfolio(this.currentUser.uid, startingBalance, simulationId, simulation);
+
+            // Load portfolio data
+            this.currentPortfolio = await getPortfolio(this.currentUser.uid, simulationId);
+            
+            // Set active context
+            this.activePortfolioContext = {
+                type: simulationId ? 'simulation' : 'solo',
+                simulationId: simulationId,
+                simulation: simulation
+            };
+
+            // Update UI
+            this.updateContextDisplay();
+            this.updatePortfolioSummary();
+            await this.updateRecentTrades();
+            this.enableTradingForm();
+
+            // Update URL if in simulation mode
+            if (simulationId) {
+                const newUrl = `${window.location.pathname}?sim=${simulationId}`;
+                window.history.replaceState({}, '', newUrl);
+            } else {
+                window.history.replaceState({}, '', window.location.pathname);
+            }
+
+            // Update selector
+            const selector = this.viewContainer.querySelector('#portfolio-selector');
+            if (selector) {
+                selector.value = simulationId || 'solo';
+            }
+
+            this.showFeedback('');
+
+        } catch (error) {
+            console.error('Error switching portfolio:', error);
+            this.showFeedback(`Failed to switch portfolio: ${error.message}`, 'text-red-400');
+        }
+    }
+
+    async initializeSimulationPortfolio(simulationId) {
+        try {
+            // Get simulation details
+            const simulation = await this.simulationService.getSimulation(simulationId);
+            if (!simulation) {
+                throw new Error('Simulation not found');
+            }
+
+            // Check if user is a member
+            const isMember = await this.simulationService.isUserMemberOfSimulation(simulationId, this.currentUser.uid);
+            if (!isMember) {
+                throw new Error('You are not a member of this simulation');
+            }
+
+            // Initialize portfolio with simulation starting balance
+            await initializePortfolio(this.currentUser.uid, simulation.startingBalance, simulationId, simulation);
+
+            // Reload portfolios and switch to this simulation
+            this.userPortfolios = await getUserPortfolios(this.currentUser.uid);
+            this.populatePortfolioSelector();
+            await this.switchToPortfolio(simulationId);
+
+        } catch (error) {
+            console.error('Error initializing simulation portfolio:', error);
+            this.showFeedback(`Failed to initialize simulation portfolio: ${error.message}`, 'text-red-400');
+            // Fall back to solo mode
+            await this.switchToPortfolio(null);
+        }
+    }
+
+    updateContextDisplay() {
+        const contextInfo = this.viewContainer.querySelector('#context-info');
+        const contextIndicator = this.viewContainer.querySelector('#context-indicator');
+        const contextTitle = this.viewContainer.querySelector('#context-title');
+        const contextDescription = this.viewContainer.querySelector('#context-description');
+
+        if (!contextInfo || !this.activePortfolioContext) return;
+
+        contextInfo.classList.remove('hidden');
+
+        if (this.activePortfolioContext.type === 'solo') {
+            contextIndicator.className = 'w-3 h-3 bg-cyan-400 rounded-full';
+            contextTitle.textContent = 'Solo Practice Mode';
+            contextDescription.textContent = 'Trade with your personal portfolio';
+        } else {
+            const simulation = this.activePortfolioContext.simulation;
+            contextIndicator.className = 'w-3 h-3 bg-purple-400 rounded-full';
+            contextTitle.textContent = simulation.name;
+            
+            // Status-based description
+            let description = '';
+            if (simulation.status === 'active') {
+                const endDate = simulation.endDate.toDate ? simulation.endDate.toDate() : new Date(simulation.endDate);
+                const daysRemaining = Math.ceil((endDate - new Date()) / (1000 * 60 * 60 * 24));
+                description = `Active simulation • ${daysRemaining} days remaining`;
+            } else if (simulation.status === 'pending') {
+                description = 'Simulation starting soon';
+            } else {
+                description = 'Simulation ended';
+            }
+            
+            contextDescription.textContent = description;
+        }
+    }
+
+    enableTradingForm() {
+        const buyBtn = this.viewContainer.querySelector('#buy-btn');
+        const sellBtn = this.viewContainer.querySelector('#sell-btn');
+        
+        if (buyBtn) buyBtn.disabled = false;
+        if (sellBtn) sellBtn.disabled = false;
+    }
+
     updatePortfolioSummary() {
         if (!this.currentPortfolio || !this.viewContainer) return;
 
         const portfolioCashEl = this.viewContainer.querySelector('#portfolio-cash');
         if (portfolioCashEl) {
-            portfolioCashEl.textContent = `$${this.currentPortfolio.cash.toFixed(2)}`;
-        } else {
-            console.warn("Element #portfolio-cash not found in TradeView.");
+            portfolioCashEl.textContent = `${this.currentPortfolio.cash.toFixed(2)}`;
         }
         
-        // Calculate total holdings value for display in summary
+        // Calculate total holdings value
         let totalHoldingsValue = 0;
         const holdings = this.currentPortfolio.holdings || {}; 
         for (const ticker in holdings) {
@@ -168,27 +402,25 @@ export default class TradeView {
             }
         }
 
-        // Removed #portfolio-holdings-value as it's no longer a separate element
-        // The total portfolio value now combines cash and holdings value
         const portfolioValueEl = this.viewContainer.querySelector('#portfolio-value');
         if (portfolioValueEl) {
-            portfolioValueEl.textContent = `$${(this.currentPortfolio.cash + totalHoldingsValue).toFixed(2)}`;
-        } else {
-            console.warn("Element #portfolio-value not found in TradeView.");
+            portfolioValueEl.textContent = `${(this.currentPortfolio.cash + totalHoldingsValue).toFixed(2)}`;
         }
     }
 
     async updateRecentTrades() { 
-        if (!this.currentUser || !this.viewContainer) return;
-        const trades = await getRecentTrades(this.currentUser.uid); 
+        if (!this.currentUser || !this.viewContainer || !this.activePortfolioContext) return;
+        
+        const trades = await getRecentTrades(
+            this.currentUser.uid, 
+            10, 
+            this.activePortfolioContext.simulationId
+        ); 
         const tradeListContainer = this.viewContainer.querySelector('#recent-trades-list'); 
         
-        if (!tradeListContainer) {
-            console.warn("Element #recent-trades-list not found in TradeView.");
-            return;
-        }
+        if (!tradeListContainer) return;
 
-        tradeListContainer.innerHTML = ''; // Clear previous trades
+        tradeListContainer.innerHTML = '';
 
         if (trades.length === 0) {
             tradeListContainer.innerHTML = '<p class="text-gray-500 text-center">No recent trades.</p>';
@@ -199,14 +431,14 @@ export default class TradeView {
             const tradeItem = document.createElement('div');
             tradeItem.className = 'bg-gray-700 p-3 rounded-md flex justify-between items-center';
             const tradeTypeClass = trade.type === 'buy' ? 'text-green-400' : 'text-red-400';
-            const tradeTime = new Date(trade.timestamp).toLocaleString(); // Format date for display
+            const tradeTime = new Date(trade.timestamp).toLocaleString();
 
             tradeItem.innerHTML = `
                 <div>
                     <span class="font-semibold ${tradeTypeClass}">${trade.type.toUpperCase()}</span> 
                     <span class="text-white">${trade.quantity}</span> shares of 
                     <span class="font-bold uppercase text-cyan-300">${trade.ticker}</span> 
-                    at <span class="text-white">$${trade.price.toFixed(2)}</span>
+                    at <span class="text-white">${trade.price.toFixed(2)}</span>
                 </div>
                 <div class="text-gray-500 text-xs">${tradeTime}</div>
             `;
@@ -228,8 +460,8 @@ export default class TradeView {
                 if (price !== null) {
                     this.currentStockPrice = price;
                     const totalCost = price * quantity;
-                    currentPriceSpan.textContent = `$${price.toFixed(2)}`;
-                    totalCostSpan.textContent = `$${totalCost.toFixed(2)}`;
+                    currentPriceSpan.textContent = `${price.toFixed(2)}`;
+                    totalCostSpan.textContent = `${totalCost.toFixed(2)}`;
                     pricePreview.classList.remove('hidden');
                     this.showFeedback('');
                 } else {
@@ -264,6 +496,11 @@ export default class TradeView {
             return;
         }
 
+        if (!this.activePortfolioContext) {
+            this.showFeedback('Please select a portfolio to trade with.', 'text-red-400');
+            return;
+        }
+
         const currentPrice = this.currentStockPrice; 
 
         if (!ticker || isNaN(quantity) || quantity <= 0 || isNaN(currentPrice) || currentPrice <= 0) {
@@ -279,15 +516,26 @@ export default class TradeView {
         };
 
         try {
-            const result = await executeTrade(this.currentUser.uid, tradeDetails);
+            const result = await executeTrade(
+                this.currentUser.uid, 
+                tradeDetails, 
+                this.activePortfolioContext.simulationId
+            );
+            
             if (result.success) {
-                this.showFeedback(`Trade successful! ${type.toUpperCase()} ${quantity} shares of ${ticker.toUpperCase()}.`, 'text-green-400');
+                const contextMsg = this.activePortfolioContext.type === 'solo' ? 'in solo mode' : `in ${this.activePortfolioContext.simulation.name}`;
+                this.showFeedback(`Trade successful! ${type.toUpperCase()} ${quantity} shares of ${ticker.toUpperCase()} ${contextMsg}.`, 'text-green-400');
+                
+                // Clear form
                 tickerInput.value = '';
                 quantityInput.value = '';
                 document.getElementById('price-preview').classList.add('hidden');
                 this.currentStockPrice = 0;
 
-                await this.loadInitialData(); 
+                // Reload data
+                this.currentPortfolio = await getPortfolio(this.currentUser.uid, this.activePortfolioContext.simulationId);
+                this.updatePortfolioSummary();
+                await this.updateRecentTrades();
             } else {
                 this.showFeedback(`Trade failed: ${result.message}`, 'text-red-400');
             }

@@ -1,7 +1,8 @@
-// src/views/simulation.js
-// Basic simulation view - foundation for Session 7
+// src/views/simulation.js - Enhanced for Session 7
+// Simulation view with trading integration
 import { SimulationService } from '../services/simulation.js';
 import { AuthService } from '../services/auth.js';
+import { getPortfolio, initializePortfolio, getRecentTrades } from '../services/trading.js';
 
 export default class SimulationView {
     constructor() {
@@ -11,10 +12,11 @@ export default class SimulationView {
         this.currentSimulation = null;
         this.currentUser = null;
         this.simulationId = null;
+        this.simulationPortfolio = null;
     }
 
     async render(container) {
-        // Extract simulation ID from URL parameters (if any)
+        // Extract simulation ID from URL parameters
         const urlParams = new URLSearchParams(window.location.search);
         this.simulationId = urlParams.get('sim');
 
@@ -85,7 +87,7 @@ export default class SimulationView {
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
                                     </svg>
-                                    Trade
+                                    <span id="trade-btn-text">Trade Now</span>
                                 </button>
                             </div>
                         </div>
@@ -136,28 +138,89 @@ export default class SimulationView {
                         </div>
                     </div>
 
-                    <!-- Placeholder for Future Features -->
-                    <div class="bg-gray-800 p-8 rounded-lg shadow-lg border border-gray-700 text-center">
-                        <div class="text-gray-400 mb-4">
-                            <svg class="w-16 h-16 mx-auto mb-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
-                            </svg>
+                    <!-- Portfolio Holdings and Recent Trades -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                        <!-- Current Holdings -->
+                        <div class="bg-gray-800 rounded-lg shadow-lg border border-gray-700">
+                            <div class="p-6 border-b border-gray-700">
+                                <h3 class="text-xl font-semibold text-white">Current Holdings</h3>
+                                <p class="text-sm text-gray-400 mt-1">Your positions in this simulation</p>
+                            </div>
+                            
+                            <div id="sim-holdings-container" class="p-6">
+                                <div id="sim-holdings-loading" class="text-center py-4">
+                                    <div class="w-6 h-6 border-2 border-cyan-400 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+                                    <p class="text-gray-400 text-sm">Loading holdings...</p>
+                                </div>
+                                
+                                <div id="sim-holdings-empty" class="text-center py-8 hidden">
+                                    <svg class="w-12 h-12 mx-auto mb-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                                    </svg>
+                                    <h4 class="text-lg font-semibold text-gray-300 mb-2">No Holdings Yet</h4>
+                                    <p class="text-gray-400 mb-4">Start trading to build your portfolio</p>
+                                    <button 
+                                        id="start-trading-btn"
+                                        class="bg-green-600 hover:bg-green-500 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200"
+                                    >
+                                        Start Trading
+                                    </button>
+                                </div>
+                                
+                                <div id="sim-holdings-list" class="space-y-3 hidden">
+                                    <!-- Holdings will be rendered here -->
+                                </div>
+                            </div>
                         </div>
-                        <h3 class="text-xl font-semibold text-gray-300 mb-2">Advanced Features Coming Soon</h3>
-                        <p class="text-gray-400 mb-4">Simulation-specific trading, leaderboards, and portfolio management will be available in Sessions 7-9</p>
-                        <div class="flex flex-col sm:flex-row gap-3 justify-center">
-                            <button 
-                                data-navigate="/trade" 
-                                class="bg-green-600 hover:bg-green-500 text-white font-bold py-2 px-6 rounded-lg transition-colors duration-300"
-                            >
-                                Trade in Solo Mode
-                            </button>
-                            <button 
-                                data-navigate="/portfolio" 
-                                class="bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-2 px-6 rounded-lg transition-colors duration-300"
-                            >
-                                View Solo Portfolio
-                            </button>
+
+                        <!-- Recent Trades -->
+                        <div class="bg-gray-800 rounded-lg shadow-lg border border-gray-700">
+                            <div class="p-6 border-b border-gray-700">
+                                <h3 class="text-xl font-semibold text-white">Recent Trades</h3>
+                                <p class="text-sm text-gray-400 mt-1">Your trading activity in this simulation</p>
+                            </div>
+                            
+                            <div id="sim-trades-container" class="p-6">
+                                <div id="sim-trades-loading" class="text-center py-4">
+                                    <div class="w-6 h-6 border-2 border-cyan-400 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+                                    <p class="text-gray-400 text-sm">Loading trades...</p>
+                                </div>
+                                
+                                <div id="sim-trades-empty" class="text-center py-8 hidden">
+                                    <svg class="w-12 h-12 mx-auto mb-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2-2h10a2 2 0 002 2v12a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
+                                    </svg>
+                                    <h4 class="text-lg font-semibold text-gray-300 mb-2">No Trades Yet</h4>
+                                    <p class="text-gray-400">Your trading history will appear here</p>
+                                </div>
+                                
+                                <div id="sim-trades-list" class="space-y-3 hidden">
+                                    <!-- Trades will be rendered here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Simulation Rules & Info -->
+                    <div class="bg-gray-800 p-6 rounded-lg shadow-lg border border-gray-700">
+                        <h3 class="text-xl font-semibold text-white mb-4">Simulation Rules</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
+                            <div>
+                                <span class="text-gray-400">Starting Balance</span>
+                                <p id="sim-starting-balance" class="text-white font-medium">$10,000</p>
+                            </div>
+                            <div>
+                                <span class="text-gray-400">Short Selling</span>
+                                <p id="sim-short-selling" class="text-white font-medium">Not Allowed</p>
+                            </div>
+                            <div>
+                                <span class="text-gray-400">Trading Hours</span>
+                                <p id="sim-trading-hours" class="text-white font-medium">Market Hours</p>
+                            </div>
+                            <div>
+                                <span class="text-gray-400">Commission</span>
+                                <p id="sim-commission" class="text-white font-medium">$0 per trade</p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -166,20 +229,20 @@ export default class SimulationView {
     }
 
     attachEventListeners(container) {
-        // Navigation buttons for future features
+        // Trade button
         const tradeBtn = container.querySelector('#trade-in-sim-btn');
+        const startTradingBtn = container.querySelector('#start-trading-btn');
+        
+        [tradeBtn, startTradingBtn].forEach(btn => {
+            if (btn) {
+                btn.addEventListener('click', () => this.handleTradeNavigation());
+            }
+        });
+
+        // Leaderboard button (placeholder for Session 9)
         const leaderboardBtn = container.querySelector('#view-leaderboard-btn');
-
-        if (tradeBtn) {
-            tradeBtn.addEventListener('click', () => {
-                // For now, just show a placeholder message
-                alert('Simulation trading will be available in Session 7!');
-            });
-        }
-
         if (leaderboardBtn) {
             leaderboardBtn.addEventListener('click', () => {
-                // For now, just show a placeholder message
                 alert('Leaderboards will be available in Session 9!');
             });
         }
@@ -217,6 +280,9 @@ export default class SimulationView {
                 return;
             }
 
+            // Initialize and load simulation portfolio
+            await this.loadSimulationPortfolio();
+
             // Display simulation data
             this.displaySimulation();
             
@@ -224,6 +290,161 @@ export default class SimulationView {
             console.error('Error loading simulation:', error);
             this.showError();
         }
+    }
+
+    async loadSimulationPortfolio() {
+        try {
+            // Initialize portfolio if it doesn't exist (non-blocking)
+            const initPromise = initializePortfolio(
+                this.currentUser.uid, 
+                this.currentSimulation.startingBalance, 
+                this.simulationId, 
+                this.currentSimulation
+            );
+
+            // Load portfolio data (can run in parallel)
+            const portfolioPromise = getPortfolio(this.currentUser.uid, this.simulationId);
+
+            // Wait for both operations
+            await initPromise;
+            this.simulationPortfolio = await portfolioPromise;
+            
+            // Load UI components asynchronously to avoid blocking
+            setTimeout(() => {
+                this.loadHoldings();
+            }, 0);
+            
+            setTimeout(() => {
+                this.loadRecentTrades();
+            }, 0);
+            
+        } catch (error) {
+            console.error('Error loading simulation portfolio:', error);
+            this.showPortfolioError();
+        }
+    }
+
+    async loadHoldings() {
+        const holdingsLoading = document.getElementById('sim-holdings-loading');
+        const holdingsEmpty = document.getElementById('sim-holdings-empty');
+        const holdingsList = document.getElementById('sim-holdings-list');
+
+        if (!this.simulationPortfolio || !this.simulationPortfolio.holdings) {
+            if (holdingsLoading) holdingsLoading.classList.add('hidden');
+            if (holdingsEmpty) holdingsEmpty.classList.remove('hidden');
+            if (holdingsList) holdingsList.classList.add('hidden');
+            return;
+        }
+
+        const holdings = this.simulationPortfolio.holdings;
+        
+        if (Object.keys(holdings).length === 0) {
+            if (holdingsLoading) holdingsLoading.classList.add('hidden');
+            if (holdingsEmpty) holdingsEmpty.classList.remove('hidden');
+            if (holdingsList) holdingsList.classList.add('hidden');
+        } else {
+            if (holdingsLoading) holdingsLoading.classList.add('hidden');
+            if (holdingsEmpty) holdingsEmpty.classList.add('hidden');
+            if (holdingsList) {
+                holdingsList.classList.remove('hidden');
+                holdingsList.innerHTML = '';
+
+                for (const ticker in holdings) {
+                    const holding = holdings[ticker];
+                    const holdingElement = this.createHoldingElement(ticker, holding);
+                    holdingsList.appendChild(holdingElement);
+                }
+            }
+        }
+    }
+
+    createHoldingElement(ticker, holding) {
+        const element = document.createElement('div');
+        element.className = 'bg-gray-700 p-4 rounded-lg flex justify-between items-center';
+        
+        // Calculate current value (using avg price as fallback)
+        const currentValue = holding.quantity * holding.avgPrice;
+        const costBasis = holding.quantity * holding.avgPrice;
+        
+        element.innerHTML = `
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-cyan-500/20 rounded-lg flex items-center justify-center">
+                    <span class="text-sm font-bold text-cyan-400">${ticker.charAt(0)}</span>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-white">${ticker.toUpperCase()}</h4>
+                    <p class="text-sm text-gray-400">${holding.quantity} shares</p>
+                </div>
+            </div>
+            <div class="text-right">
+                <p class="font-semibold text-white">${currentValue.toLocaleString()}</p>
+                <p class="text-sm text-gray-400">@${holding.avgPrice.toFixed(2)}</p>
+            </div>
+        `;
+        
+        return element;
+    }
+
+    async loadRecentTrades() {
+        const tradesLoading = document.getElementById('sim-trades-loading');
+        const tradesEmpty = document.getElementById('sim-trades-empty');
+        const tradesList = document.getElementById('sim-trades-list');
+
+        try {
+            const trades = await getRecentTrades(this.currentUser.uid, 5, this.simulationId);
+            
+            if (tradesLoading) tradesLoading.classList.add('hidden');
+            
+            if (trades.length === 0) {
+                if (tradesEmpty) tradesEmpty.classList.remove('hidden');
+                if (tradesList) tradesList.classList.add('hidden');
+            } else {
+                if (tradesEmpty) tradesEmpty.classList.add('hidden');
+                if (tradesList) {
+                    tradesList.classList.remove('hidden');
+                    tradesList.innerHTML = '';
+
+                    trades.forEach(trade => {
+                        const tradeElement = this.createTradeElement(trade);
+                        tradesList.appendChild(tradeElement);
+                    });
+                }
+            }
+        } catch (error) {
+            console.error('Error loading recent trades:', error);
+            if (tradesLoading) tradesLoading.classList.add('hidden');
+            if (tradesEmpty) tradesEmpty.classList.remove('hidden');
+        }
+    }
+
+    createTradeElement(trade) {
+        const element = document.createElement('div');
+        element.className = 'bg-gray-700 p-4 rounded-lg flex justify-between items-center';
+        
+        const tradeTypeClass = trade.type === 'buy' ? 'text-green-400' : 'text-red-400';
+        const tradeIcon = trade.type === 'buy' ? '↗' : '↘';
+        const tradeTime = new Date(trade.timestamp).toLocaleDateString();
+        
+        element.innerHTML = `
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-cyan-500/20 rounded-lg flex items-center justify-center">
+                    <span class="text-sm font-bold text-cyan-400">${trade.ticker.charAt(0)}</span>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-white">
+                        <span class="${tradeTypeClass}">${tradeIcon} ${trade.type.toUpperCase()}</span>
+                        ${trade.ticker.toUpperCase()}
+                    </h4>
+                    <p class="text-sm text-gray-400">${trade.quantity} shares • ${tradeTime}</p>
+                </div>
+            </div>
+            <div class="text-right">
+                <p class="font-semibold text-white">${trade.tradeCost.toLocaleString()}</p>
+                <p class="text-sm text-gray-400">@${trade.price.toFixed(2)}</p>
+            </div>
+        `;
+        
+        return element;
     }
 
     displaySimulation() {
@@ -239,11 +460,13 @@ export default class SimulationView {
         const statusEl = document.getElementById('sim-status');
         const participantsEl = document.getElementById('sim-participants');
         const durationEl = document.getElementById('sim-duration');
+        const tradeBtnTextEl = document.getElementById('trade-btn-text');
 
         if (nameEl) nameEl.textContent = this.currentSimulation.name;
         if (descEl) {
             if (this.currentSimulation.description) {
                 descEl.textContent = this.currentSimulation.description;
+                descEl.style.display = 'block';
             } else {
                 descEl.style.display = 'none';
             }
@@ -258,6 +481,17 @@ export default class SimulationView {
             statusEl.className = `px-3 py-1 rounded-full text-sm font-semibold ${statusClass}`;
         }
 
+        // Update trade button text based on status
+        if (tradeBtnTextEl) {
+            if (this.currentSimulation.status === 'pending') {
+                tradeBtnTextEl.textContent = 'Practice Trade';
+            } else if (this.currentSimulation.status === 'active') {
+                tradeBtnTextEl.textContent = 'Trade Now';
+            } else {
+                tradeBtnTextEl.textContent = 'View Portfolio';
+            }
+        }
+
         // Participants
         if (participantsEl) {
             participantsEl.textContent = `${this.currentSimulation.memberCount}/${this.currentSimulation.maxMembers} participants`;
@@ -270,7 +504,13 @@ export default class SimulationView {
             durationEl.textContent = `${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}`;
         }
 
-        // Update stats (placeholder values for now)
+        // Update portfolio stats
+        this.updatePortfolioStats();
+
+        // Update simulation rules
+        this.updateSimulationRules();
+
+        // Update other stats
         const totalParticipantsEl = document.getElementById('total-participants');
         if (totalParticipantsEl) {
             totalParticipantsEl.textContent = this.currentSimulation.memberCount;
@@ -287,6 +527,109 @@ export default class SimulationView {
         }
 
         console.log('Simulation displayed:', this.currentSimulation);
+    }
+
+    updatePortfolioStats() {
+        if (!this.simulationPortfolio) return;
+
+        // Portfolio value
+        const portfolioValueEl = document.getElementById('sim-portfolio-value');
+        const portfolioChangeEl = document.getElementById('sim-portfolio-change');
+        
+        if (portfolioValueEl) {
+            const cash = this.simulationPortfolio.cash;
+            let holdingsValue = 0;
+            
+            // Calculate holdings value (using avg price as estimate)
+            const holdings = this.simulationPortfolio.holdings || {};
+            for (const ticker in holdings) {
+                if (holdings.hasOwnProperty(ticker)) {
+                    holdingsValue += holdings[ticker].quantity * holdings[ticker].avgPrice;
+                }
+            }
+            
+            const totalValue = cash + holdingsValue;
+            portfolioValueEl.textContent = `${totalValue.toLocaleString()}`;
+            
+            // Calculate change from starting balance
+            if (portfolioChangeEl) {
+                const startingBalance = this.currentSimulation.startingBalance;
+                const change = totalValue - startingBalance;
+                const changePercent = (change / startingBalance * 100);
+                
+                const changeClass = change >= 0 ? 'text-green-400' : 'text-red-400';
+                portfolioChangeEl.className = `text-sm font-medium ${changeClass}`;
+                portfolioChangeEl.textContent = `${change >= 0 ? '+' : ''}${change.toFixed(2)} (${changePercent >= 0 ? '+' : ''}${changePercent.toFixed(2)}%)`;
+            }
+        }
+    }
+
+    updateSimulationRules() {
+        const startingBalanceEl = document.getElementById('sim-starting-balance');
+        const shortSellingEl = document.getElementById('sim-short-selling');
+        const tradingHoursEl = document.getElementById('sim-trading-hours');
+        const commissionEl = document.getElementById('sim-commission');
+
+        if (startingBalanceEl) {
+            startingBalanceEl.textContent = `${this.currentSimulation.startingBalance.toLocaleString()}`;
+        }
+
+        if (shortSellingEl) {
+            shortSellingEl.textContent = this.currentSimulation.rules?.allowShortSelling ? 'Allowed' : 'Not Allowed';
+        }
+
+        if (tradingHoursEl) {
+            const hours = this.currentSimulation.rules?.tradingHours === '24/7' ? '24/7' : 'Market Hours';
+            tradingHoursEl.textContent = hours;
+        }
+
+        if (commissionEl) {
+            const commission = this.currentSimulation.rules?.commissionPerTrade || 0;
+            commissionEl.textContent = `${commission} per trade`;
+        }
+    }
+
+    showPortfolioError() {
+        const holdingsContainer = document.getElementById('sim-holdings-container');
+        const tradesContainer = document.getElementById('sim-trades-container');
+        
+        const errorContent = `
+            <div class="text-center py-8">
+                <svg class="w-12 h-12 mx-auto mb-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <h4 class="text-lg font-semibold text-red-400 mb-2">Error Loading Portfolio</h4>
+                <p class="text-gray-400">Unable to load portfolio data</p>
+            </div>
+        `;
+        
+        if (holdingsContainer) holdingsContainer.innerHTML = errorContent;
+        if (tradesContainer) tradesContainer.innerHTML = errorContent;
+    }
+
+    handleTradeNavigation() {
+        if (!this.simulationId) {
+            console.error('No simulation ID available for trading');
+            return;
+        }
+
+        // Show immediate feedback
+        const tradeBtnTextEl = document.getElementById('trade-btn-text');
+        if (tradeBtnTextEl) {
+            tradeBtnTextEl.textContent = 'Loading...';
+        }
+
+        // Navigate to trade view with simulation context (non-blocking)
+        const tradeUrl = `/trade?sim=${this.simulationId}`;
+        
+        // Use requestAnimationFrame to ensure smooth UI transition
+        requestAnimationFrame(() => {
+            if (window.app && window.app.router) {
+                window.app.router.navigate(tradeUrl);
+            } else {
+                window.location.href = tradeUrl;
+            }
+        });
     }
 
     showNotFound() {
