@@ -1,3 +1,4 @@
+// file: src/views/auth.js
 // Authentication view
 import { AuthService } from '../services/auth.js';
 
@@ -30,6 +31,7 @@ export default class AuthView {
                                 type="email" 
                                 id="email" 
                                 required
+                                autocomplete="username" 
                                 class="w-full bg-gray-700 text-white rounded-lg px-4 py-3 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-cyan-500 transition"
                                 placeholder="Enter your email"
                             >
@@ -42,6 +44,7 @@ export default class AuthView {
                                 id="password" 
                                 required
                                 minlength="6"
+                                autocomplete="current-password" 
                                 class="w-full bg-gray-700 text-white rounded-lg px-4 py-3 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-cyan-500 transition"
                                 placeholder="Enter your password"
                             >

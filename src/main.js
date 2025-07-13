@@ -5,6 +5,7 @@ import { Router } from './utils/router.js';
 import { AuthService } from './services/auth.js';
 import { HeaderComponent } from './components/layout/Header.js';
 import { NavigationComponent } from './components/layout/Navigation.js';
+import { initializePortfolio } from './services/trading.js'; // Import initializePortfolio
 
 class App {
     constructor() {
@@ -29,7 +30,7 @@ class App {
             this.setupComponents();
 
             // Setup auth state listener
-            this.authService.onAuthStateChanged((user) => {
+            this.authService.onAuthStateChanged(async (user) => { // Make this callback async
                 this.handleAuthStateChange(user);
             });
 
@@ -119,26 +120,20 @@ class App {
         }
     }
 
-    handleAuthStateChange(user) {
-        console.log('Auth state changed:', user ? `Signed in as ${user.email}` : 'Signed out');
-        
+    async handleAuthStateChange(user) {
         this.currentUser = user;
-        
-        // Update header with user info
-        if (this.headerComponent) {
-            this.headerComponent.updateAuthState(user);
-        }
-
-        // Handle routing after initialization
-        if (!this.isInitialized) return;
-
         if (user) {
-            // User signed in - redirect to dashboard if on auth page
+            console.log('User signed in:', user.email);
+            this.headerComponent.updateAuthState(user);
+            // this.navigationComponent.updateAuthState(user); // If you have this method
+            
+            // CRITICAL: Initialize or ensure portfolio structure upon login
+            await initializePortfolio(user.uid); 
+
             if (window.location.pathname === '/auth') {
                 this.router.navigate('/');
             }
         } else {
-            // User signed out - redirect to auth page if not already there
             if (window.location.pathname !== '/auth') {
                 this.router.navigate('/auth');
             }

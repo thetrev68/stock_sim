@@ -1,3 +1,4 @@
+// file: src/services/auth.js
 // Authentication service
 import { 
     signInWithEmailAndPassword, 

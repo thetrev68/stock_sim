@@ -47,16 +47,16 @@ export function getFirebaseAuth() {
     return auth;
 }
 
-export function getFirebaseDb() {
+export function getFirestoreDb() {
     if (!db) {
         throw new Error('Firebase not initialized. Call initializeApp() first.');
     }
     return db;
 }
 
-export function getFirebaseApp() {
-    if (!app) {
-        throw new Error('Firebase not initialized. Call initializeApp() first.');
-    }
-    return app;
-}
+// export function getFirebaseApp() {
+//     if (!app) {
+//         throw new Error('Firebase not initialized. Call initializeApp() first.');
+//     }
+//     return app;
+// }
