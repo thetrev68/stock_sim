@@ -1,4 +1,4 @@
-// src/services/trading.js - Enhanced for Session 7 Simulation Trading
+// src/services/trading.js - Enhanced for Session 8 with Activity Logging
 import { getFirestoreDb } from './firebase';
 import { doc, getDoc, setDoc, updateDoc, runTransaction, collection, query, where, getDocs } from 'firebase/firestore';
 
@@ -65,6 +65,22 @@ export async function initializePortfolio(userId, initialBalance = 10000, simula
 
         await setDoc(portfolioRef, newPortfolio);
         console.log(`Initialized NEW portfolio for user ${userId}${simulationId ? ` in simulation ${simulationId}` : ' (solo)'} with balance $${initialBalance}`);
+        
+        // Log join activity for simulation portfolios
+        if (simulationId && simulationInfo) {
+            try {
+                const { ActivityService } = await import('./activity.js');
+                const activityService = new ActivityService();
+                activityService.initialize();
+                
+                // Get user display name (you might want to pass this as a parameter)
+                const userDisplayName = simulationInfo.userDisplayName || 'Anonymous User';
+                await activityService.logJoinActivity(simulationId, userId, userDisplayName);
+            } catch (error) {
+                console.error('Error logging join activity:', error);
+            }
+        }
+        
         return newPortfolio;
     } else {
         // Portfolio exists - ensure it has all required fields
@@ -205,9 +221,9 @@ export async function validateSimulationTrade(tradeDetails, simulation, portfoli
         
         // Check short selling rules
         if (tradeDetails.type === 'sell' && simulation.rules?.allowShortSelling === false) {
-            const currentHolding = portfolio.holdings?.[tradeDetails.ticker];
+            const currentHolding = portfolio.holdings?.[tradeDetails.ticker.toUpperCase()];
             if (!currentHolding || currentHolding.quantity < tradeDetails.quantity) {
-                return { valid: false, error: 'Short selling is not allowed in this simulation' };
+                return { valid: false, error: `Insufficient shares to sell. You own ${currentHolding?.quantity || 0} shares of ${tradeDetails.ticker.toUpperCase()}, but tried to sell ${tradeDetails.quantity}` };
             }
         }
         
@@ -271,6 +287,8 @@ export async function executeTrade(userId, tradeDetails, simulationId = null) {
             }
         }
 
+        let updatedPortfolio = null;
+
         await runTransaction(db, async (transaction) => {
             const portfolioDoc = await transaction.get(portfolioRef);
 
@@ -331,13 +349,43 @@ export async function executeTrade(userId, tradeDetails, simulationId = null) {
             updatedTrades.push(tradeRecord);
 
             // Update the portfolio document
-            transaction.update(portfolioRef, {
+            const portfolioUpdate = {
                 cash: newCash,
                 holdings: currentHoldings,
                 trades: updatedTrades,
                 updatedAt: new Date()
-            });
+            };
+
+            transaction.update(portfolioRef, portfolioUpdate);
+
+            // Store updated portfolio for activity logging
+            updatedPortfolio = {
+                ...currentPortfolio,
+                ...portfolioUpdate
+            };
         });
+
+        // Log activity for simulation trades
+        if (simulationId && updatedPortfolio) {
+            try {
+                const { ActivityService } = await import('./activity.js');
+                const activityService = new ActivityService();
+                activityService.initialize();
+
+                // Get user display name from auth or portfolio
+                const userDisplayName = updatedPortfolio.userDisplayName || 'Anonymous User';
+
+                // Log the trade activity
+                await activityService.logTradeActivity(simulationId, userId, userDisplayName, tradeDetails);
+
+                // Check for achievements
+                await activityService.detectAndLogAchievements(simulationId, userId, userDisplayName, tradeDetails, updatedPortfolio);
+
+            } catch (error) {
+                console.error('Error logging trade activity:', error);
+                // Don't fail the trade if activity logging fails
+            }
+        }
 
         const contextMsg = simulationId ? `in simulation ${simulationId}` : 'in solo mode';
         console.log(`Trade executed successfully for user ${userId} ${contextMsg}: ${type} ${quantity} ${ticker} at $${price.toFixed(2)}`);

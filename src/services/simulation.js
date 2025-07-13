@@ -1,4 +1,4 @@
-// src/services/simulation.js
+// src/services/simulation.js - Enhanced with Auto Status Updates
 import { getFirestoreDb } from './firebase.js';
 import { 
     collection, 
@@ -18,59 +18,6 @@ import {
 const SIMULATIONS_COLLECTION = 'simulations';
 const SIMULATION_MEMBERS_COLLECTION = 'simulationMembers';
 
-/**
- * Firestore Data Models:
- * 
- * Simulations Collection:
- * {
- *   id: "auto-generated",
- *   name: "Q1 Trading Challenge",
- *   description: "Test your skills against the team",
- *   createdBy: "user123",
- *   createdAt: timestamp,
- *   startDate: timestamp,
- *   endDate: timestamp,
- *   startingBalance: 10000,
- *   inviteCode: "ABC123", // 6-character alphanumeric
- *   status: "pending" | "active" | "ended",
- *   memberCount: 0,
- *   maxMembers: 50, // Optional limit
- *   isPublic: false, // Future feature for public simulations
- *   rules: {
- *     allowShortSelling: false,
- *     tradingHours: "market", // "24/7" | "market"
- *     commissionPerTrade: 0
- *   }
- * }
- * 
- * Simulation Members Collection:
- * {
- *   simulationId: "sim123",
- *   userId: "user123",
- *   joinedAt: timestamp,
- *   role: "creator" | "member",
- *   displayName: "John Doe",
- *   email: "john@example.com",
- *   status: "active" | "kicked"
- * }
- * 
- * Updated Portfolio Document (for simulation portfolios):
- * {
- *   userId: "user123",
- *   simulationId: "sim123", // null for solo, simulationId for simulation portfolio
- *   cash: 10000,
- *   holdings: {},
- *   trades: [],
- *   createdAt: timestamp,
- *   updatedAt: timestamp,
- *   // New fields for simulation portfolios:
- *   simulationName: "Q1 Trading Challenge", // Cache for easier display
- *   startingBalance: 10000,
- *   currentRank: 1, // Updated periodically
- *   lastRankUpdate: timestamp
- * }
- */
-
 export class SimulationService {
     constructor() {
         this.db = null;
@@ -80,6 +27,74 @@ export class SimulationService {
     initialize() {
         this.db = getFirestoreDb();
         console.log('SimulationService initialized');
+    }
+
+    /**
+     * Get current user info from auth
+     */
+    async getCurrentUserInfo(userId) {
+        try {
+            // Try to get from Firebase Auth if available
+            const { getFirebaseAuth } = await import('./firebase.js');
+            const auth = getFirebaseAuth();
+            const currentUser = auth.currentUser;
+            
+            if (currentUser && currentUser.uid === userId) {
+                return {
+                    displayName: currentUser.displayName || currentUser.email || 'Anonymous User',
+                    email: currentUser.email || ''
+                };
+            }
+        } catch (error) {
+            console.error('Error getting current user info:', error);
+        }
+        
+        // Fallback
+        return {
+            displayName: 'Anonymous User',
+            email: ''
+        };
+    }
+
+    /**
+     * Calculate real-time status based on dates
+     */
+    calculateRealTimeStatus(simulation) {
+        const now = new Date();
+        const startDate = simulation.startDate.toDate ? simulation.startDate.toDate() : new Date(simulation.startDate);
+        const endDate = simulation.endDate.toDate ? simulation.endDate.toDate() : new Date(simulation.endDate);
+
+        if (now > endDate) {
+            return 'ended';
+        } else if (now >= startDate) {
+            return 'active';
+        } else {
+            return 'pending';
+        }
+    }
+
+    /**
+     * Update simulation status if it has changed
+     */
+    async updateSimulationStatusIfNeeded(simulationId, currentStoredStatus, calculatedStatus) {
+        if (currentStoredStatus !== calculatedStatus) {
+            try {
+                this.db = this.db || getFirestoreDb();
+                const simRef = doc(this.db, SIMULATIONS_COLLECTION, simulationId);
+                
+                await updateDoc(simRef, {
+                    status: calculatedStatus,
+                    statusUpdatedAt: serverTimestamp()
+                });
+                
+                console.log(`Auto-updated simulation ${simulationId} status: ${currentStoredStatus} → ${calculatedStatus}`);
+                return true;
+            } catch (error) {
+                console.error('Error auto-updating simulation status:', error);
+                return false;
+            }
+        }
+        return false;
     }
 
     /**
@@ -126,6 +141,9 @@ export class SimulationService {
                 throw new Error('Unable to generate unique invite code. Please try again.');
             }
 
+            // Calculate initial status based on dates
+            const initialStatus = this.calculateRealTimeStatus(simulationData);
+
             // Create simulation document
             const simulation = {
                 name: simulationData.name.trim(),
@@ -136,7 +154,8 @@ export class SimulationService {
                 endDate: simulationData.endDate,
                 startingBalance: simulationData.startingBalance || 10000,
                 inviteCode: inviteCode,
-                status: 'pending', // Will become 'active' when start date arrives
+                status: initialStatus, // Use calculated status instead of hardcoded 'pending'
+                statusUpdatedAt: serverTimestamp(),
                 memberCount: 1, // Creator is first member
                 maxMembers: simulationData.maxMembers || 50,
                 isPublic: false,
@@ -152,9 +171,13 @@ export class SimulationService {
             const simulationId = simRef.id;
 
             // Add creator as first member
-            await this.addMemberToSimulation(simulationId, creatorUserId, 'creator');
+            const user = await this.getCurrentUserInfo(creatorUserId);
+            await this.addMemberToSimulation(simulationId, creatorUserId, 'creator', {
+                displayName: user.displayName,
+                email: user.email
+            });
 
-            console.log(`Simulation created: ${simulationId} with invite code: ${inviteCode}`);
+            console.log(`Simulation created: ${simulationId} with status: ${initialStatus} and invite code: ${inviteCode}`);
             
             return {
                 success: true,
@@ -251,8 +274,14 @@ export class SimulationService {
             const simulation = simDoc.data();
             const simulationId = simDoc.id;
 
-            // Check simulation status
-            if (simulation.status === 'ended') {
+            // Calculate real-time status
+            const realTimeStatus = this.calculateRealTimeStatus(simulation);
+            
+            // Update status if needed
+            await this.updateSimulationStatusIfNeeded(simulationId, simulation.status, realTimeStatus);
+
+            // Check simulation status (use real-time status)
+            if (realTimeStatus === 'ended') {
                 throw new Error('This simulation has already ended.');
             }
 
@@ -261,7 +290,11 @@ export class SimulationService {
 
             return {
                 success: true,
-                simulation: { ...simulation, id: simulationId }
+                simulation: { 
+                    ...simulation, 
+                    id: simulationId,
+                    status: realTimeStatus // Return updated status
+                }
             };
 
         } catch (error) {
@@ -271,7 +304,7 @@ export class SimulationService {
     }
 
     /**
-     * Get simulations for a specific user
+     * Get simulations for a specific user (with auto status updates)
      */
     async getUserSimulations(userId) {
         this.db = this.db || getFirestoreDb();
@@ -301,9 +334,19 @@ export class SimulationService {
                     const simData = simSnap.data();
                     const memberData = memberDocs.docs.find(m => m.data().simulationId === simId)?.data();
                     
+                    // Calculate real-time status
+                    const realTimeStatus = this.calculateRealTimeStatus(simData);
+                    
+                    // Update status in background if needed (don't await to avoid blocking)
+                    if (simData.status !== realTimeStatus) {
+                        this.updateSimulationStatusIfNeeded(simId, simData.status, realTimeStatus)
+                            .catch(error => console.error('Background status update failed:', error));
+                    }
+                    
                     simulations.push({
                         ...simData,
                         id: simId,
+                        status: realTimeStatus, // Use real-time status for display
                         userRole: memberData?.role || 'member',
                         joinedAt: memberData?.joinedAt
                     });
@@ -326,7 +369,7 @@ export class SimulationService {
     }
 
     /**
-     * Get simulation details by ID
+     * Get simulation details by ID (with auto status update)
      */
     async getSimulation(simulationId) {
         this.db = this.db || getFirestoreDb();
@@ -339,9 +382,18 @@ export class SimulationService {
                 return null;
             }
 
+            const simulation = simSnap.data();
+            
+            // Calculate real-time status
+            const realTimeStatus = this.calculateRealTimeStatus(simulation);
+            
+            // Update status if needed
+            await this.updateSimulationStatusIfNeeded(simulationId, simulation.status, realTimeStatus);
+
             return {
-                ...simSnap.data(),
-                id: simulationId
+                ...simulation,
+                id: simulationId,
+                status: realTimeStatus // Return real-time status
             };
 
         } catch (error) {
@@ -419,9 +471,13 @@ export class SimulationService {
             const simDoc = simResults.docs[0];
             const simulation = simDoc.data();
             
+            // Calculate real-time status for preview
+            const realTimeStatus = this.calculateRealTimeStatus(simulation);
+            
             return {
                 ...simulation,
-                id: simDoc.id
+                id: simDoc.id,
+                status: realTimeStatus // Show real-time status in preview
             };
 
         } catch (error) {
@@ -431,7 +487,7 @@ export class SimulationService {
     }
 
     /**
-     * Update simulation status (for future automation)
+     * Update simulation status (manual override for creators)
      */
     async updateSimulationStatus(simulationId, newStatus) {
         this.db = this.db || getFirestoreDb();
@@ -440,10 +496,11 @@ export class SimulationService {
             const simRef = doc(this.db, SIMULATIONS_COLLECTION, simulationId);
             await updateDoc(simRef, {
                 status: newStatus,
-                updatedAt: serverTimestamp()
+                statusUpdatedAt: serverTimestamp(),
+                manualStatusOverride: true // Flag for manual overrides
             });
 
-            console.log(`Simulation ${simulationId} status updated to: ${newStatus}`);
+            console.log(`Simulation ${simulationId} status manually updated to: ${newStatus}`);
             return { success: true };
 
         } catch (error) {

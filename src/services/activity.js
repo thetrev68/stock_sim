@@ -1,0 +1,418 @@
+// src/services/activity.js
+import { getFirestoreDb } from './firebase.js';
+import { 
+    collection, 
+    doc, 
+    addDoc, 
+    getDocs, 
+    query, 
+    where, 
+    orderBy, 
+    limit,
+    serverTimestamp 
+} from 'firebase/firestore';
+
+const ACTIVITIES_COLLECTION = 'simulationActivities';
+
+/**
+ * Activity Data Model:
+ * {
+ *   id: "auto-generated",
+ *   simulationId: "sim123",
+ *   userId: "user123",
+ *   userDisplayName: "John Doe",
+ *   type: "join" | "trade" | "achievement" | "leave",
+ *   action: "joined_simulation" | "executed_trade" | "reached_milestone" | "left_simulation",
+ *   data: {
+ *     // Type-specific data
+ *     ticker?: "AAPL",
+ *     tradeType?: "buy" | "sell",
+ *     quantity?: 100,
+ *     price?: 150.00,
+ *     amount?: 15000,
+ *     milestone?: "first_trade" | "profitable_day" | "big_winner",
+ *     rank?: 1
+ *   },
+ *   timestamp: timestamp,
+ *   isVisible: true // For filtering/moderation
+ * }
+ */
+
+export class ActivityService {
+    constructor() {
+        this.db = null;
+    }
+
+    // Initialize service
+    initialize() {
+        this.db = getFirestoreDb();
+        console.log('ActivityService initialized');
+    }
+
+    /**
+     * Log user joining simulation
+     */
+    async logJoinActivity(simulationId, userId, userDisplayName) {
+        this.db = this.db || getFirestoreDb();
+        
+        try {
+            const activity = {
+                simulationId,
+                userId,
+                userDisplayName,
+                type: 'join',
+                action: 'joined_simulation',
+                data: {},
+                timestamp: serverTimestamp(),
+                isVisible: true
+            };
+
+            await addDoc(collection(this.db, ACTIVITIES_COLLECTION), activity);
+            console.log(`Logged join activity for user ${userId} in simulation ${simulationId}`);
+            
+        } catch (error) {
+            console.error('Error logging join activity:', error);
+        }
+    }
+
+    /**
+     * Log trading activity
+     */
+    async logTradeActivity(simulationId, userId, userDisplayName, tradeData) {
+        this.db = this.db || getFirestoreDb();
+        
+        try {
+            const activity = {
+                simulationId,
+                userId,
+                userDisplayName,
+                type: 'trade',
+                action: 'executed_trade',
+                data: {
+                    ticker: tradeData.ticker,
+                    tradeType: tradeData.type,
+                    quantity: tradeData.quantity,
+                    price: tradeData.price,
+                    amount: tradeData.quantity * tradeData.price
+                },
+                timestamp: serverTimestamp(),
+                isVisible: true
+            };
+
+            await addDoc(collection(this.db, ACTIVITIES_COLLECTION), activity);
+            console.log(`Logged trade activity for user ${userId}: ${tradeData.type} ${tradeData.quantity} ${tradeData.ticker}`);
+            
+        } catch (error) {
+            console.error('Error logging trade activity:', error);
+        }
+    }
+
+    /**
+     * Log achievement/milestone activity
+     */
+    async logAchievementActivity(simulationId, userId, userDisplayName, achievementData) {
+        this.db = this.db || getFirestoreDb();
+        
+        try {
+            const activity = {
+                simulationId,
+                userId,
+                userDisplayName,
+                type: 'achievement',
+                action: 'reached_milestone',
+                data: {
+                    milestone: achievementData.milestone,
+                    value: achievementData.value,
+                    rank: achievementData.rank
+                },
+                timestamp: serverTimestamp(),
+                isVisible: true
+            };
+
+            await addDoc(collection(this.db, ACTIVITIES_COLLECTION), activity);
+            console.log(`Logged achievement activity for user ${userId}: ${achievementData.milestone}`);
+            
+        } catch (error) {
+            console.error('Error logging achievement activity:', error);
+        }
+    }
+
+    /**
+     * Get recent activities for a simulation
+     */
+    async getSimulationActivities(simulationId, maxActivities = 20) {
+        this.db = this.db || getFirestoreDb();
+
+        try {
+            const activitiesQuery = query(
+                collection(this.db, ACTIVITIES_COLLECTION),
+                where('simulationId', '==', simulationId),
+                where('isVisible', '==', true),
+                orderBy('timestamp', 'desc'),
+                limit(maxActivities)
+            );
+
+            const activityDocs = await getDocs(activitiesQuery);
+            
+            return activityDocs.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            }));
+
+        } catch (error) {
+            console.error('Error getting simulation activities:', error);
+            return [];
+        }
+    }
+
+    /**
+     * Get recent activities for a specific user in a simulation
+     */
+    async getUserActivities(simulationId, userId, maxActivities = 10) {
+        this.db = this.db || getFirestoreDb();
+
+        try {
+            const activitiesQuery = query(
+                collection(this.db, ACTIVITIES_COLLECTION),
+                where('simulationId', '==', simulationId),
+                where('userId', '==', userId),
+                where('isVisible', '==', true),
+                orderBy('timestamp', 'desc'),
+                limit(maxActivities)
+            );
+
+            const activityDocs = await getDocs(activitiesQuery);
+            
+            return activityDocs.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            }));
+
+        } catch (error) {
+            console.error('Error getting user activities:', error);
+            return [];
+        }
+    }
+
+    /**
+     * Format activity for display
+     */
+    formatActivity(activity) {
+        const timestamp = activity.timestamp?.toDate ? activity.timestamp.toDate() : new Date(activity.timestamp);
+        const timeAgo = this.getTimeAgo(timestamp);
+
+        switch (activity.action) {
+            case 'joined_simulation':
+                return {
+                    icon: '👋',
+                    iconColor: 'text-green-400',
+                    iconBg: 'bg-green-400/10',
+                    title: `${activity.userDisplayName} joined the simulation`,
+                    description: 'Welcome to the competition!',
+                    timeAgo,
+                    priority: 'low'
+                };
+
+            case 'executed_trade':
+                const { ticker, tradeType, quantity, amount } = activity.data;
+                const tradeIcon = tradeType === 'buy' ? '📈' : '📉';
+                const tradeColor = tradeType === 'buy' ? 'text-green-400' : 'text-red-400';
+                const tradeBg = tradeType === 'buy' ? 'bg-green-400/10' : 'bg-red-400/10';
+                
+                return {
+                    icon: tradeIcon,
+                    iconColor: tradeColor,
+                    iconBg: tradeBg,
+                    title: `${activity.userDisplayName} ${tradeType === 'buy' ? 'bought' : 'sold'} ${ticker}`,
+                    description: `${quantity.toLocaleString()} shares for $${amount.toLocaleString()}`,
+                    timeAgo,
+                    priority: 'medium'
+                };
+
+            case 'reached_milestone':
+                const { milestone, value, rank } = activity.data;
+                let milestoneText = '';
+                let milestoneIcon = '🏆';
+                
+                switch (milestone) {
+                    case 'first_trade':
+                        milestoneText = 'made their first trade';
+                        milestoneIcon = '🎯';
+                        break;
+                    case 'profitable_day':
+                        milestoneText = 'had a profitable day';
+                        milestoneIcon = '💰';
+                        break;
+                    case 'big_winner':
+                        milestoneText = `earned $${value.toLocaleString()} in a single trade`;
+                        milestoneIcon = '🚀';
+                        break;
+                    case 'rank_change':
+                        milestoneText = `moved to rank #${rank}`;
+                        milestoneIcon = '📊';
+                        break;
+                    default:
+                        milestoneText = 'achieved a milestone';
+                }
+                
+                return {
+                    icon: milestoneIcon,
+                    iconColor: 'text-yellow-400',
+                    iconBg: 'bg-yellow-400/10',
+                    title: `${activity.userDisplayName} ${milestoneText}`,
+                    description: 'Great progress!',
+                    timeAgo,
+                    priority: 'high'
+                };
+
+            default:
+                return {
+                    icon: '📱',
+                    iconColor: 'text-gray-400',
+                    iconBg: 'bg-gray-400/10',
+                    title: `${activity.userDisplayName} did something`,
+                    description: 'Activity recorded',
+                    timeAgo,
+                    priority: 'low'
+                };
+        }
+    }
+
+    /**
+     * Generate summary statistics from activities
+     */
+    generateActivitySummary(activities) {
+        const summary = {
+            totalActivities: activities.length,
+            recentJoins: 0,
+            recentTrades: 0,
+            recentAchievements: 0,
+            mostActiveUser: null,
+            biggestTrade: null,
+            latestActivity: null
+        };
+
+        if (activities.length === 0) return summary;
+
+        // Count activity types from last 24 hours
+        const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+        const recentActivities = activities.filter(activity => {
+            const activityTime = activity.timestamp?.toDate ? activity.timestamp.toDate() : new Date(activity.timestamp);
+            return activityTime > oneDayAgo;
+        });
+
+        recentActivities.forEach(activity => {
+            switch (activity.action) {
+                case 'joined_simulation':
+                    summary.recentJoins++;
+                    break;
+                case 'executed_trade':
+                    summary.recentTrades++;
+                    break;
+                case 'reached_milestone':
+                    summary.recentAchievements++;
+                    break;
+            }
+        });
+
+        // Find most active user (most activities in last 24h)
+        const userActivityCount = {};
+        recentActivities.forEach(activity => {
+            userActivityCount[activity.userId] = (userActivityCount[activity.userId] || 0) + 1;
+        });
+        
+        const mostActiveUserId = Object.keys(userActivityCount).reduce((a, b) => 
+            userActivityCount[a] > userActivityCount[b] ? a : b, null
+        );
+        
+        if (mostActiveUserId) {
+            const mostActiveActivity = recentActivities.find(a => a.userId === mostActiveUserId);
+            summary.mostActiveUser = {
+                userId: mostActiveUserId,
+                displayName: mostActiveActivity?.userDisplayName,
+                activityCount: userActivityCount[mostActiveUserId]
+            };
+        }
+
+        // Find biggest trade
+        const tradeActivities = activities.filter(a => a.action === 'executed_trade');
+        if (tradeActivities.length > 0) {
+            summary.biggestTrade = tradeActivities.reduce((biggest, current) => 
+                (current.data.amount > biggest.data.amount) ? current : biggest
+            );
+        }
+
+        // Latest activity
+        summary.latestActivity = activities[0]; // Already sorted by timestamp desc
+
+        return summary;
+    }
+
+    /**
+     * Get time ago string
+     */
+    getTimeAgo(date) {
+        const now = new Date();
+        const diffInSeconds = Math.floor((now - date) / 1000);
+        
+        if (diffInSeconds < 60) return 'just now';
+        if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
+        if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
+        if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)}d ago`;
+        
+        return date.toLocaleDateString();
+    }
+
+    /**
+     * Auto-detect and log achievements based on trade data
+     */
+    async detectAndLogAchievements(simulationId, userId, userDisplayName, tradeData, portfolioData) {
+        try {
+            // Check for first trade
+            if (portfolioData.trades && portfolioData.trades.length === 1) {
+                await this.logAchievementActivity(simulationId, userId, userDisplayName, {
+                    milestone: 'first_trade',
+                    value: tradeData.quantity * tradeData.price
+                });
+            }
+
+            // Check for big trade (over $10k)
+            const tradeValue = tradeData.quantity * tradeData.price;
+            if (tradeValue >= 10000) {
+                await this.logAchievementActivity(simulationId, userId, userDisplayName, {
+                    milestone: 'big_winner',
+                    value: tradeValue
+                });
+            }
+
+            // Check for profitable day (portfolio value > starting balance)
+            const currentValue = portfolioData.cash + this.calculateHoldingsValue(portfolioData.holdings);
+            const startingBalance = portfolioData.startingBalance || 10000;
+            
+            if (currentValue > startingBalance * 1.05) { // 5% profit threshold
+                await this.logAchievementActivity(simulationId, userId, userDisplayName, {
+                    milestone: 'profitable_day',
+                    value: currentValue - startingBalance
+                });
+            }
+
+        } catch (error) {
+            console.error('Error detecting achievements:', error);
+        }
+    }
+
+    /**
+     * Calculate total holdings value (simplified)
+     */
+    calculateHoldingsValue(holdings) {
+        if (!holdings) return 0;
+        
+        let total = 0;
+        for (const ticker in holdings) {
+            if (holdings.hasOwnProperty(ticker)) {
+                total += holdings[ticker].quantity * holdings[ticker].avgPrice;
+            }
+        }
+        return total;
+    }
+}

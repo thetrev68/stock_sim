@@ -1,7 +1,9 @@
-// Enhanced Dashboard view with simulation management - Session 7
+// Enhanced Dashboard view with Email Invite integration - Session 8
 import { SimulationService } from '../services/simulation.js';
 import { AuthService } from '../services/auth.js';
 import { CreateSimulationModal } from '../components/simulation/CreateSimulationModal.js';
+import { JoinSimulationModal } from '../components/simulation/JoinSimulationModal.js';
+import { EmailInviteModal } from '../components/simulation/EmailInviteModal.js';
 
 export default class DashboardView {
     constructor() {
@@ -10,6 +12,7 @@ export default class DashboardView {
         this.authService = new AuthService();
         this.createSimModal = null;
         this.joinSimModal = null;
+        this.emailInviteModal = null;
         this.userSimulations = [];
     }
 
@@ -272,6 +275,24 @@ export default class DashboardView {
         const roleText = simulation.userRole === 'creator' ? 'Creator' : 'Member';
         const roleColor = simulation.userRole === 'creator' ? 'text-cyan-400 bg-cyan-400/10' : 'text-gray-400 bg-gray-400/10';
 
+        // Creator action buttons for pending simulations
+        const creatorButtons = simulation.userRole === 'creator' && simulation.status === 'pending' ? `
+            <div class="flex flex-wrap gap-2 mb-3">
+                <button class="invite-code-btn bg-gray-700 hover:bg-gray-600 text-white text-xs font-medium py-1.5 px-3 rounded-md transition-colors duration-200 flex items-center gap-1.5" data-invite-code="${simulation.inviteCode}">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                    </svg>
+                    Copy Code
+                </button>
+                <button class="email-invite-btn bg-purple-600 hover:bg-purple-500 text-white text-xs font-medium py-1.5 px-3 rounded-md transition-colors duration-200 flex items-center gap-1.5" data-sim-id="${simulation.id}">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                    </svg>
+                    Invite Friends
+                </button>
+            </div>
+        ` : '';
+
         card.innerHTML = `
             <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
                 <div class="flex-1">
@@ -287,6 +308,9 @@ export default class DashboardView {
                     
                     ${simulation.description ? `<p class="text-gray-400 text-sm mb-3">${simulation.description}</p>` : ''}
                     
+                    <!-- Creator Actions -->
+                    ${creatorButtons}
+                    
                     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
                         <div>
                             <span class="text-gray-500">Duration</span>
@@ -294,7 +318,7 @@ export default class DashboardView {
                         </div>
                         <div>
                             <span class="text-gray-500">Starting Balance</span>
-                            <p class="text-white font-medium">${simulation.startingBalance.toLocaleString()}</p>
+                            <p class="text-white font-medium">$${simulation.startingBalance.toLocaleString()}</p>
                         </div>
                         <div>
                             <span class="text-gray-500">Participants</span>
@@ -307,16 +331,7 @@ export default class DashboardView {
                     </div>
                 </div>
                 
-                <div class="flex flex-col sm:flex-row gap-2 lg:flex-col lg:gap-2">
-                    ${simulation.userRole === 'creator' && simulation.status === 'pending' ? `
-                        <button class="invite-code-btn bg-gray-700 hover:bg-gray-600 text-white text-sm font-medium py-2 px-4 rounded-lg transition-colors duration-200 flex items-center gap-2" data-invite-code="${simulation.inviteCode}">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
-                            </svg>
-                            Copy Code
-                        </button>
-                    ` : ''}
-                    
+                <div class="flex flex-col gap-2">
                     <button class="view-sim-btn bg-cyan-600 hover:bg-cyan-500 text-white text-sm font-medium py-2 px-4 rounded-lg transition-colors duration-200 flex items-center gap-2" data-sim-id="${simulation.id}">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
@@ -329,12 +344,12 @@ export default class DashboardView {
         `;
 
         // Attach event listeners to this card
-        this.attachCardEventListeners(card);
+        this.attachCardEventListeners(card, simulation);
 
         return card;
     }
 
-    attachCardEventListeners(card) {
+    attachCardEventListeners(card, simulation) {
         // Copy invite code button
         const inviteBtn = card.querySelector('.invite-code-btn');
         if (inviteBtn) {
@@ -346,16 +361,16 @@ export default class DashboardView {
                     // Visual feedback
                     const originalText = inviteBtn.innerHTML;
                     inviteBtn.innerHTML = `
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                         </svg>
                         Copied!
                     `;
-                    inviteBtn.className = 'invite-code-btn bg-green-600 text-white text-sm font-medium py-2 px-4 rounded-lg flex items-center gap-2';
+                    inviteBtn.className = 'invite-code-btn bg-green-600 text-white text-xs font-medium py-1.5 px-3 rounded-md flex items-center gap-1.5';
                     
                     setTimeout(() => {
                         inviteBtn.innerHTML = originalText;
-                        inviteBtn.className = 'invite-code-btn bg-gray-700 hover:bg-gray-600 text-white text-sm font-medium py-2 px-4 rounded-lg transition-colors duration-200 flex items-center gap-2';
+                        inviteBtn.className = 'invite-code-btn bg-gray-700 hover:bg-gray-600 text-white text-xs font-medium py-1.5 px-3 rounded-md transition-colors duration-200 flex items-center gap-1.5';
                     }, 2000);
                     
                 } catch (err) {
@@ -363,6 +378,15 @@ export default class DashboardView {
                     // Fallback: show the code in an alert
                     alert(`Invite Code: ${inviteCode}`);
                 }
+            });
+        }
+
+        // Email invite button
+        const emailInviteBtn = card.querySelector('.email-invite-btn');
+        if (emailInviteBtn) {
+            emailInviteBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.handleEmailInvite(simulation);
             });
         }
 
@@ -425,16 +449,37 @@ export default class DashboardView {
     }
 
     handleJoinSimulation() {
-        // For now, show a placeholder message until JoinSimulationModal is set up
-        alert('Join Simulation modal will be available once JoinSimulationModal component is set up. For now, you can join simulations through the simulation service directly.');
+        if (!this.joinSimModal) {
+            this.joinSimModal = new JoinSimulationModal();
+        }
         
-        // TODO: Uncomment when JoinSimulationModal is ready
-        // if (!this.joinSimModal) {
-        //     this.joinSimModal = new JoinSimulationModal();
-        // }
-        // this.joinSimModal.show((simulation) => {
-        //     console.log('Joined simulation:', simulation);
-        //     this.loadData();
-        // });
+        this.joinSimModal.show((simulation) => {
+            console.log('Joined simulation:', simulation);
+            // Refresh the simulations list
+            this.loadData();
+            
+            // Optional: Navigate to the simulation after joining
+            if (simulation && simulation.id) {
+                setTimeout(() => {
+                    this.navigateToSimulation(simulation.id);
+                }, 1500); // Give time for success message to show
+            }
+        });
+    }
+
+    handleEmailInvite(simulation) {
+        if (!this.emailInviteModal) {
+            this.emailInviteModal = new EmailInviteModal();
+        }
+        
+        this.emailInviteModal.show(simulation, (invitationData) => {
+            console.log('Email invitations sent:', invitationData);
+            
+            // Show success notification (optional)
+            console.log(`Invitations prepared for ${invitationData.recipients.length} recipients`);
+            
+            // Optionally refresh simulation data to show updated member counts
+            this.loadData();
+        });
     }
 }
