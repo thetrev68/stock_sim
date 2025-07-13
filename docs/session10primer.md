@@ -1,5 +1,7 @@
 ## **For Session 10, prime me with:**
 
+Hi Claude! Continuing our Paper Trading Simulator project for Session 10.
+
 ### **Project Context:**
 ```
 Paper Trading Simulator - Session 10 (Research Tab Foundation)

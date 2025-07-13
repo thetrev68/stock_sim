@@ -1,4 +1,4 @@
-// Enhanced Trade view with simulation support - Session 7
+// Enhanced Trade view with simulation support - Session 7 + Research Integration - Session 10
 import { StockService } from '../services/stocks.js';
 import { initializePortfolio, getPortfolio, executeTrade, getRecentTrades, getUserPortfolios } from '../services/trading.js';
 import { SimulationService } from '../services/simulation.js';
@@ -115,6 +115,20 @@ export default class TradeView {
                                         Sell
                                     </button>
                                 </div>
+                                
+                                <!-- Research Integration Button -->
+                                <button 
+                                    type="button" 
+                                    id="research-stock-btn" 
+                                    class="w-full bg-purple-600 hover:bg-purple-500 text-white font-medium py-2 px-4 rounded-md transition-colors duration-300 disabled:bg-gray-600 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                    disabled
+                                >
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                                    </svg>
+                                    Research This Stock
+                                </button>
+                                
                                 <p id="trade-feedback" class="mt-4 text-sm text-center text-gray-400">&nbsp;</p>
                             </form>
                         </div>
@@ -156,6 +170,7 @@ export default class TradeView {
         const quantityInput = container.querySelector('#quantity');
         const buyBtn = container.querySelector('#buy-btn');
         const sellBtn = container.querySelector('#sell-btn');
+        const researchBtn = container.querySelector('#research-stock-btn');
         const portfolioSelector = container.querySelector('#portfolio-selector');
 
         // Portfolio context switching
@@ -168,6 +183,17 @@ export default class TradeView {
         // Trade buttons
         buyBtn.addEventListener('click', () => this.handleTrade('buy'));
         sellBtn.addEventListener('click', () => this.handleTrade('sell'));
+        
+        // Research button
+        researchBtn.addEventListener('click', this.handleResearchStock.bind(this));
+        
+        // Enable research button when ticker is entered
+        tickerInput.addEventListener('input', () => {
+            const ticker = tickerInput.value.trim();
+            if (researchBtn) {
+                researchBtn.disabled = !ticker;
+            }
+        });
     }
 
     async loadInitialData(requestedSimulationId = null) {
@@ -212,9 +238,65 @@ export default class TradeView {
                 await this.switchToPortfolio(null);
             }
 
+            // Check for pre-filled ticker from URL (e.g., from research page)
+            const urlParams = new URLSearchParams(window.location.search);
+            const prefilledTicker = urlParams.get('ticker');
+            
+            if (prefilledTicker) {
+                this.prefillTickerFromResearch(prefilledTicker);
+            }
+
         } catch (error) {
             console.error('Error loading initial trade data:', error);
             this.showFeedback('Failed to load trading data. Please try again.', 'text-red-400');
+        }
+    }
+
+    // New method for pre-filling ticker from research
+    prefillTickerFromResearch(ticker) {
+        const tickerInput = this.viewContainer.querySelector('#ticker');
+        const quantityInput = this.viewContainer.querySelector('#quantity');
+        const researchBtn = this.viewContainer.querySelector('#research-stock-btn');
+        
+        if (tickerInput) {
+            tickerInput.value = ticker.toUpperCase();
+            
+            // Enable research button
+            if (researchBtn) {
+                researchBtn.disabled = false;
+            }
+            
+            // Focus on quantity field for better UX
+            if (quantityInput) {
+                quantityInput.focus();
+            }
+            
+            // Automatically fetch price preview
+            setTimeout(() => {
+                this.updatePriceAndCost();
+            }, 500);
+            
+            // Show helpful message
+            this.showFeedback(`Ready to trade ${ticker.toUpperCase()}! Enter quantity to continue.`, 'text-cyan-400');
+        }
+    }
+
+    handleResearchStock() {
+        const tickerInput = this.viewContainer.querySelector('#ticker');
+        const ticker = tickerInput?.value.trim();
+        
+        if (!ticker) {
+            this.showFeedback('Please enter a ticker symbol first.', 'text-yellow-400');
+            return;
+        }
+        
+        // Navigate to research page with the ticker
+        const researchUrl = `/research?ticker=${ticker.toUpperCase()}`;
+        
+        if (window.app && window.app.router) {
+            window.app.router.navigate(researchUrl);
+        } else {
+            window.location.href = researchUrl;
         }
     }
 
@@ -438,7 +520,7 @@ export default class TradeView {
                     <span class="font-semibold ${tradeTypeClass}">${trade.type.toUpperCase()}</span> 
                     <span class="text-white">${trade.quantity}</span> shares of 
                     <span class="font-bold uppercase text-cyan-300">${trade.ticker}</span> 
-                    at <span class="text-white">${trade.price.toFixed(2)}</span>
+                    at $<span class="text-white">${trade.price.toFixed(2)}</span>
                 </div>
                 <div class="text-gray-500 text-xs">${tradeTime}</div>
             `;
@@ -531,6 +613,12 @@ export default class TradeView {
                 quantityInput.value = '';
                 document.getElementById('price-preview').classList.add('hidden');
                 this.currentStockPrice = 0;
+
+                // Disable research button since ticker is cleared
+                const researchBtn = this.viewContainer.querySelector('#research-stock-btn');
+                if (researchBtn) {
+                    researchBtn.disabled = true;
+                }
 
                 // Reload data
                 this.currentPortfolio = await getPortfolio(this.currentUser.uid, this.activePortfolioContext.simulationId);
