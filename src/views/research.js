@@ -10,6 +10,10 @@ export default class ResearchView {
         this.currentChart = null;
         this.searchResults = [];
         this.searchTimeout = null;
+        this.currentNewsData = [];
+        this.filteredNewsData = [];
+        this.currentNewsFilter = 'all';
+        this.newsSearchQuery = '';
     }
 
     async render(container) {
@@ -311,17 +315,67 @@ export default class ResearchView {
                     </div>
 
                     <div class="bg-gray-800 p-6 rounded-lg shadow-lg border border-gray-700">
-                        <div class="flex items-center justify-between mb-4">
-                            <h3 class="text-xl font-semibold text-gray-300">Latest News</h3>
-                            <div class="flex items-center">
-                                <span class="text-xs text-gray-500 bg-gray-700 px-2 py-1 rounded-full">Coming in Session 11</span>
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+                            <div>
+                                <h3 class="text-xl font-semibold text-white">Latest News</h3>
+                                <p class="text-gray-400 text-sm mt-1">Recent news and updates</p>
+                            </div>
+                            
+                            <div class="flex items-center gap-3">
+                                <div class="flex bg-gray-700 rounded-lg p-1">
+                                    <button class="news-filter-btn px-3 py-1 text-sm rounded-md transition-all duration-200 bg-cyan-600 text-white" data-filter="all">All</button>
+                                    <button class="news-filter-btn px-3 py-1 text-sm rounded-md transition-all duration-200 text-gray-300 hover:text-white" data-filter="today">Today</button>
+                                    <button class="news-filter-btn px-3 py-1 text-sm rounded-md transition-all duration-200 text-gray-300 hover:text-white" data-filter="week">This Week</button>
+                                </div>
+                                <button id="refresh-news-btn" class="bg-gray-700 hover:bg-gray-600 text-white p-2 rounded-lg transition-colors duration-200">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                                    </svg>
+                                </button>
                             </div>
                         </div>
-                        <div class="text-center py-8 text-gray-400">
-                            <svg class="w-16 h-16 mx-auto mb-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path>
-                            </svg>
-                            <p>News feeds will be available in Session 11</p>
+                        
+                        <div class="mb-4">
+                            <div class="relative">
+                                <input 
+                                    type="text" 
+                                    id="news-search-input" 
+                                    placeholder="Search news articles..." 
+                                    class="w-full bg-gray-700 text-white placeholder-gray-500 rounded-lg px-4 py-2 pr-10 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-cyan-500 transition"
+                                >
+                                <div class="absolute right-3 top-2.5">
+                                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div id="news-content">
+                            <div id="news-loading" class="text-center py-8">
+                                <div class="w-8 h-8 border-4 border-cyan-400 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                                <p class="text-gray-400">Loading latest news...</p>
+                            </div>
+                            
+                            <div id="news-articles" class="space-y-4 hidden">
+                                <!-- News articles will be rendered here -->
+                            </div>
+                            
+                            <div id="news-empty" class="text-center py-8 hidden">
+                                <svg class="w-16 h-16 mx-auto mb-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path>
+                                </svg>
+                                <h4 class="text-lg font-semibold text-gray-300 mb-2">No News Found</h4>
+                                <p class="text-gray-400">No recent news articles for this stock</p>
+                            </div>
+                            
+                            <div id="news-error" class="text-center py-8 hidden">
+                                <svg class="w-16 h-16 mx-auto mb-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <h4 class="text-lg font-semibold text-red-400 mb-2">Unable to Load News</h4>
+                                <p class="text-gray-400">There was an error loading news articles</p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -359,6 +413,10 @@ export default class ResearchView {
         const refreshChartBtn = container.querySelector('#refresh-chart-btn');
         const addWatchlistBtn = container.querySelector('#add-to-watchlist-btn');
         const quickTradeBtn = container.querySelector('#quick-trade-btn');
+        // News-related event listeners
+        const newsFilterBtns = container.querySelectorAll('.news-filter-btn');
+        const refreshNewsBtn = container.querySelector('#refresh-news-btn');
+        const newsSearchInput = container.querySelector('#news-search-input');                                                                                  
 
         // Search input events
         if (tickerInput) {
@@ -415,6 +473,29 @@ export default class ResearchView {
                 this.hideSearchResults();
             }
         });
+
+        // News filter buttons
+        newsFilterBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                this.switchNewsFilter(e.target);
+            });
+        });
+
+        // Refresh news button
+        if (refreshNewsBtn) {
+            refreshNewsBtn.addEventListener('click', this.refreshNews.bind(this));
+        }
+
+        // News search input with debouncing
+        if (newsSearchInput) {
+            let searchTimeout;
+            newsSearchInput.addEventListener('input', (e) => {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    this.searchNews(e.target.value);
+                }, 300);
+            });
+        }
     }
 
     async handleSearchInput(e) {
@@ -554,6 +635,7 @@ export default class ResearchView {
             this.displayStockData();
             await this.loadPriceChart();
             this.displayCompanyProfile();
+            await this.loadStockNews(); // NEW: Add this line
 
         } catch (error) {
             console.error('Research error:', error);
@@ -891,6 +973,256 @@ export default class ResearchView {
                 window.location.href = tradeUrl;
             }
         }
+    }
+
+    // ==========================================
+    // NEWS INTEGRATION METHODS - Session 11
+    // ==========================================
+
+    /**
+     * Load and display news for the current stock
+     */
+    async loadStockNews() {
+        if (!this.currentStockData) {
+            console.warn('No current stock data for news loading');
+            return;
+        }
+
+        this.showNewsLoading();
+
+        try {
+            console.log(`Loading news for ${this.currentStockData.ticker}...`);
+            
+            // Fetch news articles
+            this.currentNewsData = await this.stockService.getStockNews(this.currentStockData.ticker, 20);
+            
+            // Apply current filter and search
+            this.applyNewsFilters();
+            
+            // Display the news
+            this.displayNews();
+            
+        } catch (error) {
+            console.error('Error loading stock news:', error);
+            this.showNewsError();
+        }
+    }
+
+    /**
+     * Apply current filters and search to news data
+     */
+    applyNewsFilters() {
+        let filtered = [...this.currentNewsData];
+        
+        // Apply date filter
+        if (this.currentNewsFilter === 'today') {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            filtered = this.stockService.filterNewsByDate(filtered, 1);
+        } else if (this.currentNewsFilter === 'week') {
+            filtered = this.stockService.filterNewsByDate(filtered, 7);
+        }
+        
+        // Apply search filter
+        if (this.newsSearchQuery && this.newsSearchQuery.trim().length > 0) {
+            const searchTerm = this.newsSearchQuery.toLowerCase();
+            filtered = filtered.filter(article => 
+                article.headline.toLowerCase().includes(searchTerm) ||
+                article.summary.toLowerCase().includes(searchTerm) ||
+                article.source.toLowerCase().includes(searchTerm)
+            );
+        }
+        
+        // Sort by date (newest first)
+        this.filteredNewsData = this.stockService.sortNewsByDate(filtered);
+    }
+
+    /**
+     * Display news articles
+     */
+    displayNews() {
+        const newsArticlesContainer = document.getElementById('news-articles');
+        const newsEmptyContainer = document.getElementById('news-empty');
+        
+        if (!newsArticlesContainer) return;
+        
+        if (this.filteredNewsData.length === 0) {
+            this.showNewsEmpty();
+            return;
+        }
+        
+        // Clear existing content
+        newsArticlesContainer.innerHTML = '';
+        
+        // Create article cards
+        this.filteredNewsData.forEach(article => {
+            const articleCard = this.createNewsArticleCard(article);
+            newsArticlesContainer.appendChild(articleCard);
+        });
+        
+        // Show news articles
+        this.showNewsArticles();
+    }
+
+    /**
+     * Create a news article card element
+     */
+    createNewsArticleCard(article) {
+        const card = document.createElement('div');
+        card.className = 'bg-gray-700 rounded-lg p-4 hover:bg-gray-600 transition-colors duration-200 cursor-pointer border border-gray-600';
+        
+        const formattedDate = this.stockService.formatNewsDate(article.datetime);
+        const hasImage = article.image && article.image !== 'https://via.placeholder.com/400x200/1f2937/ffffff?text=News';
+        
+        card.innerHTML = `
+            <div class="flex gap-4">
+                ${hasImage ? `
+                    <div class="flex-shrink-0">
+                        <img 
+                            src="${article.image}" 
+                            alt="News image" 
+                            class="w-24 h-16 object-cover rounded-lg"
+                            onerror="this.style.display='none'"
+                        >
+                    </div>
+                ` : ''}
+                
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-start justify-between gap-4 mb-2">
+                        <h4 class="text-white font-semibold text-lg leading-tight line-clamp-2">${article.headline}</h4>
+                        <div class="flex-shrink-0 text-right">
+                            <span class="text-xs text-gray-400 bg-gray-600 px-2 py-1 rounded-full">${article.source}</span>
+                        </div>
+                    </div>
+                    
+                    <p class="text-gray-300 text-sm line-clamp-2 mb-3">${article.summary}</p>
+                    
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs text-gray-400">${formattedDate}</span>
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs text-cyan-400 hover:text-cyan-300 font-medium">Read more</span>
+                            <svg class="w-3 h-3 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Add click handler to open article
+        card.addEventListener('click', () => {
+            this.openNewsArticle(article);
+        });
+        
+        return card;
+    }
+
+    /**
+     * Open news article in new tab
+     */
+    openNewsArticle(article) {
+        if (article.url && article.url !== '#') {
+            window.open(article.url, '_blank', 'noopener,noreferrer');
+        } else {
+            // Show modal or alert for articles without URLs
+            alert(`Article: ${article.headline}\n\nSummary: ${article.summary}\n\nSource: ${article.source}`);
+        }
+    }
+
+    /**
+     * Switch news filter (All, Today, This Week)
+     */
+    switchNewsFilter(targetButton) {
+        const filter = targetButton.dataset.filter;
+        this.currentNewsFilter = filter;
+        
+        // Update button styles
+        document.querySelectorAll('.news-filter-btn').forEach(btn => {
+            btn.classList.remove('bg-cyan-600', 'text-white');
+            btn.classList.add('text-gray-300', 'hover:text-white');
+        });
+        targetButton.classList.add('bg-cyan-600', 'text-white');
+        targetButton.classList.remove('text-gray-300', 'hover:text-white');
+        
+        // Apply filters and redisplay
+        this.applyNewsFilters();
+        this.displayNews();
+    }
+
+    /**
+     * Search within news articles
+     */
+    searchNews(query) {
+        this.newsSearchQuery = query;
+        this.applyNewsFilters();
+        this.displayNews();
+    }
+
+    /**
+     * Refresh news data
+     */
+    async refreshNews() {
+        if (!this.currentStockData) return;
+        
+        const refreshBtn = document.getElementById('refresh-news-btn');
+        if (refreshBtn) {
+            refreshBtn.disabled = true;
+            refreshBtn.innerHTML = `
+                <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            `;
+        }
+        
+        try {
+            // Clear cache for this ticker to force fresh data
+            this.stockService.newsCache.delete(`${this.currentStockData.ticker}_20`);
+            
+            // Reload news
+            await this.loadStockNews();
+            
+        } catch (error) {
+            console.error('Error refreshing news:', error);
+            this.showNewsError();
+        } finally {
+            // Reset refresh button
+            if (refreshBtn) {
+                refreshBtn.disabled = false;
+                refreshBtn.innerHTML = `
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                    </svg>
+                `;
+            }
+        }
+    }
+
+    // News UI State Management
+    showNewsLoading() {
+        document.getElementById('news-loading')?.classList.remove('hidden');
+        document.getElementById('news-articles')?.classList.add('hidden');
+        document.getElementById('news-empty')?.classList.add('hidden');
+        document.getElementById('news-error')?.classList.add('hidden');
+    }
+
+    showNewsArticles() {
+        document.getElementById('news-loading')?.classList.add('hidden');
+        document.getElementById('news-articles')?.classList.remove('hidden');
+        document.getElementById('news-empty')?.classList.add('hidden');
+        document.getElementById('news-error')?.classList.add('hidden');
+    }
+
+    showNewsEmpty() {
+        document.getElementById('news-loading')?.classList.add('hidden');
+        document.getElementById('news-articles')?.classList.add('hidden');
+        document.getElementById('news-empty')?.classList.remove('hidden');
+        document.getElementById('news-error')?.classList.add('hidden');
+    }
+
+    showNewsError() {
+        document.getElementById('news-loading')?.classList.add('hidden');
+        document.getElementById('news-articles')?.classList.add('hidden');
+        document.getElementById('news-empty')?.classList.add('hidden');
+        document.getElementById('news-error')?.classList.remove('hidden');
     }
 
     // UI State Management

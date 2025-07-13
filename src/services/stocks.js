@@ -1,79 +1,399 @@
-// src/services/stocks.js - Enhanced for Session 10 Research Features
+// src/services/stocks.js - Enhanced with News Integration for Session 11
 /**
  * StockService with live Finnhub API integration
- * Enhanced with research capabilities: company profiles, search, historical data
+ * Enhanced with research capabilities: company profiles, search, historical data, and NEWS
  */
 export class StockService {
     constructor() {
-    // Your Finnhub API key (current data)
-    this.apiKey = 'd1n5qs9r01qlvnp5lkugd1n5qs9r01qlvnp5lkv0';
-    this.baseUrl = 'https://finnhub.io/api/v1';
+        // Your Finnhub API key (current data)
+        this.apiKey = 'd1n5qs9r01qlvnp5lkugd1n5qs9r01qlvnp5lkv0';
+        this.baseUrl = 'https://finnhub.io/api/v1';
 
-    // Your Tiingo API key (historical data)
-    this.tiingoApiKey = '5630214e66cda21e12a6a1bcee38baa31eee76f3';
-    this.tiingoBaseUrl = 'https://api.tiingo.com/tiingo';
-    
-    // Client-side cache to minimize API calls
-    this.priceCache = new Map();
-    this.profileCache = new Map();
-    this.searchCache = new Map();
-    this.cacheTimeout = 5 * 60 * 1000; // CHANGE: Increase to 5 minutes cache
-    
-    // Enhanced rate limiting
-    this.lastApiCall = 0;
-    this.minTimeBetweenCalls = 2000; // CHANGE: Increase to 2 seconds
-    this.apiCallCount = 0;
-    this.maxCallsPerMinute = 30; // NEW: Conservative limit
-    this.callTimestamps = []; // NEW: Track call timestamps
-    
-    // NEW: API status tracking
-    this.apiStatus = {
-        isDown: false,
-        lastFailureTime: 0,
-        cooldownPeriod: 5 * 60 * 1000 // 5 minutes cooldown after failures
-    };
-    
-    // EXPAND: Add more mock prices (add these to your existing ones)
-    this.mockPrices = {
-        'AAPL': 170.50,
-        'GOOG': 1500.25,
-        'MSFT': 420.00,
-        'TSLA': 180.75,
-        'F': 12.45,
-        'AMZN': 185.30,
-        'NVDA': 1000.00,
-        'SMCI': 800.00,
-        'AMD': 160.00,
-        'NFLX': 600.00,
-        'KO': 62.50,
-        'META': 450.00,        // NEW
-        'GOOGL': 1495.00,      // NEW
-        'INTC': 45.00,         // NEW
-        'CRM': 280.00          // NEW
-    };
+        // Your Tiingo API key (historical data)
+        this.tiingoApiKey = '5630214e66cda21e12a6a1bcee38baa31eee76f3';
+        this.tiingoBaseUrl = 'https://api.tiingo.com/tiingo';
 
-    // EXPAND: Add MSFT to your existing mockProfiles
-    this.mockProfiles = {
-        // ... keep your existing AAPL and TSLA entries ...
-        'MSFT': {  // ADD THIS NEW ENTRY
-            name: 'Microsoft Corporation',
-            country: 'US',
-            currency: 'USD',
-            exchange: 'NASDAQ',
-            ipo: '1986-03-13',
-            marketCapitalization: 2800000,
-            shareOutstanding: 7430000,
-            ticker: 'MSFT',
-            weburl: 'https://www.microsoft.com/',
-            logo: 'https://static2.finnhub.io/file/publicdatany/finnhubimage/stock_logo/MSFT.png',
-            finnhubIndustry: 'Technology'
-        }
-    };
-}
+        // NEW: Add this line - automatically detects development environment
+        this.useMockDataFallback = window.location.hostname === 'localhost' || 
+                                window.location.hostname === '127.0.0.1' ||
+                                window.location.hostname.includes('localhost');
+        
+        // Client-side cache to minimize API calls
+        this.priceCache = new Map();
+        this.profileCache = new Map();
+        this.searchCache = new Map();
+        this.newsCache = new Map(); // NEW: Add news cache
+        this.cacheTimeout = 5 * 60 * 1000; // 5 minutes cache
+        
+        // Enhanced rate limiting
+        this.lastApiCall = 0;
+        this.minTimeBetweenCalls = 2000; // 2 seconds
+        this.apiCallCount = 0;
+        this.maxCallsPerMinute = 30; // Conservative limit
+        this.callTimestamps = []; // Track call timestamps
+        
+        // API status tracking
+        this.apiStatus = {
+            isDown: false,
+            lastFailureTime: 0,
+            cooldownPeriod: 5 * 60 * 1000 // 5 minutes cooldown after failures
+        };
+        
+        // Mock prices (keep existing)
+        this.mockPrices = {
+            'AAPL': 170.50,
+            'GOOG': 1500.25,
+            'MSFT': 420.00,
+            'TSLA': 180.75,
+            'F': 12.45,
+            'AMZN': 185.30,
+            'NVDA': 1000.00,
+            'SMCI': 800.00,
+            'AMD': 160.00,
+            'NFLX': 600.00,
+            'KO': 62.50,
+            'META': 450.00,
+            'GOOGL': 1495.00,
+            'INTC': 45.00,
+            'CRM': 280.00
+        };
+
+        // Mock profiles (keep existing)
+        this.mockProfiles = {
+            'MSFT': {
+                name: 'Microsoft Corporation',
+                country: 'US',
+                currency: 'USD',
+                exchange: 'NASDAQ',
+                ipo: '1986-03-13',
+                marketCapitalization: 2800000,
+                shareOutstanding: 7430000,
+                ticker: 'MSFT',
+                weburl: 'https://www.microsoft.com/',
+                logo: 'https://static2.finnhub.io/file/publicdatany/finnhubimage/stock_logo/MSFT.png',
+                finnhubIndustry: 'Technology'
+            }
+        };
+
+        // NEW: Mock news data for fallback
+        this.mockNews = {
+            'AAPL': [
+                {
+                    category: 'technology',
+                    datetime: Date.now() - 3600000, // 1 hour ago
+                    headline: 'Apple Reports Strong Q4 Earnings Beat Expectations',
+                    id: 'mock_1',
+                    image: 'https://via.placeholder.com/400x200/1f2937/ffffff?text=Apple+News',
+                    related: 'AAPL',
+                    source: 'MarketWatch',
+                    summary: 'Apple Inc. reported quarterly earnings that exceeded analyst expectations, driven by strong iPhone sales and services revenue growth.',
+                    url: 'https://example.com/apple-earnings'
+                },
+                {
+                    category: 'technology',
+                    datetime: Date.now() - 7200000, // 2 hours ago
+                    headline: 'New iPhone Features Drive Consumer Interest',
+                    id: 'mock_2',
+                    image: 'https://via.placeholder.com/400x200/1f2937/ffffff?text=iPhone+News',
+                    related: 'AAPL',
+                    source: 'TechCrunch',
+                    summary: 'Latest iPhone models featuring advanced AI capabilities are generating significant consumer interest ahead of the holiday season.',
+                    url: 'https://example.com/iphone-features'
+                }
+            ],
+            'TSLA': [
+                {
+                    category: 'technology',
+                    datetime: Date.now() - 1800000, // 30 minutes ago
+                    headline: 'Tesla Announces New Gigafactory Location',
+                    id: 'mock_3',
+                    image: 'https://via.placeholder.com/400x200/1f2937/ffffff?text=Tesla+News',
+                    related: 'TSLA',
+                    source: 'Reuters',
+                    summary: 'Tesla reveals plans for a new Gigafactory to meet growing demand for electric vehicles in the Asian market.',
+                    url: 'https://example.com/tesla-gigafactory'
+                }
+            ],
+            'MSFT': [
+                {
+                    category: 'technology',
+                    datetime: Date.now() - 5400000, // 1.5 hours ago
+                    headline: 'Microsoft Azure Cloud Revenue Surges 30%',
+                    id: 'mock_4',
+                    image: 'https://via.placeholder.com/400x200/1f2937/ffffff?text=Microsoft+News',
+                    related: 'MSFT',
+                    source: 'Bloomberg',
+                    summary: 'Microsoft reports significant growth in cloud computing services, with Azure revenue increasing 30% year-over-year.',
+                    url: 'https://example.com/microsoft-azure'
+                }
+            ]
+        };
+    }
 
     /**
-     * Check if API should be used based on current status and rate limits
+     * Get news articles for a specific stock
+     * @param {string} ticker - Stock ticker symbol
+     * @param {number} limit - Maximum number of articles (default: 10)
+     * @returns {Promise<Array>} Array of news articles
      */
+    async getStockNews(ticker, limit = 10) {
+        const upperTicker = ticker.toUpperCase();
+        const cacheKey = `${upperTicker}_${limit}`;
+        
+        // Check cache first
+        const cached = this.getFromCache(this.newsCache, cacheKey);
+        if (cached) {
+            console.log(`Using cached news for ${upperTicker}`);
+            return cached;
+        }
+
+        // Check if API should be used
+        if (!this.shouldUseAPI()) {
+            if (this.useMockDataFallback) {
+                return this.getFallbackNews(upperTicker, limit);
+            } else {
+                throw new Error(`News API temporarily unavailable for ${upperTicker}`);
+            }
+        }
+
+        try {
+            await this.enforceRateLimit();
+            
+            // Calculate date range (last 30 days)
+            const toDate = new Date();
+            const fromDate = new Date();
+            fromDate.setDate(fromDate.getDate() - 30);
+            
+            const fromDateStr = fromDate.toISOString().split('T')[0];
+            const toDateStr = toDate.toISOString().split('T')[0];
+            
+            // Build Finnhub company news URL
+            const url = `${this.baseUrl}/company-news?symbol=${upperTicker}&from=${fromDateStr}&to=${toDateStr}&token=${this.apiKey}`;
+            
+            console.log(`Fetching news for ${upperTicker}...`);
+            
+            const response = await fetch(url);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            const newsData = await response.json();
+            
+            if (Array.isArray(newsData) && newsData.length > 0) {
+                // Process and limit results
+                const processedNews = newsData
+                    .slice(0, limit)
+                    .map(article => this.processNewsArticle(article))
+                    .filter(article => article !== null);
+                
+                // Cache the results
+                this.setInCache(this.newsCache, cacheKey, processedNews);
+                
+                // Reset API status on success
+                this.apiStatus.isDown = false;
+                
+                console.log(`Fetched ${processedNews.length} news articles for ${upperTicker}`);
+                return processedNews;
+            } else {
+                console.warn(`No news data returned for ${upperTicker}`);
+                if (this.useMockDataFallback) {
+                    return this.getFallbackNews(upperTicker, limit);
+                } else {
+                    throw new Error(`No news articles found for ${upperTicker}`);
+                }
+            }
+            
+        } catch (error) {
+            console.error(`Error fetching news for ${upperTicker}:`, error);
+            this.handleAPIError(error, 'news');
+            
+            // Only use fallback data in development environment
+            if (this.useMockDataFallback) {
+                console.log('Development environment detected - using mock news data');
+                return this.getFallbackNews(upperTicker, limit);
+            } else {
+                console.log('Production environment - throwing error instead of using mock data');
+                throw new Error(`Unable to fetch news for ${upperTicker}: API temporarily unavailable`);
+            }
+        }
+    }
+
+    /**
+     * Search within stock news articles
+     * @param {string} ticker - Stock ticker symbol
+     * @param {string} query - Search query
+     * @param {number} limit - Maximum results
+     * @returns {Promise<Array>} Filtered news articles
+     */
+    async searchStockNews(ticker, query, limit = 10) {
+        if (!query || query.trim().length < 2) {
+            return await this.getStockNews(ticker, limit);
+        }
+
+        const allNews = await this.getStockNews(ticker, 50); // Get more articles to search through
+        const searchTerm = query.toLowerCase().trim();
+        
+        const filteredNews = allNews.filter(article => {
+            return article.headline.toLowerCase().includes(searchTerm) ||
+                   article.summary.toLowerCase().includes(searchTerm) ||
+                   article.source.toLowerCase().includes(searchTerm);
+        });
+
+        return filteredNews.slice(0, limit);
+    }
+
+    /**
+     * Process raw news article from Finnhub API
+     * @param {object} rawArticle - Raw article data from API
+     * @returns {object|null} Processed article or null if invalid
+     */
+    processNewsArticle(rawArticle) {
+        try {
+            // Validate required fields
+            if (!rawArticle.headline || !rawArticle.datetime) {
+                return null;
+            }
+
+            return {
+                id: rawArticle.id || `news_${rawArticle.datetime}_${Math.random().toString(36).substr(2, 9)}`,
+                headline: rawArticle.headline,
+                summary: rawArticle.summary || this.generateSummaryFromHeadline(rawArticle.headline),
+                source: rawArticle.source || 'Unknown Source',
+                datetime: rawArticle.datetime * 1000, // Convert Unix timestamp to milliseconds
+                url: rawArticle.url || '#',
+                image: rawArticle.image || this.getDefaultNewsImage(),
+                category: rawArticle.category || 'business',
+                related: rawArticle.related || ''
+            };
+        } catch (error) {
+            console.error('Error processing news article:', error);
+            return null;
+        }
+    }
+
+    /**
+     * Generate a summary from headline when summary is not available
+     * @param {string} headline - Article headline
+     * @returns {string} Generated summary
+     */
+    generateSummaryFromHeadline(headline) {
+        // Simple summary generation - could be enhanced
+        if (headline.length > 100) {
+            return headline.substring(0, 97) + '...';
+        }
+        return `${headline} - Read the full article for more details.`;
+    }
+
+    /**
+     * Get default placeholder image for news articles
+     * @returns {string} Default image URL
+     */
+    getDefaultNewsImage() {
+        return 'https://via.placeholder.com/400x200/1f2937/ffffff?text=News';
+    }
+
+    /**
+     * Get fallback mock news when API is unavailable
+     * @param {string} ticker - Stock ticker
+     * @param {number} limit - Maximum articles
+     * @returns {Array} Mock news articles
+     */
+    getFallbackNews(ticker, limit = 10) {
+        const mockNewsForTicker = this.mockNews[ticker] || [];
+        
+        if (mockNewsForTicker.length === 0) {
+            // Generate generic news for unknown tickers
+            return this.generateGenericNews(ticker, limit);
+        }
+        
+        return mockNewsForTicker.slice(0, limit);
+    }
+
+    /**
+     * Generate generic news articles for tickers without mock data
+     * @param {string} ticker - Stock ticker
+     * @param {number} limit - Maximum articles
+     * @returns {Array} Generic news articles
+     */
+    generateGenericNews(ticker, limit = 10) {
+        const genericHeadlines = [
+            `${ticker} Reports Quarterly Earnings`,
+            `Analysts Update ${ticker} Price Target`,
+            `${ticker} Announces Strategic Partnership`,
+            `Market Outlook for ${ticker} Remains Positive`,
+            `${ticker} Sees Increased Trading Volume`
+        ];
+
+        return genericHeadlines.slice(0, limit).map((headline, index) => ({
+            id: `generic_${ticker}_${index}`,
+            headline: headline,
+            summary: `${headline} - Stay updated with the latest developments and market analysis.`,
+            source: 'Market News',
+            datetime: Date.now() - (index * 3600000), // Stagger times by 1 hour
+            url: '#',
+            image: this.getDefaultNewsImage(),
+            category: 'business',
+            related: ticker
+        }));
+    }
+
+    /**
+     * Format news article date for display
+     * @param {number} timestamp - Unix timestamp in milliseconds
+     * @returns {string} Formatted date string
+     */
+    formatNewsDate(timestamp) {
+        const now = new Date();
+        const newsDate = new Date(timestamp);
+        const diffInMinutes = Math.floor((now - newsDate) / (1000 * 60));
+        
+        if (diffInMinutes < 1) {
+            return 'Just now';
+        } else if (diffInMinutes < 60) {
+            return `${diffInMinutes}m ago`;
+        } else if (diffInMinutes < 1440) { // Less than 24 hours
+            const hours = Math.floor(diffInMinutes / 60);
+            return `${hours}h ago`;
+        } else {
+            const days = Math.floor(diffInMinutes / 1440);
+            if (days === 1) {
+                return 'Yesterday';
+            } else if (days < 7) {
+                return `${days} days ago`;
+            } else {
+                return newsDate.toLocaleDateString();
+            }
+        }
+    }
+
+    /**
+     * Filter news articles by date range
+     * @param {Array} newsArticles - Array of news articles
+     * @param {number} daysBack - Number of days to go back
+     * @returns {Array} Filtered articles
+     */
+    filterNewsByDate(newsArticles, daysBack = 7) {
+        const cutoffDate = new Date();
+        cutoffDate.setDate(cutoffDate.getDate() - daysBack);
+        const cutoffTimestamp = cutoffDate.getTime();
+        
+        return newsArticles.filter(article => article.datetime >= cutoffTimestamp);
+    }
+
+    /**
+     * Sort news articles by date (newest first)
+     * @param {Array} newsArticles - Array of news articles
+     * @returns {Array} Sorted articles
+     */
+    sortNewsByDate(newsArticles) {
+        return [...newsArticles].sort((a, b) => b.datetime - a.datetime);
+    }
+
+    // ==========================================
+    // EXISTING METHODS (keep all unchanged)
+    // ==========================================
+
     shouldUseAPI() {
         const now = Date.now();
         
@@ -93,9 +413,6 @@ export class StockService {
         return true;
     }
 
-    /**
-     * Handle API errors and update status
-     */
     handleAPIError(error, endpoint) {
         console.error(`API Error at ${endpoint}:`, error.message);
         
@@ -107,9 +424,6 @@ export class StockService {
         }
     }
 
-    /**
-     * Create fallback stock details from mock data
-     */
     getFallbackStockDetails(ticker) {
         const mockPrice = this.mockPrices[ticker];
         const mockProfile = this.mockProfiles[ticker];
@@ -143,11 +457,6 @@ export class StockService {
         };
     }
 
-    /**
-     * Fetches current price for a given ticker from Finnhub API
-     * @param {string} ticker - The stock ticker symbol
-     * @returns {Promise<number|null>} The current price or null if not found
-     */
     async getQuote(ticker) {
         const upperTicker = ticker.toUpperCase();
         
@@ -158,7 +467,6 @@ export class StockService {
             return cachedPrice;
         }
 
-        // ADD THIS CHECK:
         if (!this.shouldUseAPI()) {
             return this.getFallbackPrice(upperTicker);
         }
@@ -197,11 +505,6 @@ export class StockService {
         }
     }
 
-    /**
-     * Fetches detailed stock info including price, company name, and daily stats
-     * @param {string} ticker - The stock ticker symbol
-     * @returns {Promise<object|null>} Detailed stock info or null if not found
-     */
     async getStockDetails(ticker) {
         const upperTicker = ticker.toUpperCase();
         
@@ -249,15 +552,9 @@ export class StockService {
         }
     }
 
-    /**
-     * Get detailed quote data from Finnhub API
-     * @param {string} ticker - The stock ticker symbol
-     * @returns {Promise<object|null>} Quote data object or null
-     */
     async getQuoteData(ticker) {
         const upperTicker = ticker.toUpperCase();
         
-        // ADD THIS CHECK:
         if (!this.shouldUseAPI()) {
             // Return mock quote data
             const mockPrice = this.mockPrices[upperTicker];
@@ -300,7 +597,6 @@ export class StockService {
                 const priceChange = currentPrice - previousClose;
                 const priceChangePercent = (priceChange / previousClose) * 100;
                 
-                // ADD THIS: Reset API status on success
                 this.apiStatus.isDown = false;
                 
                 return {
@@ -318,7 +614,6 @@ export class StockService {
             return null;
             
         } catch (error) {
-            // CHANGE THIS: Replace your existing catch block
             this.handleAPIError(error, 'quote');
             // Return fallback mock data
             const mockPrice = this.mockPrices[upperTicker];
@@ -341,21 +636,15 @@ export class StockService {
         }
     }
 
-    /**
-     * Get company profile information
-     * @param {string} ticker - The stock ticker symbol
-     * @returns {Promise<object|null>} Company profile or null
-     */
     async getCompanyProfile(ticker) {
         const upperTicker = ticker.toUpperCase();
         
-        // Check cache first (keep your existing cache check)
+        // Check cache first
         const cached = this.getFromCache(this.profileCache, upperTicker);
         if (cached) {
             return cached;
         }
 
-        // ADD THIS CHECK:
         if (!this.shouldUseAPI()) {
             const mockProfile = this.mockProfiles[upperTicker];
             if (mockProfile) {
@@ -379,12 +668,11 @@ export class StockService {
             
             if (data && data.name) {
                 this.setInCache(this.profileCache, upperTicker, data);
-                // ADD THIS:
                 this.apiStatus.isDown = false;
                 return data;
             }
             
-            // Fallback to mock data (keep your existing fallback logic)
+            // Fallback to mock data
             const mockProfile = this.mockProfiles[upperTicker];
             if (mockProfile) {
                 this.setInCache(this.profileCache, upperTicker, mockProfile);
@@ -394,7 +682,6 @@ export class StockService {
             return null;
             
         } catch (error) {
-            // CHANGE THIS: Replace your existing catch block
             this.handleAPIError(error, 'profile');
             
             // Return mock profile if available
@@ -408,11 +695,6 @@ export class StockService {
         }
     }
 
-    /**
-     * Search for stocks by symbol or company name
-     * @param {string} query - Search query (ticker or company name)
-     * @returns {Promise<Array>} Array of search results
-     */
     async searchStocks(query) {
         if (!query || query.trim().length < 1) {
             return [];
@@ -420,13 +702,12 @@ export class StockService {
 
         const searchQuery = query.trim().toUpperCase();
         
-        // Check cache first (keep your existing cache check)
+        // Check cache first
         const cached = this.getFromCache(this.searchCache, searchQuery);
         if (cached) {
             return cached;
         }
 
-        // ADD THIS CHECK:
         if (!this.shouldUseAPI()) {
             return this.getMockSearchResults(searchQuery);
         }
@@ -434,20 +715,39 @@ export class StockService {
         try {
             await this.enforceRateLimit();
             
-            // ... rest of your existing method stays the same ...
-            // BUT in the catch block, change to:
+            const url = `${this.baseUrl}/search?q=${encodeURIComponent(searchQuery)}&token=${this.apiKey}`;
+            const response = await fetch(url);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            const data = await response.json();
+            
+            if (data && data.result && Array.isArray(data.result)) {
+                const results = data.result
+                    .filter(item => item.type === 'Common Stock')
+                    .slice(0, 10)
+                    .map(item => ({
+                        symbol: item.symbol,
+                        description: item.description,
+                        type: item.type,
+                        displaySymbol: item.displaySymbol || item.symbol
+                    }));
+                
+                this.setInCache(this.searchCache, searchQuery, results);
+                this.apiStatus.isDown = false;
+                return results;
+            }
+            
+            return this.getMockSearchResults(searchQuery);
             
         } catch (error) {
-            this.handleAPIError(error, 'search');  // CHANGE THIS LINE
+            this.handleAPIError(error, 'search');
             return this.getMockSearchResults(searchQuery);
         }
     }
 
-    /**
-     * Get mock search results for fallback
-     * @param {string} query - Search query
-     * @returns {Array} Mock search results
-     */
     getMockSearchResults(query) {
         const mockResults = [
             { symbol: 'AAPL', description: 'Apple Inc', type: 'Common Stock', displaySymbol: 'AAPL' },
@@ -466,13 +766,6 @@ export class StockService {
         );
     }
 
-    /**
-     * Get historical price data for charts
-     * @param {string} ticker - Stock ticker symbol
-     * @param {string} resolution - Resolution (1, 5, 15, 30, 60, D, W, M)
-     * @param {number} days - Number of days back
-     * @returns {Promise<object|null>} Historical data or null
-     */
     async getHistoricalData(ticker, resolution = 'D', days = 30) {
         const upperTicker = ticker.toUpperCase();
         
@@ -540,12 +833,6 @@ export class StockService {
         }
     }
 
-    /**
-     * Generate mock historical data for charts
-     * @param {string} ticker - Stock ticker
-     * @param {number} days - Number of days
-     * @returns {object} Mock historical data
-     */
     generateMockHistoricalData(ticker, days) {
         const currentPrice = this.mockPrices[ticker] || 100;
         const timestamps = [];
@@ -583,11 +870,6 @@ export class StockService {
 
     // === Cache Management Methods ===
 
-    /**
-     * Check cache for a recent price
-     * @param {string} ticker - The stock ticker symbol
-     * @returns {number|null} Cached price or null if not found/expired
-     */
     getCachedPrice(ticker) {
         const cached = this.priceCache.get(ticker);
         if (cached && (Date.now() - cached.timestamp < this.cacheTimeout)) {
@@ -596,11 +878,6 @@ export class StockService {
         return null;
     }
 
-    /**
-     * Store price in cache with timestamp
-     * @param {string} ticker - The stock ticker symbol
-     * @param {number} price - The price to cache
-     */
     setCachedPrice(ticker, price) {
         this.priceCache.set(ticker, {
             price: price,
@@ -608,12 +885,6 @@ export class StockService {
         });
     }
 
-    /**
-     * Generic cache getter
-     * @param {Map} cache - Cache map to check
-     * @param {string} key - Cache key
-     * @returns {any|null} Cached data or null
-     */
     getFromCache(cache, key) {
         const cached = cache.get(key);
         if (cached && (Date.now() - cached.timestamp < this.cacheTimeout)) {
@@ -622,12 +893,6 @@ export class StockService {
         return null;
     }
 
-    /**
-     * Generic cache setter
-     * @param {Map} cache - Cache map to set
-     * @param {string} key - Cache key
-     * @param {any} data - Data to cache
-     */
     setInCache(cache, key, data) {
         cache.set(key, {
             data: data,
@@ -635,24 +900,16 @@ export class StockService {
         });
     }
 
-    /**
-     * Get fallback mock price when API fails
-     * @param {string} ticker - The stock ticker symbol
-     * @returns {number|null} Mock price or null if not found
-     */
     getFallbackPrice(ticker) {
         const mockPrice = this.mockPrices[ticker];
         if (mockPrice) {
-            console.log(`Using fallback mock price for ${ticker}: $${mockPrice}`);
+            console.log(`Using fallback mock price for ${ticker}: ${mockPrice}`);
             return mockPrice;
         }
         console.warn(`No fallback price available for ${ticker}`);
         return null;
     }
 
-    /**
-     * Simple rate limiting to avoid hitting API limits
-     */
     async enforceRateLimit() {
         const now = Date.now();
         
@@ -679,19 +936,14 @@ export class StockService {
         this.lastApiCall = Date.now();
     }
 
-    /**
-     * Clear all caches (useful for testing or manual refresh)
-     */
     clearCache() {
         this.priceCache.clear();
         this.profileCache.clear();
         this.searchCache.clear();
+        this.newsCache.clear(); // NEW: Clear news cache too
         console.log('All caches cleared');
     }
 
-    /**
-     * Get cache status for debugging
-     */
     getCacheStatus() {
         const now = Date.now();
         
@@ -708,7 +960,8 @@ export class StockService {
             cacheTimeout: this.cacheTimeout / 1000,
             prices: cacheInfo(this.priceCache, 'prices'),
             profiles: cacheInfo(this.profileCache, 'profiles'),
-            searches: cacheInfo(this.searchCache, 'searches')
+            searches: cacheInfo(this.searchCache, 'searches'),
+            news: cacheInfo(this.newsCache, 'news') // NEW: Include news cache status
         };
     }
 }
