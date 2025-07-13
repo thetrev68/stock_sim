@@ -65,6 +65,11 @@ class App {
         this.router.addRoute('/portfolio', () => this.loadView('portfolio'));
         this.router.addRoute('/research', () => this.loadView('research'));
         this.router.addRoute('/auth', () => this.loadView('auth'));
+        
+        // New simulation routes for Session 6
+        this.router.addRoute('/simulation', () => this.loadView('simulation'));
+        this.router.addRoute('/simulation/create', () => this.loadView('simulation-create'));
+        this.router.addRoute('/simulation/join', () => this.loadView('simulation-join'));
 
         // Start router
         this.router.start();
