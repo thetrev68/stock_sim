@@ -1,0 +1,382 @@
+[
+  {
+    "file": "components/layout/Header.js",
+    "lines": 82,
+    "imports": [],
+    "exports": [
+      "export class HeaderComponent {"
+    ],
+    "functions": [],
+    "classes": []
+  },
+  {
+    "file": "components/layout/Navigation.js",
+    "lines": 52,
+    "imports": [],
+    "exports": [
+      "export class NavigationComponent {"
+    ],
+    "functions": [
+      "navItems"
+    ],
+    "classes": []
+  },
+  {
+    "file": "components/simulation/CreateSimulationModal.js",
+    "lines": 390,
+    "imports": [
+      "../../services/simulation.js",
+      "../../services/auth.js"
+    ],
+    "exports": [
+      "export class CreateSimulationModal {"
+    ],
+    "functions": [],
+    "classes": []
+  },
+  {
+    "file": "components/simulation/EmailInviteModal.js",
+    "lines": 451,
+    "imports": [
+      "../../services/simulation.js",
+      "../../services/auth.js"
+    ],
+    "exports": [
+      "export class EmailInviteModal {"
+    ],
+    "functions": [],
+    "classes": []
+  },
+  {
+    "file": "components/simulation/JoinSimulationModal.js",
+    "lines": 362,
+    "imports": [
+      "../../services/simulation.js",
+      "../../services/auth.js"
+    ],
+    "exports": [
+      "export class JoinSimulationModal {"
+    ],
+    "functions": [],
+    "classes": []
+  },
+  {
+    "file": "components/simulation/LeaderboardOverview.js",
+    "lines": 345,
+    "imports": [],
+    "exports": [
+      "export class LeaderboardOverview {"
+    ],
+    "functions": [
+      "totalVolume"
+    ],
+    "classes": []
+  },
+  {
+    "file": "components/simulation/LeaderboardTable.js",
+    "lines": 252,
+    "imports": [],
+    "exports": [
+      "export class LeaderboardTable {"
+    ],
+    "functions": [
+      "rankingRows"
+    ],
+    "classes": []
+  },
+  {
+    "file": "counter.js",
+    "lines": 10,
+    "imports": [],
+    "exports": [
+      "export function setupCounter(element) {"
+    ],
+    "functions": [
+      "setCounter"
+    ],
+    "classes": []
+  },
+  {
+    "file": "main.js",
+    "lines": 180,
+    "imports": [
+      "./services/firebase.js",
+      "./utils/router.js",
+      "./services/auth.js",
+      "./components/layout/Header.js",
+      "./components/layout/Navigation.js",
+      "./services/trading.js"
+    ],
+    "exports": [],
+    "functions": [],
+    "classes": [
+      {
+        "name": "App",
+        "line": 10,
+        "methods": [
+          "constructor",
+          "initialize",
+          "setupComponents",
+          "setupRouting",
+          "loadView",
+          "updateNavigationActive",
+          "handleAuthStateChange",
+          "showApp",
+          "showError"
+        ]
+      }
+    ]
+  },
+  {
+    "file": "services/activity.js",
+    "lines": 478,
+    "imports": [
+      "./firebase.js"
+    ],
+    "exports": [
+      "export class ActivityService {"
+    ],
+    "functions": [
+      "recentActivities",
+      "mostActiveUserId",
+      "mostActiveActivity",
+      "tradeActivities"
+    ],
+    "classes": []
+  },
+  {
+    "file": "services/auth.js",
+    "lines": 98,
+    "imports": [
+      "./firebase.js"
+    ],
+    "exports": [
+      "export class AuthService {"
+    ],
+    "functions": [],
+    "classes": []
+  },
+  {
+    "file": "services/firebase.js",
+    "lines": 62,
+    "imports": [
+      "firebase/app",
+      "firebase/analytics",
+      "firebase/auth",
+      "firebase/firestore"
+    ],
+    "exports": [
+      "export async function initializeApp() {",
+      "export function getFirebaseAuth() {",
+      "export function getFirestoreDb() {"
+    ],
+    "functions": [],
+    "classes": []
+  },
+  {
+    "file": "services/leaderboard.js",
+    "lines": 504,
+    "imports": [
+      "./firebase.js",
+      "./trading.js",
+      "./stocks.js"
+    ],
+    "exports": [
+      "export class LeaderboardService {"
+    ],
+    "functions": [
+      "pricePromises",
+      "buyTrades",
+      "sellTrades",
+      "totalVolume",
+      "averageReturn",
+      "userRanking"
+    ],
+    "classes": []
+  },
+  {
+    "file": "services/simulation.js",
+    "lines": 1245,
+    "imports": [
+      "./firebase.js"
+    ],
+    "exports": [
+      "export class SimulationService {"
+    ],
+    "functions": [
+      "activeMembers",
+      "removedMembers",
+      "tradeActivities",
+      "memberSimulationIds",
+      "results",
+      "simulationIds",
+      "memberData"
+    ],
+    "classes": []
+  },
+  {
+    "file": "services/stocks.js",
+    "lines": 967,
+    "imports": [],
+    "exports": [
+      "export class StockService {"
+    ],
+    "functions": [
+      "filteredNews",
+      "timestamps",
+      "closes",
+      "opens",
+      "highs",
+      "lows",
+      "volumes",
+      "cacheInfo",
+      "entries"
+    ],
+    "classes": []
+  },
+  {
+    "file": "services/trading.js",
+    "lines": 445,
+    "imports": [
+      "./firebase",
+      "firebase/firestore"
+    ],
+    "exports": [
+      "export function getPortfolioRef(userId, simulationId = null) {",
+      "export function getUserPortfolioRef(userId) {",
+      "export async function initializePortfolio(userId, initialBalance = 10000, simulationId = null, simulationInfo = null) {",
+      "export async function getPortfolio(userId, simulationId = null) {",
+      "export async function getUserPortfolios(userId) {",
+      "export async function validateSimulationTrade(tradeDetails, simulation, portfolio) {",
+      "export async function executeTrade(userId, tradeDetails, simulationId = null) {",
+      "export async function getRecentTrades(userId, limit = 10, simulationId = null) {",
+      "export async function updatePortfolioInitialBalance(userId, newBalance, simulationId = null) {"
+    ],
+    "functions": [],
+    "classes": []
+  },
+  {
+    "file": "utils/router.js",
+    "lines": 60,
+    "imports": [],
+    "exports": [
+      "export class Router {"
+    ],
+    "functions": [],
+    "classes": []
+  },
+  {
+    "file": "views/auth.js",
+    "lines": 221,
+    "imports": [
+      "../services/auth.js"
+    ],
+    "exports": [
+      "export default class AuthView {"
+    ],
+    "functions": [],
+    "classes": []
+  },
+  {
+    "file": "views/dashboard.js",
+    "lines": 485,
+    "imports": [
+      "../services/simulation.js",
+      "../services/auth.js",
+      "../components/simulation/CreateSimulationModal.js",
+      "../components/simulation/JoinSimulationModal.js",
+      "../components/simulation/EmailInviteModal.js"
+    ],
+    "exports": [
+      "export default class DashboardView {"
+    ],
+    "functions": [
+      "activeSimCount"
+    ],
+    "classes": []
+  },
+  {
+    "file": "views/portfolio.js",
+    "lines": 716,
+    "imports": [
+      "../services/trading.js",
+      "../services/auth.js",
+      "../services/stocks.js"
+    ],
+    "exports": [
+      "export default class PortfolioView {"
+    ],
+    "functions": [
+      "totalVolume"
+    ],
+    "classes": []
+  },
+  {
+    "file": "views/research.js",
+    "lines": 1312,
+    "imports": [
+      "../services/stocks.js"
+    ],
+    "exports": [
+      "export default class ResearchView {"
+    ],
+    "functions": [
+      "labels"
+    ],
+    "classes": []
+  },
+  {
+    "file": "views/simulation-archive.js",
+    "lines": 544,
+    "imports": [
+      "../services/simulation.js",
+      "../services/auth.js"
+    ],
+    "exports": [
+      "export default class SimulationArchiveView {"
+    ],
+    "functions": [],
+    "classes": []
+  },
+  {
+    "file": "views/simulation.js",
+    "lines": 2235,
+    "imports": [
+      "../services/simulation.js",
+      "../services/auth.js",
+      "../services/activity.js",
+      "../services/leaderboard.js",
+      "../components/simulation/LeaderboardOverview.js",
+      "../components/simulation/LeaderboardTable.js",
+      "../services/trading.js"
+    ],
+    "exports": [
+      "export default class SimulationView {"
+    ],
+    "functions": [
+      "userRanking",
+      "isCreator",
+      "activeMemberCount",
+      "removedMemberCount",
+      "isCreator"
+    ],
+    "classes": []
+  },
+  {
+    "file": "views/trade.js",
+    "lines": 647,
+    "imports": [
+      "../services/stocks.js",
+      "../services/trading.js",
+      "../services/simulation.js",
+      "../services/auth.js"
+    ],
+    "exports": [
+      "export default class TradeView {"
+    ],
+    "functions": [
+      "simPortfolio"
+    ],
+    "classes": []
+  }
+]

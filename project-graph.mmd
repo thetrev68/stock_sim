@@ -1,0 +1,59 @@
+graph TD
+  components_simulation_CreateSimulationModal --> services_simulation
+  components_simulation_CreateSimulationModal --> services_auth
+  components_simulation_EmailInviteModal --> services_simulation
+  components_simulation_EmailInviteModal --> services_auth
+  components_simulation_JoinSimulationModal --> services_simulation
+  components_simulation_JoinSimulationModal --> services_auth
+  main --> services_firebase
+  main --> utils_router
+  main --> services_auth
+  main --> components_layout_Header
+  main --> components_layout_Navigation
+  main --> services_trading
+  services_activity --> services_firebase
+  services_auth --> services_firebase
+  services_leaderboard --> services_firebase
+  services_leaderboard --> services_trading
+  services_leaderboard --> services_stocks
+  services_simulation --> services_firebase
+  services_trading --> services_firebase
+  views_auth --> services_auth
+  views_dashboard --> services_simulation
+  views_dashboard --> services_auth
+  views_dashboard --> components_simulation_CreateSimulationModal
+  views_dashboard --> components_simulation_JoinSimulationModal
+  views_dashboard --> components_simulation_EmailInviteModal
+  views_portfolio --> services_trading
+  views_portfolio --> services_auth
+  views_portfolio --> services_stocks
+  views_research --> services_stocks
+  views_simulation_archive --> services_simulation
+  views_simulation_archive --> services_auth
+  views_simulation --> services_simulation
+  views_simulation --> services_auth
+  views_simulation --> services_activity
+  views_simulation --> services_leaderboard
+  views_simulation --> components_simulation_LeaderboardOverview
+  views_simulation --> components_simulation_LeaderboardTable
+  views_simulation --> services_trading
+  views_trade --> services_stocks
+  views_trade --> services_trading
+  views_trade --> services_simulation
+  views_trade --> services_auth
+  App --> main
+
+%% ```
+%% classDiagram
+%%   class App {
+%%     + constructor()
+%%     + initialize()
+%%     + setupComponents()
+%%     + setupRouting()
+%%     + loadView()
+%%     + updateNavigationActive()
+%%     + handleAuthStateChange()
+%%     + showApp()
+%%     + showError()
+%%   }
+%% ```
