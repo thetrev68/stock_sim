@@ -138,6 +138,35 @@ export class ActivityService {
     }
 
     /**
+     * Log admin actions (simulation ended, member removed, etc.)
+     */
+    async logAdminActivity(simulationId, adminUserId, adminDisplayName, actionData) {
+        this.db = this.db || getFirestoreDb();
+        
+        try {
+            const activity = {
+                simulationId,
+                userId: adminUserId,
+                userDisplayName: adminDisplayName,
+                type: 'admin',
+                action: actionData.action || 'admin_action',
+                data: {
+                    ...actionData,
+                    isAdminAction: true
+                },
+                timestamp: serverTimestamp(),
+                isVisible: true
+            };
+
+            await addDoc(collection(this.db, ACTIVITIES_COLLECTION), activity);
+            console.log(`Logged admin activity for user ${adminUserId}: ${actionData.action}`);
+            
+        } catch (error) {
+            console.error('Error logging admin activity:', error);
+        }
+    }
+
+    /**
      * Get recent activities for a simulation
      */
     async getSimulationActivities(simulationId, maxActivities = 20) {
@@ -275,6 +304,37 @@ export class ActivityService {
                     timeAgo,
                     priority: 'low'
                 };
+            // Add this case in the formatActivity method switch statement:
+            case 'admin_action':
+            case 'simulation_ended_early':
+                let adminText = '';
+                let adminIcon = '⚙️';
+                
+                if (activity.action === 'simulation_ended_early' || activity.data?.milestone === 'simulation_ended_early') {
+                    adminText = `${activity.userDisplayName} ended the simulation early`;
+                    adminIcon = '🏁';
+                    const reason = activity.data?.reason;
+                    return {
+                        icon: adminIcon,
+                        iconColor: 'text-orange-400',
+                        iconBg: 'bg-orange-400/10',
+                        title: adminText,
+                        description: reason ? `Reason: ${reason}` : 'Simulation ended by admin',
+                        timeAgo,
+                        priority: 'high'
+                    };
+                } else {
+                    adminText = `${activity.userDisplayName} performed an admin action`;
+                    return {
+                        icon: adminIcon,
+                        iconColor: 'text-purple-400',
+                        iconBg: 'bg-purple-400/10',
+                        title: adminText,
+                        description: activity.data?.description || 'Admin action performed',
+                        timeAgo,
+                        priority: 'high'
+                    };
+                }
         }
     }
 

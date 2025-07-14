@@ -71,6 +71,9 @@ class App {
         this.router.addRoute('/simulation/create', () => this.loadView('simulation-create'));
         this.router.addRoute('/simulation/join', () => this.loadView('simulation-join'));
 
+        // Add this route after the existing simulation routes:
+        this.router.addRoute('/simulation/archive', () => this.loadView('simulation-archive'));
+
         // Start router
         this.router.start();
     }
