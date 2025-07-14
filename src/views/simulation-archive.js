@@ -1,6 +1,7 @@
 // src/views/simulation-archive.js - View archived simulation results
 import { SimulationService } from '../services/simulation.js';
 import { AuthService } from '../services/auth.js';
+import { TIMEOUTS } from '../constants/app-config.js';
 
 export default class SimulationArchiveView {
     constructor() {
@@ -539,6 +540,6 @@ export default class SimulationArchiveView {
 
         setTimeout(() => {
             document.getElementById('temp-message')?.remove();
-        }, 5000);
+        }, TIMEOUTS.TEMP_MESSAGE_AUTO_HIDE);
     }
 }

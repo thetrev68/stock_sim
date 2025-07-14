@@ -14,6 +14,7 @@ import {
     arrayUnion,
     arrayRemove 
 } from 'firebase/firestore';
+import { SIMULATION_STATUS } from '../constants/simulation-status.js';
 
 const SIMULATIONS_COLLECTION = 'simulations';
 const SIMULATION_MEMBERS_COLLECTION = 'simulationMembers';
@@ -62,12 +63,12 @@ export class SimulationService {
     calculateRealTimeStatus(simulation) {
         // CRITICAL FIX: Check for admin early ending first
         if (simulation.adminEndedEarly || simulation.endedEarly) {
-            return 'ended';
+            return SIMULATION_STATUS.ENDED;
         }
 
         // Check for manual status override
-        if (simulation.manualStatusOverride && simulation.status === 'ended') {
-            return 'ended';
+        if (simulation.manualStatusOverride && simulation.status === SIMULATION_STATUS.ENDED) {
+            return SIMULATION_STATUS.ENDED;
         }
 
         // Only calculate from dates if no manual interventions
@@ -76,11 +77,11 @@ export class SimulationService {
         const endDate = simulation.endDate.toDate ? simulation.endDate.toDate() : new Date(simulation.endDate);
 
         if (now > endDate) {
-            return 'ended';
+            return SIMULATION_STATUS.ENDED;
         } else if (now >= startDate) {
-            return 'active';
+            return SIMULATION_STATUS.ACTIVE;
         } else {
-            return 'pending';
+            return SIMULATION_STATUS.PENDING;
         }
     }
 
@@ -110,7 +111,7 @@ export class SimulationService {
                 throw new Error('Only simulation creator can end simulation');
             }
 
-            if (simulation.status === 'ended') {
+            if (simulation.status === SIMULATION_STATUS.ENDED) {
                 throw new Error('Simulation is already ended');
             }
 
@@ -118,7 +119,7 @@ export class SimulationService {
             
             // Update simulation status
             const updateData = {
-                status: 'ended',
+                status: SIMULATION_STATUS.ENDED,
                 endedEarly: true,
                 endedAt: serverTimestamp(),
                 endedBy: adminUserId,
@@ -186,7 +187,7 @@ export class SimulationService {
                 throw new Error('Only simulation creator can extend simulation');
             }
 
-            if (simulation.status === 'ended') {
+            if (simulation.status === SIMULATION_STATUS.ENDED) {
                 throw new Error('Cannot extend an ended simulation');
             }
 
@@ -263,7 +264,7 @@ export class SimulationService {
             }
 
             // Only allow rule changes if simulation hasn't started yet
-            if (simulation.status === 'pending' && settings.rules) {
+            if (simulation.status === SIMULATION_STATUS.PENDING && settings.rules) {
                 updateData.rules = {
                     ...simulation.rules,
                     ...settings.rules
@@ -312,7 +313,7 @@ export class SimulationService {
             );
             const memberDocs = await getDocs(memberQuery);
 
-            const activeMembers = memberDocs.docs.filter(doc => doc.data().status === 'active').length;
+            const activeMembers = memberDocs.docs.filter(doc => doc.data().status === SIMULATION_STATUS.ACTIVE).length;
             const removedMembers = memberDocs.docs.filter(doc => doc.data().status === 'removed').length;
             const totalJoined = memberDocs.docs.length;
 
@@ -397,7 +398,7 @@ export class SimulationService {
                 throw new Error('Only simulation creator can archive simulation');
             }
 
-            if (simulation.status !== 'ended') {
+            if (simulation.status !== SIMULATION_STATUS.ENDED) {
                 throw new Error('Only ended simulations can be archived');
             }
 
@@ -612,7 +613,7 @@ export class SimulationService {
             console.log('Manual status override:', simulation.manualStatusOverride);
             
             // If there's a manual override (like admin ending early), respect it
-            if (simulation.manualStatusOverride && simulation.status === 'ended') {
+            if (simulation.manualStatusOverride && simulation.status === SIMULATION_STATUS.ENDED) {
                 console.log('Manual override detected, keeping ended status');
                 return { updated: false, status: simulation.status, reason: 'manual_override' };
             }
@@ -737,7 +738,7 @@ export class SimulationService {
                 endDate: simulationData.endDate,
                 startingBalance: simulationData.startingBalance || 10000,
                 inviteCode: inviteCode,
-                status: initialStatus, // Use calculated status instead of hardcoded 'pending'
+                status: initialStatus, // Use calculated status instead of hardcoded SIMULATION_STATUS.PENDING
                 statusUpdatedAt: serverTimestamp(),
                 memberCount: 1, // Creator is first member
                 maxMembers: simulationData.maxMembers || 50,
@@ -787,7 +788,7 @@ export class SimulationService {
                 collection(this.db, SIMULATION_MEMBERS_COLLECTION),
                 where('simulationId', '==', simulationId),
                 where('userId', '==', userId),
-                where('status', '==', 'active')
+                where('status', '==', SIMULATION_STATUS.ACTIVE)
             );
             const existingMembers = await getDocs(existingMemberQuery);
             
@@ -816,7 +817,7 @@ export class SimulationService {
                 role: role,
                 displayName: userInfo?.displayName || 'Anonymous User',
                 email: userInfo?.email || '',
-                status: 'active'
+                status: SIMULATION_STATUS.ACTIVE
             };
 
             await addDoc(collection(this.db, SIMULATION_MEMBERS_COLLECTION), memberData);
@@ -864,7 +865,7 @@ export class SimulationService {
             await this.updateSimulationStatusIfNeeded(simulationId, simulation.status, realTimeStatus);
 
             // Check simulation status (use real-time status)
-            if (realTimeStatus === 'ended') {
+            if (realTimeStatus === SIMULATION_STATUS.ENDED) {
                 throw new Error('This simulation has already ended.');
             }
 
@@ -897,7 +898,7 @@ export class SimulationService {
             const memberQuery = query(
                 collection(this.db, SIMULATION_MEMBERS_COLLECTION),
                 where('userId', '==', userId),
-                where('status', '==', 'active')
+                where('status', '==', SIMULATION_STATUS.ACTIVE)
             );
             const memberDocs = await getDocs(memberQuery);
 
@@ -995,7 +996,7 @@ export class SimulationService {
             const memberQuery = query(
                 collection(this.db, SIMULATION_MEMBERS_COLLECTION),
                 where('simulationId', '==', simulationId),
-                where('status', '==', 'active'),
+                where('status', '==', SIMULATION_STATUS.ACTIVE),
                 orderBy('joinedAt', 'asc')
             );
             const memberDocs = await getDocs(memberQuery);
@@ -1022,7 +1023,7 @@ export class SimulationService {
                 collection(this.db, SIMULATION_MEMBERS_COLLECTION),
                 where('simulationId', '==', simulationId),
                 where('userId', '==', userId),
-                where('status', '==', 'active')
+                where('status', '==', SIMULATION_STATUS.ACTIVE)
             );
             const memberDocs = await getDocs(memberQuery);
 
@@ -1064,7 +1065,7 @@ export class SimulationService {
                 collection(this.db, SIMULATION_MEMBERS_COLLECTION),
                 where('simulationId', '==', simulationId),
                 where('userId', '==', userId),
-                where('status', '==', 'active')
+                where('status', '==', SIMULATION_STATUS.ACTIVE)
             );
             const memberDocs = await getDocs(memberQuery);
 
@@ -1130,7 +1131,7 @@ export class SimulationService {
                 
                 // Get portfolio data if member is active
                 let portfolioData = null;
-                if (member.status === 'active') {
+                if (member.status === SIMULATION_STATUS.ACTIVE) {
                     try {
                         const { getPortfolio } = await import('./trading.js');
                         portfolioData = await getPortfolio(member.userId, simulationId);

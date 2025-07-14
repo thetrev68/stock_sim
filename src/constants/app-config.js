@@ -19,11 +19,28 @@ export const TIMEOUTS = {
     CACHE_TIMEOUT: 60000        // Default cache timeout (1 minute)
 };
 
+// Time calculation constants (milliseconds)
+export const TIME_UNITS = {
+    SECOND: 1000,
+    MINUTE: 60 * 1000,
+    HOUR: 60 * 60 * 1000,
+    DAY: 24 * 60 * 60 * 1000,
+    WEEK: 7 * 24 * 60 * 60 * 1000
+};
+
 // API Rate limiting
 export const API_LIMITS = {
     MAX_CALLS_PER_MINUTE: 60,   // Stock API calls per minute
     MIN_TIME_BETWEEN_CALLS: 100, // Minimum milliseconds between calls
     RATE_LIMIT_WINDOW: 60000    // Rate limit tracking window
+};
+
+// API Error handling
+export const API_ERROR_CONFIG = {
+    COOLDOWN_PERIOD: 5 * 60 * 1000,  // 5 minutes cooldown after failures
+    MAX_RETRY_ATTEMPTS: 3,           // Maximum retry attempts for failed requests
+    RETRY_DELAY: 1000,               // Base delay between retries (milliseconds)
+    TIMEOUT_DURATION: 10000          // Request timeout (10 seconds)
 };
 
 // Cache configurations

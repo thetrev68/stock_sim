@@ -8,6 +8,12 @@ export const SIMULATION_STATUS = {
     ENDED: 'ended'
 };
 
+// Member status values
+export const MEMBER_STATUS = {
+    ACTIVE: 'active',
+    REMOVED: 'removed'
+};
+
 // Status display configurations
 export const STATUS_CONFIG = {
     [SIMULATION_STATUS.ACTIVE]: {

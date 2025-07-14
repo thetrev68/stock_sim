@@ -1,5 +1,6 @@
 // src/views/research.js - Enhanced Research View - Session 10
 import { StockService } from '../services/stocks.js';
+import { TIMEOUTS } from '../constants/app-config.js';
 
 export default class ResearchView {
     constructor() {
@@ -493,7 +494,7 @@ export default class ResearchView {
                 clearTimeout(searchTimeout);
                 searchTimeout = setTimeout(() => {
                     this.searchNews(e.target.value);
-                }, 300);
+                }, TIMEOUTS.NEWS_SEARCH_DEBOUNCE);
             });
         }
     }
@@ -525,7 +526,7 @@ export default class ResearchView {
             } finally {
                 this.showSearchLoading(false);
             }
-        }, 300);
+        }, TIMEOUTS.SEARCH_DEBOUNCE);
     }
 
     showSearchLoading(show) {

@@ -1,6 +1,7 @@
 // src/services/trading.js - Enhanced for Session 8 with Activity Logging
 import { getFirestoreDb } from './firebase';
 import { doc, getDoc, setDoc, updateDoc, runTransaction, collection, query, where, getDocs } from 'firebase/firestore';
+import { TRADE_TYPES } from '../constants/trade-types.js';
 
 const PORTFOLIOS_COLLECTION = 'portfolios';
 const SIMULATIONS_COLLECTION = 'simulations';
@@ -220,7 +221,7 @@ export async function validateSimulationTrade(tradeDetails, simulation, portfoli
         }
         
         // Check short selling rules
-        if (tradeDetails.type === 'sell' && simulation.rules?.allowShortSelling === false) {
+        if (tradeDetails.type === TRADE_TYPES.SELL && simulation.rules?.allowShortSelling === false) {
             const currentHolding = portfolio.holdings?.[tradeDetails.ticker.toUpperCase()];
             if (!currentHolding || currentHolding.quantity < tradeDetails.quantity) {
                 return { valid: false, error: `Insufficient shares to sell. You own ${currentHolding?.quantity || 0} shares of ${tradeDetails.ticker.toUpperCase()}, but tried to sell ${tradeDetails.quantity}` };
@@ -257,8 +258,8 @@ export async function executeTrade(userId, tradeDetails, simulationId = null) {
     if (typeof tradeDetails.price !== 'number' || tradeDetails.price <= 0) {
         throw new Error('Price must be a positive number.');
     }
-    if (!['buy', 'sell'].includes(tradeDetails.type)) {
-        throw new Error('Trade type must be "buy" or "sell".');
+    if (!Object.values(TRADE_TYPES).includes(tradeDetails.type)) {
+        throw new Error(`Trade type must be "${TRADE_TYPES.BUY}" or "${TRADE_TYPES.SELL}".`);
     }
 
     const { ticker, quantity, price, type } = tradeDetails;
@@ -300,7 +301,7 @@ export async function executeTrade(userId, tradeDetails, simulationId = null) {
             let newCash = currentPortfolio.cash;
             const currentHoldings = { ...currentPortfolio.holdings };
 
-            if (type === 'buy') {
+            if (type === TRADE_TYPES.BUY) {
                 if (newCash < cost) {
                     throw new Error('Insufficient cash to execute this buy trade.');
                 }
@@ -322,7 +323,7 @@ export async function executeTrade(userId, tradeDetails, simulationId = null) {
                         avgPrice: price
                     };
                 }
-            } else if (type === 'sell') {
+            } else if (type === TRADE_TYPES.SELL) {
                 if (!currentHoldings[ticker] || currentHoldings[ticker].quantity < quantity) {
                     throw new Error(`Insufficient shares of ${ticker.toUpperCase()} to execute this sell trade.`);
                 }

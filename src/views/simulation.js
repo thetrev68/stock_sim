@@ -7,6 +7,9 @@ import { LeaderboardService } from '../services/leaderboard.js';
 import { LeaderboardOverview } from '../components/simulation/LeaderboardOverview.js';
 import { LeaderboardTable } from '../components/simulation/LeaderboardTable.js';
 import { getPortfolio, initializePortfolio, getRecentTrades } from '../services/trading.js';
+import { REFRESH_INTERVALS } from '../constants/app-config.js';
+import { SIMULATION_STATUS, STATUS_CONFIG, MEMBER_STATUS } from '../constants/simulation-status.js';
+import { TRADE_TYPES, TRADE_TYPE_CONFIG } from '../constants/trade-types.js';
 
 export default class SimulationView {
     constructor() {
@@ -403,7 +406,7 @@ export default class SimulationView {
             this.displaySimulation();
             
             // PHASE 3 ADDITION: Check if simulation should be archived
-            if (this.currentSimulation.status === 'ended' && !this.currentSimulation.archived) {
+            if (this.currentSimulation.status === SIMULATION_STATUS.ENDED && !this.currentSimulation.archived) {
                 this.showArchivePrompt();
             }
             
@@ -618,7 +621,7 @@ export default class SimulationView {
             } catch (error) {
                 console.error('Auto-refresh error:', error);
             }
-        }, 30000);
+        }, REFRESH_INTERVALS.SIMULATION_DATA);
 
         // Refresh leaderboard every 2 minutes (less frequent since it's more expensive)
         this.leaderboardRefreshInterval = setInterval(async () => {
@@ -633,7 +636,7 @@ export default class SimulationView {
             } catch (error) {
                 console.error('Leaderboard auto-refresh error:', error);
             }
-        }, 120000); // 2 minutes
+        }, REFRESH_INTERVALS.LEADERBOARD);
     }
 
     stopAutoRefresh() {
@@ -695,7 +698,7 @@ export default class SimulationView {
         const timeAgo = this.getTimeAgo(joinedDate);
 
         const roleColor = member.role === 'creator' ? 'text-cyan-400 bg-cyan-400/10' : 'text-gray-400 bg-gray-400/10';
-        const statusColor = member.status === 'active' ? 'text-green-400' : 'text-red-400';
+        const statusColor = member.status === MEMBER_STATUS.ACTIVE ? 'text-green-400' : 'text-red-400';
 
         memberDiv.innerHTML = `
             <div class="flex items-center gap-4">
@@ -829,8 +832,8 @@ export default class SimulationView {
             existingModal.remove();
         }
 
-        const activeMemberCount = memberStats.filter(m => m.status === 'active').length;
-        const removedMemberCount = memberStats.filter(m => m.status === 'removed').length;
+        const activeMemberCount = memberStats.filter(m => m.status === MEMBER_STATUS.ACTIVE).length;
+        const removedMemberCount = memberStats.filter(m => m.status === MEMBER_STATUS.REMOVED).length;
 
         const modalHTML = `
             <div id="member-management-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -853,7 +856,7 @@ export default class SimulationView {
                             <div>
                                 <h3 class="text-lg font-semibold text-white mb-4">Active Members (${activeMemberCount})</h3>
                                 <div class="space-y-3">
-                                    ${memberStats.filter(m => m.status === 'active').map(member => `
+                                    ${memberStats.filter(m => m.status === MEMBER_STATUS.ACTIVE).map(member => `
                                         <div class="bg-gray-700 p-4 rounded-lg">
                                             <div class="flex justify-between items-start">
                                                 <div class="flex items-center gap-3">
@@ -895,7 +898,7 @@ export default class SimulationView {
                                 <h3 class="text-lg font-semibold text-white mb-4">Removed Members (${removedMemberCount})</h3>
                                 ${removedMemberCount > 0 ? `
                                     <div class="space-y-3">
-                                        ${memberStats.filter(m => m.status === 'removed').map(member => `
+                                        ${memberStats.filter(m => m.status === MEMBER_STATUS.REMOVED).map(member => `
                                             <div class="bg-gray-700/50 p-4 rounded-lg border border-gray-600">
                                                 <div class="flex items-center gap-3">
                                                     <div class="w-10 h-10 bg-gray-600 rounded-full flex items-center justify-center">
@@ -1125,8 +1128,9 @@ export default class SimulationView {
         const element = document.createElement('div');
         element.className = 'bg-gray-700 p-4 rounded-lg flex justify-between items-center';
         
-        const tradeTypeClass = trade.type === 'buy' ? 'text-green-400' : 'text-red-400';
-        const tradeIcon = trade.type === 'buy' ? '↗' : '↘';
+        const tradeConfig = TRADE_TYPE_CONFIG[trade.type];
+        const tradeTypeClass = tradeConfig?.color || 'text-gray-400';
+        const tradeIcon = tradeConfig?.icon || '•';
         const tradeTime = new Date(trade.timestamp).toLocaleDateString();
         
         element.innerHTML = `
@@ -1179,17 +1183,17 @@ export default class SimulationView {
         // Status
         if (statusEl) {
             statusEl.textContent = this.currentSimulation.status.charAt(0).toUpperCase() + this.currentSimulation.status.slice(1);
-            const statusClass = this.currentSimulation.status === 'active' ? 'bg-green-600 text-white' :
-                               this.currentSimulation.status === 'pending' ? 'bg-yellow-600 text-white' :
+            const statusClass = this.currentSimulation.status === SIMULATION_STATUS.ACTIVE ? 'bg-green-600 text-white' :
+                               this.currentSimulation.status === SIMULATION_STATUS.PENDING ? 'bg-yellow-600 text-white' :
                                'bg-gray-600 text-gray-300';
             statusEl.className = `px-3 py-1 rounded-full text-sm font-semibold ${statusClass}`;
         }
 
         // Update trade button text based on status
         if (tradeBtnTextEl) {
-            if (this.currentSimulation.status === 'pending') {
+            if (this.currentSimulation.status === SIMULATION_STATUS.PENDING) {
                 tradeBtnTextEl.textContent = 'Practice Trade';
-            } else if (this.currentSimulation.status === 'active') {
+            } else if (this.currentSimulation.status === SIMULATION_STATUS.ACTIVE) {
                 tradeBtnTextEl.textContent = 'Trade Now';
             } else {
                 tradeBtnTextEl.textContent = 'View Portfolio';
@@ -1414,9 +1418,9 @@ export default class SimulationView {
         }
 
         const simulation = stats.simulation;
-        const canModifyRules = simulation.status === 'pending';
-        const isActive = simulation.status === 'active';
-        const isEnded = simulation.status === 'ended';
+        const canModifyRules = simulation.status === SIMULATION_STATUS.PENDING;
+        const isActive = simulation.status === SIMULATION_STATUS.ACTIVE;
+        const isEnded = simulation.status === SIMULATION_STATUS.ENDED;
 
         const modalHTML = `
             <div id="simulation-settings-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -2194,7 +2198,7 @@ export default class SimulationView {
             this.displaySimulation();
             
             // Check if archive prompt should be shown
-            if (this.currentSimulation.status === 'ended' && !this.currentSimulation.archived) {
+            if (this.currentSimulation.status === SIMULATION_STATUS.ENDED && !this.currentSimulation.archived) {
                 console.log('Showing archive prompt...');
                 this.showArchivePrompt();
             }

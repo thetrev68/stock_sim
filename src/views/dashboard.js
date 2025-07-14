@@ -4,6 +4,8 @@ import { AuthService } from '../services/auth.js';
 import { CreateSimulationModal } from '../components/simulation/CreateSimulationModal.js';
 import { JoinSimulationModal } from '../components/simulation/JoinSimulationModal.js';
 import { EmailInviteModal } from '../components/simulation/EmailInviteModal.js';
+import { SIMULATION_STATUS, STATUS_CONFIG, PENDING_STATES, USER_ROLES, ROLE_CONFIG } from '../constants/simulation-status.js';
+import { TIME_UNITS } from '../constants/app-config.js';
 
 export default class DashboardView {
     constructor() {
@@ -187,7 +189,7 @@ export default class DashboardView {
     }
 
     updateSimulationStats() {
-        const activeSimCount = this.userSimulations.filter(sim => sim.status === 'active').length;
+        const activeSimCount = this.userSimulations.filter(sim => sim.status === SIMULATION_STATUS.ACTIVE).length;
         const activeSimCountEl = document.getElementById('active-sim-count');
         if (activeSimCountEl) {
             activeSimCountEl.textContent = activeSimCount;
@@ -230,53 +232,61 @@ export default class DashboardView {
         const now = new Date();
         
         // Determine status and color
-        let statusText = simulation.status;
-        let statusColor = 'text-gray-400';
-        let statusBg = 'bg-gray-600';
+        let statusText, statusColor, statusBg;
         
-        if (simulation.status === 'active') {
-            statusText = 'Active';
-            statusColor = 'text-green-400';
-            statusBg = 'bg-green-600';
-        } else if (simulation.status === 'pending') {
+        if (simulation.status === SIMULATION_STATUS.ACTIVE) {
+            const statusConfig = STATUS_CONFIG[SIMULATION_STATUS.ACTIVE];
+            statusText = statusConfig.text;
+            statusColor = statusConfig.color;
+            statusBg = statusConfig.bgClass;
+        } else if (simulation.status === SIMULATION_STATUS.PENDING) {
             if (startDate > now) {
-                statusText = 'Upcoming';
-                statusColor = 'text-yellow-400';
-                statusBg = 'bg-yellow-600';
+                const pendingConfig = PENDING_STATES.UPCOMING;
+                statusText = pendingConfig.text;
+                statusColor = pendingConfig.color;
+                statusBg = pendingConfig.bgClass;
             } else {
-                statusText = 'Starting Soon';
-                statusColor = 'text-cyan-400';
-                statusBg = 'bg-cyan-600';
+                const pendingConfig = PENDING_STATES.STARTING_SOON;
+                statusText = pendingConfig.text;
+                statusColor = pendingConfig.color;
+                statusBg = pendingConfig.bgClass;
             }
-        } else if (simulation.status === 'ended') {
-            statusText = 'Ended';
-            statusColor = 'text-red-400';
-            statusBg = 'bg-red-600';
+        } else if (simulation.status === SIMULATION_STATUS.ENDED) {
+            const statusConfig = STATUS_CONFIG[SIMULATION_STATUS.ENDED];
+            statusText = statusConfig.text;
+            statusColor = statusConfig.color;
+            statusBg = statusConfig.bgClass;
+        } else {
+            // Fallback for unknown status
+            statusText = simulation.status;
+            statusColor = 'text-gray-400';
+            statusBg = 'bg-gray-600';
         }
 
-        // Calculate time remaining or elapsed
+        // Calculate time remaining or elapsed using TIME_UNITS
         let timeInfo = '';
-        if (simulation.status === 'pending' && startDate > now) {
-            const daysUntilStart = Math.ceil((startDate - now) / (1000 * 60 * 60 * 24));
+        if (simulation.status === SIMULATION_STATUS.PENDING && startDate > now) {
+            const daysUntilStart = Math.ceil((startDate - now) / TIME_UNITS.DAY);
             timeInfo = `Starts in ${daysUntilStart} day${daysUntilStart !== 1 ? 's' : ''}`;
-        } else if (simulation.status === 'active') {
-            const daysRemaining = Math.ceil((endDate - now) / (1000 * 60 * 60 * 24));
+        } else if (simulation.status === SIMULATION_STATUS.ACTIVE) {
+            const daysRemaining = Math.ceil((endDate - now) / TIME_UNITS.DAY);
             if (daysRemaining > 0) {
                 timeInfo = `${daysRemaining} day${daysRemaining !== 1 ? 's' : ''} remaining`;
             } else {
                 timeInfo = 'Ending soon';
             }
-        } else if (simulation.status === 'ended') {
-            const daysAgo = Math.floor((now - endDate) / (1000 * 60 * 60 * 24));
+        } else if (simulation.status === SIMULATION_STATUS.ENDED) {
+            const daysAgo = Math.floor((now - endDate) / TIME_UNITS.DAY);
             timeInfo = `Ended ${daysAgo} day${daysAgo !== 1 ? 's' : ''} ago`;
         }
 
-        // Role badge
-        const roleText = simulation.userRole === 'creator' ? 'Creator' : 'Member';
-        const roleColor = simulation.userRole === 'creator' ? 'text-cyan-400 bg-cyan-400/10' : 'text-gray-400 bg-gray-400/10';
+        // Role badge using constants
+        const roleConfig = ROLE_CONFIG[simulation.userRole] || ROLE_CONFIG[USER_ROLES.MEMBER];
+        const roleText = roleConfig.text;
+        const roleColor = roleConfig.color;
 
         // Creator action buttons for pending simulations
-        const creatorButtons = simulation.userRole === 'creator' && simulation.status === 'pending' ? `
+        const creatorButtons = simulation.userRole === USER_ROLES.CREATOR && simulation.status === SIMULATION_STATUS.PENDING ? `
             <div class="flex flex-wrap gap-2 mb-3">
                 <button class="invite-code-btn bg-gray-700 hover:bg-gray-600 text-white text-xs font-medium py-1.5 px-3 rounded-md transition-colors duration-200 flex items-center gap-1.5" data-invite-code="${simulation.inviteCode}">
                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">

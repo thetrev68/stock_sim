@@ -1,4 +1,7 @@
 // src/services/stocks.js - Enhanced with News Integration for Session 11
+
+import { API_LIMITS, CACHE_CONFIG, API_ERROR_CONFIG } from '../constants/app-config.js';
+
 /**
  * StockService with live Finnhub API integration
  * Enhanced with research capabilities: company profiles, search, historical data, and NEWS
@@ -23,20 +26,20 @@ export class StockService {
         this.profileCache = new Map();
         this.searchCache = new Map();
         this.newsCache = new Map(); // NEW: Add news cache
-        this.cacheTimeout = 5 * 60 * 1000; // 5 minutes cache
+        this.cacheTimeout = CACHE_CONFIG.STOCK_PRICES; // 5 minutes cache
         
         // Enhanced rate limiting
         this.lastApiCall = 0;
-        this.minTimeBetweenCalls = 2000; // 2 seconds
+        this.minTimeBetweenCalls = API_LIMITS.MIN_TIME_BETWEEN_CALLS; // 2 seconds
         this.apiCallCount = 0;
-        this.maxCallsPerMinute = 30; // Conservative limit
+        this.maxCallsPerMinute = API_LIMITS.MAX_CALLS_PER_MINUTE; // Conservative limit
         this.callTimestamps = []; // Track call timestamps
         
         // API status tracking
         this.apiStatus = {
             isDown: false,
             lastFailureTime: 0,
-            cooldownPeriod: 5 * 60 * 1000 // 5 minutes cooldown after failures
+            cooldownPeriod: API_ERROR_CONFIG // 5 minutes cooldown after failures
         };
         
         // Mock prices (keep existing)
@@ -404,7 +407,7 @@ export class StockService {
         }
         
         // Check rate limiting
-        this.callTimestamps = this.callTimestamps.filter(timestamp => now - timestamp < 60000);
+        this.callTimestamps = this.callTimestamps.filter(timestamp => now - timestamp < API_LIMITS.RATE_LIMIT_WINDOW);
         if (this.callTimestamps.length >= this.maxCallsPerMinute) {
             console.log('Rate limit exceeded, using fallback data');
             return false;
@@ -914,12 +917,12 @@ export class StockService {
         const now = Date.now();
         
         // Clean old timestamps
-        this.callTimestamps = this.callTimestamps.filter(timestamp => now - timestamp < 60000);
+        this.callTimestamps = this.callTimestamps.filter(timestamp => now - timestamp < API_LIMITS.RATE_LIMIT_WINDOW);
         
         // Check if we're hitting rate limits
         if (this.callTimestamps.length >= this.maxCallsPerMinute) {
             const oldestCall = Math.min(...this.callTimestamps);
-            const waitTime = 60000 - (now - oldestCall) + 1000; // Wait until we can make another call
+            const waitTime = API_LIMITS.RATE_LIMIT_WINDOW - (now - oldestCall) + API_LIMITS.MIN_TIME_BETWEEN_CALLS;
             console.log(`Rate limit protection: waiting ${Math.round(waitTime/1000)}s...`);
             await new Promise(resolve => setTimeout(resolve, waitTime));
         }

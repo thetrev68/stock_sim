@@ -3,6 +3,7 @@ import { StockService } from '../services/stocks.js';
 import { initializePortfolio, getPortfolio, executeTrade, getRecentTrades, getUserPortfolios } from '../services/trading.js';
 import { SimulationService } from '../services/simulation.js';
 import { AuthService } from '../services/auth.js';
+import { TRADE_TYPES, TRADE_TYPE_CONFIG } from '../constants/trade-types.js';
 
 export default class TradeView {
     constructor() {
@@ -181,8 +182,8 @@ export default class TradeView {
         quantityInput.addEventListener('input', this.updatePriceAndCost.bind(this));
         
         // Trade buttons
-        buyBtn.addEventListener('click', () => this.handleTrade('buy'));
-        sellBtn.addEventListener('click', () => this.handleTrade('sell'));
+        buyBtn.addEventListener('click', () => this.handleTrade(TRADE_TYPES.BUY));
+        sellBtn.addEventListener('click', () => this.handleTrade(TRADE_TYPES.SELL));
         
         // Research button
         researchBtn.addEventListener('click', this.handleResearchStock.bind(this));
@@ -512,7 +513,7 @@ export default class TradeView {
         trades.forEach(trade => {
             const tradeItem = document.createElement('div');
             tradeItem.className = 'bg-gray-700 p-3 rounded-md flex justify-between items-center';
-            const tradeTypeClass = trade.type === 'buy' ? 'text-green-400' : 'text-red-400';
+            const tradeTypeClass = TRADE_TYPE_CONFIG[trade.type]?.color || 'text-gray-400';
             const tradeTime = new Date(trade.timestamp).toLocaleString();
 
             tradeItem.innerHTML = `

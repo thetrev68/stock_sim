@@ -9,6 +9,7 @@ import {
     onAuthStateChanged 
 } from 'firebase/auth';
 import { getFirebaseAuth } from './firebase.js';
+import { ERROR_MESSAGES } from '../constants/ui-messages.js';
 
 export class AuthService {
     constructor() {
@@ -84,15 +85,15 @@ export class AuthService {
     // Format Firebase auth errors for user display
     formatAuthError(error) {
         const errorMessages = {
-            'auth/user-not-found': 'No account found with this email address.',
-            'auth/wrong-password': 'Incorrect password.',
-            'auth/email-already-in-use': 'An account with this email already exists.',
-            'auth/weak-password': 'Password should be at least 6 characters.',
-            'auth/invalid-email': 'Please enter a valid email address.',
-            'auth/popup-closed-by-user': 'Sign-in popup was closed.',
-            'auth/network-request-failed': 'Network error. Please check your connection.',
+            'auth/user-not-found': ERROR_MESSAGES.AUTH_USER_NOT_FOUND,
+            'auth/wrong-password': ERROR_MESSAGES.AUTH_WRONG_PASSWORD,
+            'auth/email-already-in-use': ERROR_MESSAGES.AUTH_EMAIL_IN_USE,
+            'auth/weak-password': ERROR_MESSAGES.AUTH_WEAK_PASSWORD,
+            'auth/invalid-email': ERROR_MESSAGES.AUTH_INVALID_EMAIL,
+            'auth/popup-closed-by-user': ERROR_MESSAGES.AUTH_POPUP_CLOSED,
+            'auth/network-request-failed': ERROR_MESSAGES.AUTH_NETWORK_ERROR,
         };
 
-        return new Error(errorMessages[error.code] || 'An authentication error occurred.');
+        return new Error(errorMessages[error.code] || ERROR_MESSAGES.AUTH_GENERAL);
     }
 }
