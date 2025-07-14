@@ -1,0 +1,222 @@
+// file: src/templates/portfolio/portfolio-main-layout.js
+// Main layout templates for portfolio view
+// Focused module: Primary portfolio structure exactly as it exists
+
+/**
+ * Generate the main portfolio view template
+ * @returns {string} HTML template string
+ */
+export const getMainPortfolioLayoutTemplate = () => {
+    return `
+        <div class="portfolio-view">
+            <!-- Enhanced Portfolio Overview -->
+            <section class="mb-8">
+                <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 gap-4">
+                    <div>
+                        <h1 class="text-3xl font-bold text-white mb-2">Portfolio Overview</h1>
+                        <p class="text-gray-400">Solo Practice Mode</p>
+                    </div>
+                    <div class="flex gap-3">
+                        <button 
+                            id="refresh-prices-btn"
+                            class="flex items-center gap-2 px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white font-semibold rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 focus:ring-offset-gray-900"
+                        >
+                            <svg id="refresh-icon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                            </svg>
+                            <span id="refresh-text">Refresh Prices</span>
+                            <div id="refresh-loading" class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin hidden"></div>
+                        </button>
+                        <button 
+                            data-navigate="/trade" 
+                            class="flex items-center gap-2 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white font-semibold rounded-lg transition-colors"
+                        >
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                            </svg>
+                            Make Trade
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Portfolio Stats Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <!-- Total Portfolio Value -->
+                    <div class="bg-gradient-to-br from-gray-800 to-gray-900 p-6 rounded-xl shadow-lg border border-gray-700">
+                        <div class="flex items-center justify-between mb-3">
+                            <h3 class="text-sm font-medium text-gray-400">Portfolio Value</h3>
+                            <div class="w-10 h-10 bg-cyan-500/20 rounded-lg flex items-center justify-center">
+                                <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                                </svg>
+                            </div>
+                        </div>
+                        <p id="portfolio-value" class="text-3xl font-bold text-white mb-2">$0.00</p>
+                        <div class="flex items-center gap-2">
+                            <span id="portfolio-change" class="text-sm font-medium text-gray-400">$0.00 (0.00%)</span>
+                        </div>
+                    </div>
+
+                    <!-- Holdings Value -->
+                    <div class="bg-gradient-to-br from-gray-800 to-gray-900 p-6 rounded-xl shadow-lg border border-gray-700">
+                        <div class="flex items-center justify-between mb-3">
+                            <h3 class="text-sm font-medium text-gray-400">Stock Holdings</h3>
+                            <div class="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center">
+                                <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                </svg>
+                            </div>
+                        </div>
+                        <p id="stock-holdings-value" class="text-3xl font-bold text-white mb-2">$0.00</p>
+                        <div class="flex items-center gap-2">
+                            <span id="holdings-count" class="text-sm text-gray-400">0 positions</span>
+                        </div>
+                    </div>
+
+                    <!-- Available Cash -->
+                    <div class="bg-gradient-to-br from-gray-800 to-gray-900 p-6 rounded-xl shadow-lg border border-gray-700">
+                        <div class="flex items-center justify-between mb-3">
+                            <h3 class="text-sm font-medium text-gray-400">Available Cash</h3>
+                            <div class="w-10 h-10 bg-green-500/20 rounded-lg flex items-center justify-center">
+                                <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
+                        </div>
+                        <p id="available-cash" class="text-3xl font-bold text-green-400 mb-2">$0.00</p>
+                        <div class="flex items-center gap-2">
+                            <span id="cash-percentage" class="text-sm text-gray-400">0% of portfolio</span>
+                        </div>
+                    </div>
+
+                    <!-- Trading Stats -->
+                    <div class="bg-gradient-to-br from-gray-800 to-gray-900 p-6 rounded-xl shadow-lg border border-gray-700">
+                        <div class="flex items-center justify-between mb-3">
+                            <h3 class="text-sm font-medium text-gray-400">Trading Activity</h3>
+                            <div class="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center">
+                                <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2-2h10a2 2 0 002 2v12a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
+                                </svg>
+                            </div>
+                        </div>
+                        <p id="total-trades" class="text-3xl font-bold text-white mb-2">0</p>
+                        <div class="flex items-center gap-2">
+                            <span id="trade-volume" class="text-sm text-gray-400">$0 volume</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Enhanced Holdings Table -->
+            <section class="bg-gray-800 rounded-xl shadow-lg border border-gray-700 mb-8">
+                <div class="p-6 border-b border-gray-700">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                        <div>
+                            <h2 class="text-xl font-semibold text-white">Current Holdings</h2>
+                            <p class="text-sm text-gray-400 mt-1">Real-time market values</p>
+                        </div>
+                        <div class="flex items-center gap-2 text-sm text-gray-400">
+                            <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                            <span>Live prices</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="holdings-table-container" class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-700">
+                        <thead class="bg-gray-750">
+                            <tr>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider">Symbol</th>
+                                <th class="px-6 py-4 text-right text-xs font-semibold text-gray-300 uppercase tracking-wider">Shares</th>
+                                <th class="px-6 py-4 text-right text-xs font-semibold text-gray-300 uppercase tracking-wider">Avg Cost</th>
+                                <th class="px-6 py-4 text-right text-xs font-semibold text-gray-300 uppercase tracking-wider">Current Price</th>
+                                <th class="px-6 py-4 text-right text-xs font-semibold text-gray-300 uppercase tracking-wider">Market Value</th>
+                                <th class="px-6 py-4 text-right text-xs font-semibold text-gray-300 uppercase tracking-wider">Gain/Loss</th>
+                                <th class="px-6 py-4 text-right text-xs font-semibold text-gray-300 uppercase tracking-wider">% Change</th>
+                            </tr>
+                        </thead>
+                        <tbody id="holdings-tbody" class="divide-y divide-gray-700">
+                            <!-- Holdings will be injected here -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div id="no-holdings-message" class="text-center py-12 hidden">
+                    <div class="w-20 h-20 bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-10 h-10 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-300 mb-2">No Holdings Yet</h3>
+                    <p class="text-gray-400 mb-6">Start trading to build your portfolio</p>
+                    <button 
+                        data-navigate="/trade" 
+                        class="bg-cyan-600 hover:bg-cyan-500 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 inline-flex items-center gap-2"
+                    >
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                        </svg>
+                        Make Your First Trade
+                    </button>
+                </div>
+            </section>
+
+            <!-- Enhanced Trade History -->
+            <section class="bg-gray-800 rounded-xl shadow-lg border border-gray-700">
+                <div class="p-6 border-b border-gray-700">
+                    <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+                        <div>
+                            <h2 class="text-xl font-semibold text-white">Trade History</h2>
+                            <p class="text-sm text-gray-400 mt-1">Your trading activity</p>
+                        </div>
+                        
+                        <!-- Trade History Filters -->
+                        <div class="flex flex-col sm:flex-row gap-3">
+                            <select 
+                                id="trade-filter"
+                                class="px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                            >
+                                <option value="all">All Trades</option>
+                                <option value="buy">Buy Orders</option>
+                                <option value="sell">Sell Orders</option>
+                            </select>
+                            
+                            <select 
+                                id="sort-filter"
+                                class="px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                            >
+                                <option value="date-desc">Newest First</option>
+                                <option value="date-asc">Oldest First</option>
+                                <option value="amount-desc">Highest Value</option>
+                                <option value="amount-asc">Lowest Value</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="trades-container" class="p-6">
+                    <!-- Trade history items will be injected here -->
+                </div>
+
+                <div id="no-trades-message" class="text-center py-12 hidden">
+                    <div class="w-16 h-16 bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2-2h10a2 2 0 002 2v12a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-300 mb-2">No Trades Yet</h3>
+                    <p class="text-gray-400 mb-6">Your trading history will appear here</p>
+                    <button 
+                        data-navigate="/trade" 
+                        class="bg-cyan-600 hover:bg-cyan-500 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 inline-flex items-center gap-2"
+                    >
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                        </svg>
+                        Start Trading
+                    </button>
+                </div>
+            </section>
+        </div>
+    `;
+};
