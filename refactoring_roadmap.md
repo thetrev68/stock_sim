@@ -22,6 +22,18 @@
 
 ---
 
+🎯 CRITICAL REFACTORING RULES - NO EXCEPTIONS
+ONLY MOVE EXISTING CODE - NEVER ADD OR MODIFY
+
+✅ Extract existing HTML template strings exactly as they are
+✅ Move existing functions without any changes
+✅ Preserve all original CSS classes and element IDs
+❌ NO new code, improvements, or "optimizations"
+❌ NO helper functions unless they already exist
+❌ NO reorganizing or restructuring existing logic
+
+---
+
 ## 🛡️ **Phase 1: Extract Safe Utilities (No Breaking Changes)**
 
 **Goal**: Remove the easiest, safest pieces first to reduce file sizes
