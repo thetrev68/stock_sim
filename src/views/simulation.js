@@ -10,6 +10,8 @@ import { getPortfolio, initializePortfolio, getRecentTrades } from '../services/
 import { REFRESH_INTERVALS } from '../constants/app-config.js';
 import { SIMULATION_STATUS, STATUS_CONFIG, MEMBER_STATUS } from '../constants/simulation-status.js';
 import { TRADE_TYPES, TRADE_TYPE_CONFIG } from '../constants/trade-types.js';
+import { LOADING_MESSAGES } from '../constants/ui-messages.js';
+import { SUCCESS_MESSAGES, INFO_MESSAGES } from '../constants/ui-messages.js';
 
 export default class SimulationView {
     constructor() {
@@ -51,7 +53,7 @@ export default class SimulationView {
                 <div id="simulation-loading" class="flex items-center justify-center py-12">
                     <div class="text-center">
                         <div class="w-12 h-12 border-4 border-cyan-400 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                        <p class="text-gray-400">Loading simulation...</p>
+                        <p class="text-gray-400">${LOADING_MESSAGES.SIMULATION}</p>
                     </div>
                 </div>
 
@@ -257,7 +259,7 @@ export default class SimulationView {
                                 <div id="members-list-container" class="space-y-4">
                                     <div id="members-loading" class="text-center py-8">
                                         <div class="w-8 h-8 border-4 border-cyan-400 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                                        <p class="text-gray-400">Loading members...</p>
+                                        <p class="text-gray-400">${LOADING_MESSAGES.MEMBERS}</p>
                                     </div>
                                     
                                     <div id="members-list" class="hidden space-y-3">
@@ -271,7 +273,7 @@ export default class SimulationView {
                                             <svg class="w-12 h-12 mx-auto mb-3 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                                             </svg>
-                                            <p>Activity feed loading...</p>
+                                            <p>${LOADING_MESSAGES.ACTIVITIES}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -1749,7 +1751,7 @@ export default class SimulationView {
         try {
             const saveBtn = document.getElementById('save-basic-settings');
             saveBtn.disabled = true;
-            saveBtn.textContent = 'Saving...';
+            saveBtn.textContent = INFO_MESSAGES.SAVING_SETTINGS;
 
             const result = await this.simulationService.updateSimulationSettings(
                 this.simulationId,
@@ -1758,7 +1760,7 @@ export default class SimulationView {
             );
 
             if (result.success) {
-                this.showTemporaryMessage(`Settings updated successfully`, 'success');
+                this.showTemporaryMessage(SUCCESS_MESSAGES.SETTINGS_UPDATED, 'success');
                 
                 // Update local simulation data
                 this.currentSimulation.name = settings.name;

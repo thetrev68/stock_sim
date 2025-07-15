@@ -8,7 +8,7 @@
  */
 export const getTradeConfirmationModalTemplate = () => {
     return `
-        <div id="confirmation-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div id="confirmation-modal" class="fixed inset-0 bg-black bg-opacity-50 items-center justify-center z-50 hidden">
             <div class="bg-gray-800 p-6 rounded-lg max-w-md w-full mx-4">
                 <h3 class="text-xl font-semibold text-white mb-4">Confirm Trade</h3>
                 
@@ -111,7 +111,7 @@ export const getFeedbackMessageTemplate = () => {
  */
 export const getProcessingTradeModalTemplate = () => {
     return `
-        <div id="processing-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div id="processing-modal" class="fixed inset-0 bg-black bg-opacity-50 items-center justify-center z-50 hidden">
             <div class="bg-gray-800 p-6 rounded-lg max-w-md w-full mx-4">
                 <div class="text-center">
                     <div class="w-12 h-12 border-4 border-cyan-400 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>

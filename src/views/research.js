@@ -1,6 +1,7 @@
 // src/views/research.js - Enhanced Research View - Session 10
 import { StockService } from '../services/stocks.js';
 import { TIMEOUTS } from '../constants/app-config.js';
+import { ERROR_MESSAGES } from '../constants/ui-messages.js';
 
 export default class ResearchView {
     constructor() {
@@ -603,7 +604,7 @@ export default class ResearchView {
         const ticker = document.getElementById('research-ticker-input')?.value.trim();
         
         if (!ticker) {
-            this.showError('Please enter a stock ticker symbol');
+            this.showError(ERROR_MESSAGES.STOCK_TICKER_REQUIRED);
             return;
         }
 

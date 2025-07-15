@@ -4,6 +4,7 @@ import { initializePortfolio, getPortfolio, executeTrade, getRecentTrades, getUs
 import { SimulationService } from '../services/simulation.js';
 import { AuthService } from '../services/auth.js';
 import { TRADE_TYPES, TRADE_TYPE_CONFIG } from '../constants/trade-types.js';
+import { SUCCESS_MESSAGES, INFO_MESSAGES, ERROR_MESSAGES } from '../constants/ui-messages.js';
 
 export default class TradeView {
     constructor() {
@@ -572,7 +573,7 @@ export default class TradeView {
         const ticker = tickerInput.value.trim();
         const quantity = parseInt(quantityInput.value, 10);
 
-        this.showFeedback('Processing trade...', 'text-cyan-400');
+        this.showFeedback(INFO_MESSAGES.PROCESSING_TRADE, 'text-cyan-400');
 
         if (!this.currentUser) {
             this.showFeedback('You must be logged in to make trades.', 'text-red-400');

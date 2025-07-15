@@ -6,7 +6,7 @@
  */
 export const getExportConfirmationModalTemplate = () => {
     return `
-        <div id="export-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div id="export-modal" class="fixed inset-0 bg-black bg-opacity-50 items-center justify-center z-50 hidden">
             <div class="bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4 border border-gray-700">
                 <div class="flex items-center gap-3 mb-4">
                     <div class="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center">
@@ -59,7 +59,7 @@ export const getExportConfirmationModalTemplate = () => {
  */
 export const getExportProgressModalTemplate = () => {
     return `
-        <div id="export-progress-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div id="export-progress-modal" class="fixed inset-0 bg-black bg-opacity-50 items-center justify-center z-50 hidden">
             <div class="bg-gray-800 rounded-lg p-6 max-w-sm w-full mx-4 border border-gray-700">
                 <div class="text-center">
                     <div class="w-16 h-16 bg-blue-500/20 rounded-lg flex items-center justify-center mx-auto mb-4">
