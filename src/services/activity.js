@@ -11,6 +11,9 @@ import {
     limit,
     serverTimestamp 
 } from 'firebase/firestore';
+import { getTimeAgoCompact } from '../utils/date-utils.js';
+
+
 
 const ACTIVITIES_COLLECTION = 'simulationActivities';
 
@@ -228,7 +231,7 @@ export class ActivityService {
      */
     formatActivity(activity) {
         const timestamp = activity.timestamp?.toDate ? activity.timestamp.toDate() : new Date(activity.timestamp);
-        const timeAgo = this.getTimeAgo(timestamp);
+        const timeAgo = getTimeAgoCompact(timestamp);
 
         switch (activity.action) {
             case 'joined_simulation':
@@ -406,21 +409,6 @@ export class ActivityService {
         summary.latestActivity = activities[0]; // Already sorted by timestamp desc
 
         return summary;
-    }
-
-    /**
-     * Get time ago string
-     */
-    getTimeAgo(date) {
-        const now = new Date();
-        const diffInSeconds = Math.floor((now - date) / 1000);
-        
-        if (diffInSeconds < 60) return 'just now';
-        if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
-        if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
-        if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)}d ago`;
-        
-        return date.toLocaleDateString();
     }
 
     /**

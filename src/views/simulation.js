@@ -12,6 +12,21 @@ import { SIMULATION_STATUS, STATUS_CONFIG, MEMBER_STATUS } from '../constants/si
 import { TRADE_TYPES, TRADE_TYPE_CONFIG } from '../constants/trade-types.js';
 import { LOADING_MESSAGES } from '../constants/ui-messages.js';
 import { SUCCESS_MESSAGES, INFO_MESSAGES } from '../constants/ui-messages.js';
+import { 
+    convertFirebaseDate, 
+    formatDateRange, 
+    calculateDaysRemaining, 
+    calculateDaysUntilStart,
+    calculateDaysElapsed,
+    calculateTotalDuration,
+    calculateDaysAgo,
+    getTimeAgo,
+    getTimeAgoCompact,
+    formatNewsDate,
+    getTomorrowISO,
+    filterByDateRange,
+    sortByDateDesc
+} from '../utils/date-utils.js';
 
 export default class SimulationView {
     constructor() {
@@ -697,7 +712,7 @@ export default class SimulationView {
         memberDiv.className = 'bg-gray-700 p-4 rounded-lg flex justify-between items-center';
 
         const joinedDate = member.joinedAt.toDate ? member.joinedAt.toDate() : new Date(member.joinedAt);
-        const timeAgo = this.getTimeAgo(joinedDate);
+        const timeAgo = getTimeAgo(joinedDate);
 
         const roleColor = member.role === 'creator' ? 'text-cyan-400 bg-cyan-400/10' : 'text-gray-400 bg-gray-400/10';
         const statusColor = member.status === MEMBER_STATUS.ACTIVE ? 'text-green-400' : 'text-red-400';
@@ -747,18 +762,6 @@ export default class SimulationView {
         }
 
         return memberDiv;
-    }
-
-    getTimeAgo(date) {
-        const now = new Date();
-        const diffInSeconds = Math.floor((now - date) / 1000);
-        
-        if (diffInSeconds < 60) return 'just now';
-        if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`;
-        if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`;
-        if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)} days ago`;
-        
-        return date.toLocaleDateString();
     }
 
     isCurrentUserCreator() {
@@ -1209,9 +1212,7 @@ export default class SimulationView {
 
         // Duration
         if (durationEl) {
-            const startDate = this.currentSimulation.startDate.toDate ? this.currentSimulation.startDate.toDate() : new Date(this.currentSimulation.startDate);
-            const endDate = this.currentSimulation.endDate.toDate ? this.currentSimulation.endDate.toDate() : new Date(this.currentSimulation.endDate);
-            durationEl.textContent = `${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}`;
+           durationEl.textContent = formatDateRange(this.currentSimulation.startDate, this.currentSimulation.endDate);
         }
 
         // Update portfolio stats
@@ -1223,10 +1224,7 @@ export default class SimulationView {
         // Calculate days remaining
         const daysRemainingEl = document.getElementById('days-remaining');
         if (daysRemainingEl) {
-            const endDate = this.currentSimulation.endDate.toDate ? this.currentSimulation.endDate.toDate() : new Date(this.currentSimulation.endDate);
-            const now = new Date();
-            const diffTime = endDate - now;
-            const diffDays = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
+            const diffDays = calculateDaysRemaining(this.currentSimulation.endDate);
             daysRemainingEl.textContent = diffDays;
         }
 
@@ -1535,11 +1533,11 @@ export default class SimulationView {
                                     <div class="space-y-3">
                                         <div class="flex justify-between">
                                             <span class="text-gray-400">Start Date:</span>
-                                            <span class="text-white">${new Date(simulation.startDate.toDate()).toLocaleDateString()}</span>
+                                            <span class="text-white">${convertFirebaseDate(simulation.startDate).toLocaleDateString()}</span>
                                         </div>
                                         <div class="flex justify-between">
                                             <span class="text-gray-400">End Date:</span>
-                                            <span class="text-white">${new Date(simulation.endDate.toDate()).toLocaleDateString()}</span>
+                                            <span class="text-white">${convertFirebaseDate(simulation.endDate).toLocaleDateString()}</span>
                                         </div>
                                         <div class="flex justify-between">
                                             <span class="text-gray-400">Duration:</span>
@@ -1548,7 +1546,7 @@ export default class SimulationView {
                                         ${stats.timeline.wasExtended ? `
                                             <div class="flex justify-between">
                                                 <span class="text-gray-400">Original End:</span>
-                                                <span class="text-yellow-400">${new Date(simulation.originalEndDate.toDate()).toLocaleDateString()}</span>
+                                                <span class="text-yellow-400">${convertFirebaseDate(simulation.originalEndDate).toLocaleDateString()}</span>
                                             </div>
                                         ` : ''}
                                     </div>
@@ -1564,7 +1562,7 @@ export default class SimulationView {
                                                 <input 
                                                     type="date" 
                                                     id="new-end-date" 
-                                                    min="${new Date(Date.now() + 24*60*60*1000).toISOString().split('T')[0]}"
+                                                    min="${getTomorrowISO()}"
                                                     class="w-full bg-gray-700 text-white rounded-lg px-4 py-2 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-cyan-500"
                                                 >
                                                 <button type="button" id="extend-simulation" class="mt-2 w-full bg-yellow-600 hover:bg-yellow-500 text-white font-medium py-2 px-4 rounded-lg transition-colors">

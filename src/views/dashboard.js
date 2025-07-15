@@ -6,6 +6,12 @@ import { JoinSimulationModal } from '../components/simulation/JoinSimulationModa
 import { EmailInviteModal } from '../components/simulation/EmailInviteModal.js';
 import { SIMULATION_STATUS, STATUS_CONFIG, PENDING_STATES, USER_ROLES, ROLE_CONFIG } from '../constants/simulation-status.js';
 import { TIME_UNITS } from '../constants/app-config.js';
+import { 
+    convertFirebaseDate, 
+    calculateDaysUntilStart,
+    calculateDaysRemaining,
+    calculateDaysAgo
+} from '../utils/date-utils.js';
 
 export default class DashboardView {
     constructor() {
@@ -227,8 +233,8 @@ export default class DashboardView {
         card.className = 'bg-gray-800 p-6 rounded-lg shadow-lg border border-gray-700 hover:border-gray-600 transition-colors duration-200';
         
         // Format dates
-        const startDate = simulation.startDate.toDate ? simulation.startDate.toDate() : new Date(simulation.startDate);
-        const endDate = simulation.endDate.toDate ? simulation.endDate.toDate() : new Date(simulation.endDate);
+        const startDate = convertFirebaseDate(simulation.startDate);
+        const endDate = convertFirebaseDate(simulation.endDate);
         const now = new Date();
         
         // Determine status and color
@@ -266,17 +272,17 @@ export default class DashboardView {
         // Calculate time remaining or elapsed using TIME_UNITS
         let timeInfo = '';
         if (simulation.status === SIMULATION_STATUS.PENDING && startDate > now) {
-            const daysUntilStart = Math.ceil((startDate - now) / TIME_UNITS.DAY);
+            const daysUntilStart = calculateDaysUntilStart(simulation.startDate);
             timeInfo = `Starts in ${daysUntilStart} day${daysUntilStart !== 1 ? 's' : ''}`;
         } else if (simulation.status === SIMULATION_STATUS.ACTIVE) {
-            const daysRemaining = Math.ceil((endDate - now) / TIME_UNITS.DAY);
+            const daysRemaining = calculateDaysRemaining(simulation.endDate);
             if (daysRemaining > 0) {
                 timeInfo = `${daysRemaining} day${daysRemaining !== 1 ? 's' : ''} remaining`;
             } else {
                 timeInfo = 'Ending soon';
             }
         } else if (simulation.status === SIMULATION_STATUS.ENDED) {
-            const daysAgo = Math.floor((now - endDate) / TIME_UNITS.DAY);
+            const daysAgo = calculateDaysAgo(simulation.endDate);
             timeInfo = `Ended ${daysAgo} day${daysAgo !== 1 ? 's' : ''} ago`;
         }
 

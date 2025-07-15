@@ -1,6 +1,11 @@
 // src/services/stocks.js - Enhanced with News Integration for Session 11
 
 import { API_LIMITS, CACHE_CONFIG, API_ERROR_CONFIG } from '../constants/app-config.js';
+import { 
+    formatNewsDate, 
+    filterByDateRange, 
+    sortByDateDesc 
+} from '../utils/date-utils.js';
 
 /**
  * StockService with live Finnhub API integration
@@ -342,46 +347,13 @@ export class StockService {
     }
 
     /**
-     * Format news article date for display
-     * @param {number} timestamp - Unix timestamp in milliseconds
-     * @returns {string} Formatted date string
-     */
-    formatNewsDate(timestamp) {
-        const now = new Date();
-        const newsDate = new Date(timestamp);
-        const diffInMinutes = Math.floor((now - newsDate) / (1000 * 60));
-        
-        if (diffInMinutes < 1) {
-            return 'Just now';
-        } else if (diffInMinutes < 60) {
-            return `${diffInMinutes}m ago`;
-        } else if (diffInMinutes < 1440) { // Less than 24 hours
-            const hours = Math.floor(diffInMinutes / 60);
-            return `${hours}h ago`;
-        } else {
-            const days = Math.floor(diffInMinutes / 1440);
-            if (days === 1) {
-                return 'Yesterday';
-            } else if (days < 7) {
-                return `${days} days ago`;
-            } else {
-                return newsDate.toLocaleDateString();
-            }
-        }
-    }
-
-    /**
      * Filter news articles by date range
      * @param {Array} newsArticles - Array of news articles
      * @param {number} daysBack - Number of days to go back
      * @returns {Array} Filtered articles
      */
     filterNewsByDate(newsArticles, daysBack = 7) {
-        const cutoffDate = new Date();
-        cutoffDate.setDate(cutoffDate.getDate() - daysBack);
-        const cutoffTimestamp = cutoffDate.getTime();
-        
-        return newsArticles.filter(article => article.datetime >= cutoffTimestamp);
+        return filterByDateRange(newsArticles, daysBack);
     }
 
     /**
@@ -390,7 +362,7 @@ export class StockService {
      * @returns {Array} Sorted articles
      */
     sortNewsByDate(newsArticles) {
-        return [...newsArticles].sort((a, b) => b.datetime - a.datetime);
+        return sortByDateDesc(newsArticles);
     }
 
     // ==========================================

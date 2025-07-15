@@ -15,6 +15,21 @@ import {
     arrayRemove 
 } from 'firebase/firestore';
 import { SIMULATION_STATUS } from '../constants/simulation-status.js';
+import { 
+    convertFirebaseDate, 
+    formatDateRange, 
+    calculateDaysRemaining, 
+    calculateDaysUntilStart,
+    calculateDaysElapsed,
+    calculateTotalDuration,
+    calculateDaysAgo,
+    getTimeAgo,
+    getTimeAgoCompact,
+    formatNewsDate,
+    getTomorrowISO,
+    filterByDateRange,
+    sortByDateDesc
+} from '../utils/date-utils.js';
 
 const SIMULATIONS_COLLECTION = 'simulations';
 const SIMULATION_MEMBERS_COLLECTION = 'simulationMembers';
@@ -336,15 +351,13 @@ export class SimulationService {
 
             // Calculate time statistics
             const now = new Date();
-            const startDate = simulation.startDate.toDate ? simulation.startDate.toDate() : new Date(simulation.startDate);
-            const endDate = simulation.endDate.toDate ? simulation.endDate.toDate() : new Date(simulation.endDate);
-            const originalEndDate = simulation.originalEndDate ? 
-                (simulation.originalEndDate.toDate ? simulation.originalEndDate.toDate() : new Date(simulation.originalEndDate)) : 
-                null;
+            const startDate = convertFirebaseDate(simulation.startDate);
+            const endDate = convertFirebaseDate(simulation.endDate);
+            const originalEndDate = simulation.originalEndDate ? convertFirebaseDate(simulation.originalEndDate) : null;
 
-            const totalDuration = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
-            const daysElapsed = Math.max(0, Math.ceil((now - startDate) / (1000 * 60 * 60 * 24)));
-            const daysRemaining = Math.max(0, Math.ceil((endDate - now) / (1000 * 60 * 60 * 24)));
+            const totalDuration = calculateTotalDuration(simulation.startDate, simulation.endDate);
+            const daysElapsed = calculateDaysElapsed(simulation.startDate);
+            const daysRemaining = calculateDaysRemaining(simulation.endDate);
 
             return {
                 simulation: {
