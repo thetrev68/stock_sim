@@ -2,6 +2,19 @@
 // Sidebar content templates for simulation view
 // Focused module: Only sidebar stats and rules templates
 
+import { 
+    formatCurrencyWithCommas,
+    formatCashPercentage,
+    formatPortfolioChange,
+    calculateGainLoss,
+    formatPrice,
+    formatNumberWithCommas,
+    formatGainLoss,
+    calculateMarketValue,
+    calculateCostBasis,
+    getTradeTypeColorClass
+} from '../utils/currency-utils.js';
+
 /**
  * Generate the user rank card template
  * @param {number} rank - User's current rank
@@ -36,7 +49,8 @@ export const getPortfolioValueCardTemplate = (portfolioValue = 10000, change = 0
     const changeClass = change >= 0 ? 'text-green-400' : 'text-red-400';
     const changeSign = change >= 0 ? '+' : '';
     const percentSign = changePercent >= 0 ? '+' : '';
-    
+    const changeFormatted = formatPortfolioChange(change, changePercent);
+
     return `
         <div class="bg-gray-800 p-6 rounded-lg shadow-lg border border-gray-700">
             <div class="flex items-center justify-between mb-3">
@@ -47,8 +61,8 @@ export const getPortfolioValueCardTemplate = (portfolioValue = 10000, change = 0
                     </svg>
                 </div>
             </div>
-            <p id="sim-portfolio-value" class="text-3xl font-bold text-white mb-2">$${portfolioValue.toLocaleString()}</p>
-            <p id="sim-portfolio-change" class="text-sm font-medium ${changeClass}">${changeSign}$${Math.abs(change).toFixed(2)} (${percentSign}${changePercent.toFixed(2)}%)</p>
+            <p id="sim-portfolio-value" class="text-3xl font-bold text-white mb-2">${formatCurrencyWithCommas(portfolioValue)}</p>
+            <p id="sim-portfolio-change" class="text-sm font-medium ${changeFormatted.colorClass}">${changeFormatted.display}</p>
         </div>
     `;
 };
@@ -77,7 +91,7 @@ export const getSimulationRulesCardTemplate = (simulation) => {
             <div class="space-y-3">
                 <div class="flex justify-between items-center">
                     <span class="text-gray-400 text-sm">Starting Balance:</span>
-                    <span id="sim-starting-balance" class="text-white font-medium">$${startingBalance.toLocaleString()}</span>
+                    <span id="sim-starting-balance" class="text-white font-medium">${formatCurrencyWithCommas(startingBalance)}</span>
                 </div>
                 <div class="flex justify-between items-center">
                     <span class="text-gray-400 text-sm">Short Selling:</span>
@@ -89,7 +103,7 @@ export const getSimulationRulesCardTemplate = (simulation) => {
                 </div>
                 <div class="flex justify-between items-center">
                     <span class="text-gray-400 text-sm">Commission:</span>
-                    <span id="sim-commission" class="text-white font-medium">$${commission.toFixed(2)}</span>
+                    <span id="sim-commission" class="text-white font-medium">${formatPrice(commission)}</span>
                 </div>
             </div>
         </div>

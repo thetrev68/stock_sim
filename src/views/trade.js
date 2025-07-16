@@ -5,6 +5,12 @@ import { SimulationService } from '../services/simulation.js';
 import { AuthService } from '../services/auth.js';
 import { TRADE_TYPES, TRADE_TYPE_CONFIG } from '../constants/trade-types.js';
 import { SUCCESS_MESSAGES, INFO_MESSAGES, ERROR_MESSAGES } from '../constants/ui-messages.js';
+import { 
+    formatPrice,
+    formatCurrencyWithCommas,
+    formatNumberWithCommas,
+    getTradeTypeColorClass
+} from '../utils/currency-utils.js';
 
 export default class TradeView {
     constructor() {
@@ -472,7 +478,7 @@ export default class TradeView {
 
         const portfolioCashEl = this.viewContainer.querySelector('#portfolio-cash');
         if (portfolioCashEl) {
-            portfolioCashEl.textContent = `${this.currentPortfolio.cash.toFixed(2)}`;
+            portfolioCashEl.textContent = formatCurrencyWithCommas(this.currentPortfolio.cash);
         }
         
         // Calculate total holdings value
@@ -488,7 +494,7 @@ export default class TradeView {
 
         const portfolioValueEl = this.viewContainer.querySelector('#portfolio-value');
         if (portfolioValueEl) {
-            portfolioValueEl.textContent = `${(this.currentPortfolio.cash + totalHoldingsValue).toFixed(2)}`;
+            portfolioValueEl.textContent = formatCurrencyWithCommas(this.currentPortfolio.cash + totalHoldingsValue);
         }
     }
 
@@ -514,7 +520,7 @@ export default class TradeView {
         trades.forEach(trade => {
             const tradeItem = document.createElement('div');
             tradeItem.className = 'bg-gray-700 p-3 rounded-md flex justify-between items-center';
-            const tradeTypeClass = TRADE_TYPE_CONFIG[trade.type]?.color || 'text-gray-400';
+            const tradeTypeClass = getTradeTypeColorClass(trade.type);
             const tradeTime = new Date(trade.timestamp).toLocaleString();
 
             tradeItem.innerHTML = `
@@ -522,7 +528,7 @@ export default class TradeView {
                     <span class="font-semibold ${tradeTypeClass}">${trade.type.toUpperCase()}</span> 
                     <span class="text-white">${trade.quantity}</span> shares of 
                     <span class="font-bold uppercase text-cyan-300">${trade.ticker}</span> 
-                    at $<span class="text-white">${trade.price.toFixed(2)}</span>
+                    at <span class="text-white">${formatPrice(trade.price)}</span>
                 </div>
                 <div class="text-gray-500 text-xs">${tradeTime}</div>
             `;
@@ -544,8 +550,8 @@ export default class TradeView {
                 if (price !== null) {
                     this.currentStockPrice = price;
                     const totalCost = price * quantity;
-                    currentPriceSpan.textContent = `${price.toFixed(2)}`;
-                    totalCostSpan.textContent = `${totalCost.toFixed(2)}`;
+                    currentPriceSpan.textContent = formatPrice(price, false);
+                    totalCostSpan.textContent = formatPrice(totalCost, false);
                     pricePreview.classList.remove('hidden');
                     this.showFeedback('');
                 } else {

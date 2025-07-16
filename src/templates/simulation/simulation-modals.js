@@ -2,6 +2,19 @@
 // Modal dialog templates for simulation management
 // Focused module: Only modal-related templates
 
+import { 
+    formatCurrencyWithCommas,
+    formatCashPercentage,
+    formatPortfolioChange,
+    calculateGainLoss,
+    formatPrice,
+    formatNumberWithCommas,
+    formatGainLoss,
+    calculateMarketValue,
+    calculateCostBasis,
+    getTradeTypeColorClass
+} from '../utils/currency-utils.js';
+
 /**
  * Generate the member management modal template
  * @param {Array} memberStats - Array of member statistics
@@ -57,7 +70,7 @@ export const getMemberManagementModalTemplate = (memberStats, activeMemberCount,
                                         <div class="mt-3 grid grid-cols-2 gap-4 text-sm">
                                             <div>
                                                 <span class="text-gray-400">Portfolio Value</span>
-                                                <p class="text-white font-medium">$${member.totalValue?.toLocaleString() || '0'}</p>
+                                                <p class="text-white font-medium">${formatCurrencyWithCommas(member.totalValue || 0)}</p>
                                             </div>
                                             <div>
                                                 <span class="text-gray-400">Total Trades</span>
@@ -66,7 +79,7 @@ export const getMemberManagementModalTemplate = (memberStats, activeMemberCount,
                                             <div>
                                                 <span class="text-gray-400">Gain/Loss</span>
                                                 <p class="font-medium ${(member.totalGainLoss || 0) >= 0 ? 'text-green-400' : 'text-red-400'}">
-                                                    ${(member.totalGainLoss || 0) >= 0 ? '+' : ''}$${Math.abs(member.totalGainLoss || 0).toLocaleString()}
+                                                    ${formatGainLoss(member.totalGainLoss || 0, 0).amount}
                                                 </p>
                                             </div>
                                             <div>
@@ -105,7 +118,7 @@ export const getMemberManagementModalTemplate = (memberStats, activeMemberCount,
                                         <div class="mt-3 grid grid-cols-2 gap-4 text-sm">
                                             <div>
                                                 <span class="text-gray-500">Final Portfolio</span>
-                                                <p class="text-gray-400 font-medium">$${member.totalValue?.toLocaleString() || '0'}</p>
+                                                <p class="text-gray-400 font-medium">${formatCurrencyWithCommas(member.totalValue || 0)}</p>
                                             </div>
                                             <div>
                                                 <span class="text-gray-500">Total Trades</span>
@@ -114,7 +127,7 @@ export const getMemberManagementModalTemplate = (memberStats, activeMemberCount,
                                             <div>
                                                 <span class="text-gray-500">Final Gain/Loss</span>
                                                 <p class="font-medium ${(member.totalGainLoss || 0) >= 0 ? 'text-green-500' : 'text-red-500'}">
-                                                    ${(member.totalGainLoss || 0) >= 0 ? '+' : ''}$${Math.abs(member.totalGainLoss || 0).toLocaleString()}
+                                                    ${formatGainLoss(member.totalGainLoss || 0, 0).amount}
                                                 </p>
                                             </div>
                                             <div>

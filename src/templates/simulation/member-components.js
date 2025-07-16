@@ -2,6 +2,19 @@
 // Member display templates for simulation view
 // Focused module: Only member-related display templates
 
+import { 
+    formatCurrencyWithCommas,
+    formatCashPercentage,
+    formatPortfolioChange,
+    calculateGainLoss,
+    formatPrice,
+    formatNumberWithCommas,
+    formatGainLoss,
+    calculateMarketValue,
+    calculateCostBasis,
+    getTradeTypeColorClass
+} from '../utils/currency-utils.js';
+
 /**
  * Generate the member card template (individual member display)
  * @param {Object} member - Member data object
@@ -81,7 +94,7 @@ export const getModalMemberListTemplate = (member, currentUser) => {
             <div class="mt-3 grid grid-cols-2 gap-4 text-sm">
                 <div>
                     <span class="text-gray-400">Portfolio Value:</span>
-                    <p class="text-white font-medium">$${(member.portfolioValue || 10000).toLocaleString()}</p>
+                    <p class="text-white font-medium">${formatCurrencyWithCommas(member.portfolioValue || 10000)}</p>
                 </div>
                 <div>
                     <span class="text-gray-400">Total Trades:</span>
@@ -90,7 +103,7 @@ export const getModalMemberListTemplate = (member, currentUser) => {
                 <div>
                     <span class="text-gray-400">P&L:</span>
                     <p class="${(member.totalGainLoss || 0) >= 0 ? 'text-green-400' : 'text-red-400'} font-medium">
-                        ${(member.totalGainLoss || 0) >= 0 ? '+' : ''}${((member.totalGainLoss || 0) * 100).toFixed(2)}%
+                        ${formatPercentage((member.totalGainLoss || 0) * 100)}
                     </p>
                 </div>
                 <div>

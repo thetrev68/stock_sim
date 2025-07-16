@@ -27,6 +27,18 @@ import {
     filterByDateRange,
     sortByDateDesc
 } from '../utils/date-utils.js';
+import { 
+    formatCurrencyWithCommas,
+    formatCashPercentage,
+    formatPortfolioChange,
+    calculateGainLoss,
+    formatPrice,
+    formatNumberWithCommas,
+    formatGainLoss,
+    calculateMarketValue,
+    calculateCostBasis,
+    getTradeTypeColorClass
+} from '../utils/currency-utils.js';
 
 export default class SimulationView {
     constructor() {
@@ -882,7 +894,7 @@ export default class SimulationView {
                                             <div class="grid grid-cols-3 gap-2 mt-3 text-xs">
                                                 <div>
                                                     <span class="text-gray-500">Portfolio</span>
-                                                    <p class="text-white font-medium">$${member.portfolioValue.toLocaleString()}</p>
+                                                    <p class="text-white font-medium">${formatCurrencyWithCommas(member.portfolioValue)}</p>
                                                 </div>
                                                 <div>
                                                     <span class="text-gray-500">Trades</span>
@@ -1089,8 +1101,8 @@ export default class SimulationView {
                 </div>
             </div>
             <div class="text-right">
-                <p class="font-semibold text-white">${currentValue.toLocaleString()}</p>
-                <p class="text-sm text-gray-400">@${holding.avgPrice.toFixed(2)}</p>
+                <p class="font-semibold text-white">${formatCurrencyWithCommas(currentValue)}</p>
+                <p class="text-sm text-gray-400">@${formatPrice(holding.avgPrice)}</p>
             </div>
         `;
         
@@ -1152,8 +1164,8 @@ export default class SimulationView {
                 </div>
             </div>
             <div class="text-right">
-                <p class="font-semibold text-white">${trade.tradeCost.toLocaleString()}</p>
-                <p class="text-sm text-gray-400">@${trade.price.toFixed(2)}</p>
+                <p class="font-semibold text-white">${formatCurrencyWithCommas(trade.tradeCost)}</p>
+                <p class="text-sm text-gray-400">@${formatPrice(trade.price)}</p>
             </div>
         `;
         
@@ -1249,7 +1261,7 @@ export default class SimulationView {
             }
             
             const totalValue = cash + holdingsValue;
-            portfolioValueEl.textContent = `${totalValue.toLocaleString()}`;
+            portfolioValueEl.textContent = formatCurrencyWithCommas(totalValue);
             
             if (portfolioChangeEl) {
                 const startingBalance = this.currentSimulation.startingBalance;
@@ -1270,7 +1282,7 @@ export default class SimulationView {
         const commissionEl = document.getElementById('sim-commission');
 
         if (startingBalanceEl) {
-            startingBalanceEl.textContent = `${this.currentSimulation.startingBalance.toLocaleString()}`;
+            startingBalanceEl.textContent = formatCurrencyWithCommas(this.currentSimulation.startingBalance);
         }
 
         if (shortSellingEl) {

@@ -2,6 +2,18 @@
 import { SimulationService } from '../services/simulation.js';
 import { AuthService } from '../services/auth.js';
 import { TIMEOUTS } from '../constants/app-config.js';
+import { 
+    formatCurrencyWithCommas,
+    formatCashPercentage,
+    formatPortfolioChange,
+    calculateGainLoss,
+    formatPrice,
+    formatNumberWithCommas,
+    formatGainLoss,
+    calculateMarketValue,
+    calculateCostBasis,
+    getTradeTypeColorClass
+} from '../utils/currency-utils.js';
 
 export default class SimulationArchiveView {
     constructor() {
@@ -315,11 +327,12 @@ export default class SimulationArchiveView {
 
     displayWinner(winner) {
         this.updateElement('winner-name', winner.displayName);
-        this.updateElement('winner-value', `$${winner.portfolioValue.toLocaleString()}`);
+        this.updateElement('winner-value', formatCurrencyWithCommas(winner.portfolioValue));
         
         if (winner.totalReturn !== undefined) {
-            this.updateElement('winner-return', `${winner.totalReturn >= 0 ? '+' : ''}$${Math.abs(winner.totalReturn).toLocaleString()}`);
-            this.updateElement('winner-percent', `${winner.totalReturnPercent >= 0 ? '+' : ''}${winner.totalReturnPercent.toFixed(2)}%`);
+            const returnFormatted = formatGainLoss(winner.totalReturn, winner.totalReturnPercent);
+            this.updateElement('winner-return', returnFormatted.amount);
+            this.updateElement('winner-percent', returnFormatted.percentage);
         }
     }
 
@@ -355,11 +368,11 @@ export default class SimulationArchiveView {
                         </div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-right">
-                        <div class="text-white font-semibold">$${ranking.portfolioValue.toLocaleString()}</div>
+                        <div class="text-white font-semibold">${formatCurrencyWithCommas(ranking.portfolioValue)}</div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-right">
                         <div class="${returnClass} font-semibold">
-                            ${returnIcon} $${Math.abs(totalReturn).toLocaleString()}
+                            ${formatGainLoss(totalReturn, 0).amount}
                         </div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-right">
@@ -409,7 +422,7 @@ export default class SimulationArchiveView {
         this.updateElement('archived-date', archivedDate.toLocaleDateString());
 
         // Settings
-        this.updateElement('starting-balance', `$${sim.startingBalance.toLocaleString()}`);
+        this.updateElement('starting-balance', formatCurrencyWithCommas(sim.startingBalance));
         this.updateElement('short-selling', sim.rules?.allowShortSelling ? 'Allowed' : 'Not Allowed');
         this.updateElement('trading-hours', sim.rules?.tradingHours === '24/7' ? '24/7' : 'Market Hours');
 

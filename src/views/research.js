@@ -2,6 +2,13 @@
 import { StockService } from '../services/stocks.js';
 import { TIMEOUTS } from '../constants/app-config.js';
 import { ERROR_MESSAGES } from '../constants/ui-messages.js';
+import { 
+    formatPrice,
+    formatNumberWithCommas,
+    formatPriceChange,
+    getGainLossColorClass
+} from '../utils/currency-utils.js';
+import { formatNewsDate } from '../utils/date-utils.js';
 
 export default class ResearchView {
     constructor() {
@@ -660,24 +667,23 @@ export default class ResearchView {
         this.updateElement('company-currency', data.currency);
 
         // Update price information
-        this.updateElement('current-price', `${data.currentPrice.toFixed(2)}`);
+        this.updateElement('current-price', formatPrice(data.currentPrice));
         
         // Price change with color
         const changeEl = document.getElementById('price-change');
         if (changeEl && data.priceChange !== undefined) {
-            const isPositive = data.priceChange >= 0;
-            const changeClass = isPositive ? 'text-green-400' : 'text-red-400';
-            const changeIcon = isPositive ? '↗' : '↘';
-            
-            changeEl.className = `text-lg font-semibold ${changeClass}`;
-            changeEl.textContent = `${changeIcon} ${Math.abs(data.priceChange)} (${isPositive ? '+' : ''}${data.priceChangePercent}%)`;
+            const changeFormatted = formatPriceChange(data.priceChange, data.priceChangePercent);
+            const colorClass = getGainLossColorClass(data.priceChange);
+
+            changeEl.className = `text-lg font-semibold ${colorClass}`;
+            changeEl.textContent = changeFormatted;
         }
 
         // Update quick stats
-        this.updateElement('open-price', `${data.openPrice?.toFixed(2) || '--'}`);
-        this.updateElement('day-high', `${data.dayHigh?.toFixed(2) || '--'}`);
-        this.updateElement('day-low', `${data.dayLow?.toFixed(2) || '--'}`);
-        this.updateElement('volume', data.volume ? data.volume.toLocaleString() : '--');
+        this.updateElement('open-price', formatPrice(data.openPrice, false));
+        this.updateElement('day-high', formatPrice(data.dayHigh, false));
+        this.updateElement('day-low', formatPrice(data.dayLow, false));
+        this.updateElement('volume', data.volume ? formatNumberWithCommas(data.volume) : '--');
 
         // Update last updated
         this.updateElement('last-updated', `Last updated: ${new Date().toLocaleTimeString()}`);
@@ -1073,7 +1079,7 @@ export default class ResearchView {
         const card = document.createElement('div');
         card.className = 'bg-gray-700 rounded-lg p-4 hover:bg-gray-600 transition-colors duration-200 cursor-pointer border border-gray-600';
         
-        const formattedDate = this.stockService.formatNewsDate(article.datetime);
+        const formattedDate = formatNewsDate(article.datetime);
         const hasImage = article.image && article.image !== 'https://via.placeholder.com/400x200/1f2937/ffffff?text=News';
         
         card.innerHTML = `

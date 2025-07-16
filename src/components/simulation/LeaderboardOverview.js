@@ -1,4 +1,11 @@
 // src/components/simulation/LeaderboardOverview.js
+
+import { 
+    formatCurrencyWithCommas,
+    formatPrice,
+    formatPortfolioChange
+} from '../../utils/currency-utils.js';
+
 export class LeaderboardOverview {
     constructor() {
         this.container = null;
@@ -95,7 +102,7 @@ export class LeaderboardOverview {
                             </div>
                         </div>
                         <p class="text-3xl font-bold text-white mb-1">
-                            $${stats.highestPortfolio.toLocaleString()}
+                            ${formatCurrencyWithCommas(stats.highestPortfolio)}
                         </p>
                         <p class="text-sm text-gray-400">${this.leaderboardData.topPerformer?.displayName || 'N/A'}</p>
                     </div>
@@ -110,7 +117,7 @@ export class LeaderboardOverview {
                             </div>
                         </div>
                         <p class="text-3xl font-bold text-white mb-1">
-                            $${stats.totalVolume.toLocaleString()}
+                            ${formatCurrencyWithCommas(stats.totalVolume)}
                         </p>
                         <p class="text-sm text-gray-400">Traded by all users</p>
                     </div>
@@ -167,12 +174,12 @@ export class LeaderboardOverview {
                     
                     <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 text-center">
                         <div>
-                            <p class="text-2xl font-bold text-white">${userRanking.portfolioValue.toLocaleString()}</p>
+                            <p class="text-2xl font-bold text-white">${formatCurrencyWithCommas(userRanking.portfolioValue)}</p>
                             <p class="text-gray-400 text-sm">Portfolio Value</p>
                         </div>
                         <div>
                             <p class="text-2xl font-bold ${returnClass}">
-                                ${returnIcon} ${Math.abs(totalReturn).toLocaleString()}
+                                ${returnIcon} ${formatPrice(Math.abs(totalReturn))}
                             </p>
                             <p class="text-gray-400 text-sm">Total Return</p>
                         </div>
@@ -223,7 +230,7 @@ export class LeaderboardOverview {
                 <div class="space-y-2 text-sm">
                     <div class="flex justify-between">
                         <span class="text-gray-400">Portfolio:</span>
-                        <span class="text-white font-semibold">${performer.portfolioValue.toLocaleString()}</span>
+                        <span class="text-white font-semibold">${formatCurrencyWithCommas(performer.portfolioValue)}</span>
                     </div>
                     <div class="flex justify-between">
                         <span class="text-gray-400">Return:</span>

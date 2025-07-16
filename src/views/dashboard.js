@@ -12,6 +12,18 @@ import {
     calculateDaysRemaining,
     calculateDaysAgo
 } from '../utils/date-utils.js';
+import { 
+    formatCurrencyWithCommas,
+    formatCashPercentage,
+    formatPortfolioChange,
+    calculateGainLoss,
+    formatPrice,
+    formatNumberWithCommas,
+    formatGainLoss,
+    calculateMarketValue,
+    calculateCostBasis,
+    getTradeTypeColorClass
+} from '../utils/currency-utils.js';
 
 export default class DashboardView {
     constructor() {
@@ -334,7 +346,7 @@ export default class DashboardView {
                         </div>
                         <div>
                             <span class="text-gray-500">Starting Balance</span>
-                            <p class="text-white font-medium">$${simulation.startingBalance.toLocaleString()}</p>
+                            <p class="text-white font-medium">${formatCurrencyWithCommas(simulation.startingBalance)}</p>
                         </div>
                         <div>
                             <span class="text-gray-500">Participants</span>

@@ -2,6 +2,18 @@
 import { getPortfolio, getRecentTrades } from '../services/trading.js';
 import { AuthService } from '../services/auth.js';
 import { StockService } from '../services/stocks.js';
+import { 
+    formatCurrencyWithCommas,
+    formatCashPercentage,
+    formatPortfolioChange,
+    calculateGainLoss,
+    formatPrice,
+    formatNumberWithCommas,
+    formatGainLoss,
+    calculateMarketValue,
+    calculateCostBasis,
+    getTradeTypeColorClass
+} from '../utils/currency-utils.js';
 
 export default class PortfolioView {
     constructor() {
@@ -324,7 +336,7 @@ export default class PortfolioView {
 
     updateBasicStats() {
         const availableCashEl = this.viewContainer.querySelector('#available-cash');
-        if (availableCashEl) availableCashEl.textContent = `$${this.currentPortfolio.cash.toFixed(2)}`;
+        if (availableCashEl) availableCashEl.textContent = formatCurrencyWithCommas(this.currentPortfolio.cash);
 
         const totalTradesEl = this.viewContainer.querySelector('#total-trades');
         if (totalTradesEl) totalTradesEl.textContent = this.allTrades.length;
@@ -377,8 +389,8 @@ export default class PortfolioView {
                                 <span class="font-semibold text-white">${ticker.toUpperCase()}</span>
                             </div>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right text-white">${holding.quantity.toLocaleString()}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right text-gray-300">$${holding.avgPrice.toFixed(2)}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-white">${formatNumberWithCommas(holding.quantity)}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-gray-300">${formatPrice(holding.avgPrice)}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-right">
                             <div class="w-4 h-4 border-2 border-cyan-400 border-t-transparent rounded-full animate-spin ml-auto"></div>
                         </td>
@@ -394,16 +406,12 @@ export default class PortfolioView {
                     const currentPrice = await this.stockService.getQuote(ticker);
                     const finalPrice = currentPrice !== null ? currentPrice : holding.avgPrice;
                     
-                    const marketValue = holding.quantity * finalPrice;
+                    const marketValue = calculateMarketValue(holding.quantity, finalPrice);
                     totalHoldingsValue += marketValue;
 
-                    const costBasis = holding.quantity * holding.avgPrice;
-                    const gainLoss = marketValue - costBasis;
-                    const gainLossPercent = (gainLoss / costBasis * 100);
-                    
-                    // Determine colors based on gain/loss
-                    const gainLossClass = gainLoss >= 0 ? 'text-green-400' : 'text-red-400';
-                    const gainLossIcon = gainLoss >= 0 ? '↗' : '↘';
+                    const costBasis = calculateCostBasis(holding.quantity, holding.avgPrice);
+                    const gainLossData = calculateGainLoss(marketValue, costBasis);
+                    const gainLossFormatted = formatGainLoss(gainLossData.amount, gainLossData.percentage);
 
                     // Update the row with real data
                     const updatedRow = `
@@ -416,20 +424,20 @@ export default class PortfolioView {
                                     <span class="font-semibold text-white">${ticker.toUpperCase()}</span>
                                 </div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right text-white">${holding.quantity.toLocaleString()}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right text-gray-300">$${holding.avgPrice.toFixed(2)}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-white">${formatNumberWithCommas(holding.quantity)}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-gray-300">${formatPrice(holding.avgPrice)}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-right">
-                                <span class="text-white">$${finalPrice.toFixed(2)}</span>
+                                <span class="text-white">${formatPrice(finalPrice)}</span>
                                 ${currentPrice === null ? '<span class="text-xs text-gray-500 block">estimate</span>' : ''}
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right text-white font-semibold">$${marketValue.toLocaleString()}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-white font-semibold">${formatCurrencyWithCommas(marketValue)}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-right">
                                 <div class="flex items-center justify-end">
-                                    <span class="${gainLossClass} font-semibold">${gainLossIcon} $${Math.abs(gainLoss).toFixed(2)}</span>
+                                    <span class="${gainLossFormatted.colorClass} font-semibold">${gainLossFormatted.amount}</span>
                                 </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right">
-                                <span class="${gainLossClass} font-semibold">${gainLossPercent >= 0 ? '+' : ''}${gainLossPercent.toFixed(2)}%</span>
+                                <span class="${gainLossFormatted.colorClass} font-semibold">${gainLossFormatted.percentage}</span>
                             </td>
                         </tr>
                     `;
@@ -439,11 +447,10 @@ export default class PortfolioView {
                     if (existingRow) {
                         existingRow.outerHTML = updatedRow;
                     }
-
                 } catch (error) {
                     console.error(`Error loading price for ${ticker}:`, error);
                     // Fallback to average price if API fails
-                    const marketValue = holding.quantity * holding.avgPrice;
+                    const marketValue = calculateMarketValue(holding.quantity, holding.avgPrice);
                     totalHoldingsValue += marketValue;
 
                     const errorRow = `
@@ -456,18 +463,19 @@ export default class PortfolioView {
                                     <span class="font-semibold text-white">${ticker.toUpperCase()}</span>
                                 </div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right text-white">${holding.quantity.toLocaleString()}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right text-gray-300">${holding.avgPrice.toFixed(2)}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-white">${formatNumberWithCommas(holding.quantity)}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-gray-300">${formatPrice(holding.avgPrice)}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-right">
-                                <span class="text-gray-500">${holding.avgPrice.toFixed(2)}</span>
+                                <span class="text-gray-500">${formatPrice(holding.avgPrice)}</span>
                                 <span class="text-xs text-gray-500 block">estimate</span>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right text-white">${marketValue.toLocaleString()}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right text-gray-500">$0.00</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-white">${formatCurrencyWithCommas(marketValue)}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-gray-500">${formatPrice(0)}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-right text-gray-500">0.00%</td>
                         </tr>
                     `;
 
+                    // Replace loading row with error row
                     const existingRow = document.getElementById(`holding-${ticker}`);
                     if (existingRow) {
                         existingRow.outerHTML = errorRow;
@@ -482,31 +490,30 @@ export default class PortfolioView {
 
     updatePortfolioSummary(totalHoldingsValue) {
         const stockHoldingsValueEl = this.viewContainer.querySelector('#stock-holdings-value');
-        if (stockHoldingsValueEl) stockHoldingsValueEl.textContent = `${totalHoldingsValue.toLocaleString()}`;
+        if (stockHoldingsValueEl) stockHoldingsValueEl.textContent = formatCurrencyWithCommas(totalHoldingsValue);
 
         const portfolioValueEl = this.viewContainer.querySelector('#portfolio-value');
         const totalValue = this.currentPortfolio.cash + totalHoldingsValue;
         if (portfolioValueEl) {
-            portfolioValueEl.textContent = `${totalValue.toLocaleString()}`;
+            portfolioValueEl.textContent = formatCurrencyWithCommas(totalValue);
         }
 
         // Calculate portfolio change vs starting balance (assuming $10,000 start)
         const startingBalance = 10000;
-        const portfolioChange = totalValue - startingBalance;
-        const portfolioChangePercent = (portfolioChange / startingBalance * 100);
+        const gainLossData = calculateGainLoss(totalValue, startingBalance);
+        const changeFormatted = formatPortfolioChange(gainLossData.amount, gainLossData.percentage);
         
         const portfolioChangeEl = this.viewContainer.querySelector('#portfolio-change');
         if (portfolioChangeEl) {
-            const changeClass = portfolioChange >= 0 ? 'text-green-400' : 'text-red-400';
-            portfolioChangeEl.className = `text-sm font-medium ${changeClass}`;
-            portfolioChangeEl.textContent = `${portfolioChange >= 0 ? '+' : ''}${portfolioChange.toFixed(2)} (${portfolioChangePercent >= 0 ? '+' : ''}${portfolioChangePercent.toFixed(2)}%)`;
+            portfolioChangeEl.className = `text-sm font-medium ${changeFormatted.colorClass}`;
+            portfolioChangeEl.textContent = changeFormatted.display;
         }
 
         // Calculate cash percentage
         const cashPercentage = (this.currentPortfolio.cash / totalValue * 100);
         const cashPercentageEl = this.viewContainer.querySelector('#cash-percentage');
         if (cashPercentageEl) {
-            cashPercentageEl.textContent = `${cashPercentage.toFixed(1)}% of portfolio`;
+            cashPercentageEl.textContent = `${formatCashPercentage(this.currentPortfolio.cash, totalValue)} of portfolio`;
         }
     }
 
@@ -528,7 +535,7 @@ export default class PortfolioView {
                 const tradeDate = new Date(trade.timestamp);
                 const tradeDateStr = tradeDate.toLocaleDateString();
                 const tradeTimeStr = tradeDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                const tradeTypeClass = trade.type === 'buy' ? 'text-green-400 bg-green-400/10' : 'text-red-400 bg-red-400/10';
+                const tradeTypeClass = getTradeTypeColorClass(trade.type);
                 const tradeIcon = trade.type === 'buy' ? '↗' : '↘';
                 
                 const row = `
@@ -551,8 +558,8 @@ export default class PortfolioView {
                             </div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-white">${trade.quantity.toLocaleString()}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right text-gray-300">${trade.price.toFixed(2)}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right text-white font-semibold">${trade.tradeCost.toLocaleString()}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-gray-300">${formatPrice(trade.price)}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-white font-semibold">${formatPrice(trade.tradeCost)}</td>
                     </tr>
                 `;
                 if (tradesTbody) tradesTbody.innerHTML += row;

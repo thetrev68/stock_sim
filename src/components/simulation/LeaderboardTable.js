@@ -1,4 +1,10 @@
 // src/components/simulation/LeaderboardTable.js
+
+import { 
+    formatCurrencyWithCommas,
+    formatPrice
+} from '../../utils/currency-utils.js';
+
 export class LeaderboardTable {
     constructor() {
         this.container = null;
@@ -106,25 +112,25 @@ export class LeaderboardTable {
                     </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-right">
-                    <div class="text-white font-semibold">${ranking.portfolioValue.toLocaleString()}</div>
+                    <span class="text-white font-semibold">${formatCurrencyWithCommas(ranking.portfolioValue)}</span>
                     <div class="text-gray-400 text-sm">
-                        Cash: ${ranking.cash.toLocaleString()} • 
-                        Holdings: ${ranking.holdingsValue.toLocaleString()}
+                        Cash: ${formatCurrencyWithCommas(ranking.cash)} • 
+                        Holdings: ${formatCurrencyWithCommas(ranking.holdingsValue)}
                     </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-right">
-                    <div class="${returnClass} font-semibold">
-                        ${returnIcon} ${Math.abs(totalReturn).toLocaleString()}
-                    </div>
+                    <span class="${returnClass} font-semibold">
+                        ${returnIcon} ${formatPrice(Math.abs(totalReturn))}
+                    </span>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-right">
-                    <div class="${returnClass} font-semibold">
+                    <span class="${returnClass} font-semibold">
                         ${totalReturnPercent >= 0 ? '+' : ''}${totalReturnPercent.toFixed(2)}%
-                    </div>
+                    </span>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-right">
                     <div class="text-white">${totalTrades}</div>
-                    <div class="text-gray-400 text-sm">${totalVolume.toLocaleString()} vol</div>
+                    <div class="text-gray-400 text-sm">${formatCurrencyWithCommas(totalVolume, false)} vol</div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-right">
                     <div class="text-white">${holdingsCount}</div>
