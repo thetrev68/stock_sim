@@ -66,7 +66,7 @@ export const calculateTotalPortfolioValue = (cash, holdings) => {
  * @returns {number} Total holdings value
  */
 export const calculateTotalHoldingsValue = (holdings) => {
-    if (!holdings || typeof holdings !== 'object') return 0;
+    if (!holdings || typeof holdings !== "object") return 0;
     
     let total = 0;
     for (const ticker in holdings) {
@@ -220,7 +220,7 @@ export const calculateWinRate = (wins, total) => {
  * @returns {number} Win rate percentage
  */
 export const calculateWinRateFromHoldings = (holdings) => {
-    if (!holdings || typeof holdings !== 'object') return 0;
+    if (!holdings || typeof holdings !== "object") return 0;
     
     const holdingsArray = Object.values(holdings);
     const wins = holdingsArray.filter(h => (h.gainLoss || 0) > 0).length;

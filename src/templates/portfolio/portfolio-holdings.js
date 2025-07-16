@@ -46,9 +46,9 @@ export const getHoldingRowTemplate = (ticker, holding, stockData) => {
     const gainLoss = marketValue - (holding.quantity * holding.avgPrice);
     const gainLossPercent = (gainLoss / (holding.quantity * holding.avgPrice)) * 100;
     
-    const gainLossClass = gainLoss >= 0 ? 'text-green-400' : 'text-red-400';
-    const gainLossSign = gainLoss >= 0 ? '+' : '';
-    const percentSign = gainLossPercent >= 0 ? '+' : '';
+    const gainLossClass = gainLoss >= 0 ? "text-green-400" : "text-red-400";
+    const gainLossSign = gainLoss >= 0 ? "+" : "";
+    const percentSign = gainLossPercent >= 0 ? "+" : "";
 
     return `
         <tr class="hover:bg-gray-700/50 transition-colors">

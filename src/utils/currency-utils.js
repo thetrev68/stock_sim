@@ -12,7 +12,7 @@
  * @returns {string} Formatted currency string
  */
 export const formatCurrency = (amount, includeDollarSign = true) => {
-    const prefix = includeDollarSign ? '$' : '';
+    const prefix = includeDollarSign ? "$" : "";
     return `${prefix}${amount.toFixed(2)}`;
 };
 
@@ -23,7 +23,7 @@ export const formatCurrency = (amount, includeDollarSign = true) => {
  * @returns {string} Formatted currency string with commas
  */
 export const formatCurrencyWithCommas = (amount, includeDollarSign = true) => {
-    const prefix = includeDollarSign ? '$' : '';
+    const prefix = includeDollarSign ? "$" : "";
     return `${prefix}${amount.toLocaleString()}`;
 };
 
@@ -57,9 +57,9 @@ export const formatPercentage = (value, decimals = 2) => {
  */
 export const formatPriceChange = (change, changePercent, includeIcon = true) => {
     const isPositive = change >= 0;
-    const sign = isPositive ? '+' : '';
-    const icon = includeIcon ? (isPositive ? '↗' : '↘') : '';
-    const iconPrefix = icon ? `${icon} ` : '';
+    const sign = isPositive ? "+" : "";
+    const icon = includeIcon ? (isPositive ? "↗" : "↘") : "";
+    const iconPrefix = icon ? `${icon} ` : "";
     
     return `${iconPrefix}${sign}${Math.abs(change).toFixed(2)} (${sign}${changePercent.toFixed(2)}%)`;
 };
@@ -74,10 +74,10 @@ export const formatPriceChange = (change, changePercent, includeIcon = true) => 
  */
 export const formatGainLoss = (gainLoss, gainLossPercent, includeIcon = true) => {
     const isPositive = gainLoss >= 0;
-    const sign = isPositive ? '+' : '';
-    const icon = includeIcon ? (isPositive ? '↗' : '↘') : '';
-    const iconPrefix = icon ? `${icon} ` : '';
-    const colorClass = isPositive ? 'text-green-400' : 'text-red-400';
+    const sign = isPositive ? "+" : "";
+    const icon = includeIcon ? (isPositive ? "↗" : "↘") : "";
+    const iconPrefix = icon ? `${icon} ` : "";
+    const colorClass = isPositive ? "text-green-400" : "text-red-400";
     
     return {
         amount: `${iconPrefix}${sign}$${Math.abs(gainLoss).toFixed(2)}`,
@@ -143,8 +143,8 @@ export const calculatePortfolioPercentage = (holdingValue, totalPortfolioValue) 
  */
 export const formatPortfolioChange = (change, changePercent) => {
     const isPositive = change >= 0;
-    const sign = isPositive ? '+' : '';
-    const colorClass = isPositive ? 'text-green-400' : 'text-red-400';
+    const sign = isPositive ? "+" : "";
+    const colorClass = isPositive ? "text-green-400" : "text-red-400";
     
     return {
         display: `${sign}${change.toFixed(2)} (${sign}${changePercent.toFixed(2)}%)`,
@@ -161,9 +161,9 @@ export const formatPortfolioChange = (change, changePercent) => {
  * @returns {string} Formatted number with suffix
  */
 export const formatLargeNumber = (num, decimals = 1) => {
-    if (num === 0) return '0';
+    if (num === 0) return "0";
     
-    const units = ['', 'K', 'M', 'B', 'T'];
+    const units = ["", "K", "M", "B", "T"];
     const magnitude = Math.floor(Math.log10(Math.abs(num)) / 3);
     const index = Math.min(magnitude, units.length - 1);
     const scaled = num / Math.pow(10, index * 3);
@@ -178,8 +178,8 @@ export const formatLargeNumber = (num, decimals = 1) => {
  * @returns {string} Formatted price string
  */
 export const formatPrice = (price, includeDollarSign = true) => {
-    if (price === null || price === undefined) return '--';
-    const prefix = includeDollarSign ? '$' : '';
+    if (price === null || price === undefined) return "--";
+    const prefix = includeDollarSign ? "$" : "";
     return `${prefix}${price.toFixed(2)}`;
 };
 
@@ -189,7 +189,7 @@ export const formatPrice = (price, includeDollarSign = true) => {
  * @returns {string} CSS class for styling
  */
 export const getGainLossColorClass = (value) => {
-    return value >= 0 ? 'text-green-400' : 'text-red-400';
+    return value >= 0 ? "text-green-400" : "text-red-400";
 };
 
 /**
@@ -198,7 +198,7 @@ export const getGainLossColorClass = (value) => {
  * @returns {string} CSS class for styling
  */
 export const getTradeTypeColorClass = (tradeType) => {
-    return tradeType === 'buy' ? 'text-green-400 bg-green-400/10' : 'text-red-400 bg-red-400/10';
+    return tradeType === "buy" ? "text-green-400 bg-green-400/10" : "text-red-400 bg-red-400/10";
 };
 
 /**
@@ -209,7 +209,7 @@ export const getTradeTypeColorClass = (tradeType) => {
  * @returns {string} Formatted percentage string
  */
 export const formatCashPercentage = (cash, totalValue, decimals = 1) => {
-    if (totalValue === 0) return '0.0%';
+    if (totalValue === 0) return "0.0%";
     const percentage = (cash / totalValue) * 100;
     return `${percentage.toFixed(decimals)}%`;
 };

@@ -1,6 +1,6 @@
 // src/components/simulation/JoinSimulationModal.js
-import { SimulationService } from '../../services/simulation.js';
-import { AuthService } from '../../services/auth.js';
+import { SimulationService } from "../../services/simulation.js";
+import { AuthService } from "../../services/auth.js";
 
 export class JoinSimulationModal {
     constructor() {
@@ -18,14 +18,14 @@ export class JoinSimulationModal {
         
         // Focus on invite code input
         setTimeout(() => {
-            const codeInput = document.getElementById('invite-code');
+            const codeInput = document.getElementById("invite-code");
             if (codeInput) codeInput.focus();
         }, 100);
     }
 
     hide() {
         this.isVisible = false;
-        const modal = document.getElementById('join-simulation-modal');
+        const modal = document.getElementById("join-simulation-modal");
         if (modal) {
             modal.remove();
         }
@@ -33,7 +33,7 @@ export class JoinSimulationModal {
 
     render() {
         // Remove existing modal if any
-        const existingModal = document.getElementById('join-simulation-modal');
+        const existingModal = document.getElementById("join-simulation-modal");
         if (existingModal) {
             existingModal.remove();
         }
@@ -133,39 +133,39 @@ export class JoinSimulationModal {
             </div>
         `;
 
-        document.body.insertAdjacentHTML('beforeend', modalHTML);
+        document.body.insertAdjacentHTML("beforeend", modalHTML);
     }
 
     attachEventListeners() {
-        const modal = document.getElementById('join-simulation-modal');
-        const form = document.getElementById('join-simulation-form');
-        const closeBtn = document.getElementById('close-join-modal-btn');
-        const cancelBtn = document.getElementById('cancel-join-btn');
-        const inviteCodeInput = document.getElementById('invite-code');
+        const modal = document.getElementById("join-simulation-modal");
+        const form = document.getElementById("join-simulation-form");
+        const closeBtn = document.getElementById("close-join-modal-btn");
+        const cancelBtn = document.getElementById("cancel-join-btn");
+        const inviteCodeInput = document.getElementById("invite-code");
 
         // Close modal events
-        closeBtn?.addEventListener('click', () => this.hide());
-        cancelBtn?.addEventListener('click', () => this.hide());
+        closeBtn?.addEventListener("click", () => this.hide());
+        cancelBtn?.addEventListener("click", () => this.hide());
         
         // Close on outside click
-        modal?.addEventListener('click', (e) => {
+        modal?.addEventListener("click", (e) => {
             if (e.target === modal) this.hide();
         });
 
         // Close on Escape key
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && this.isVisible) this.hide();
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "Escape" && this.isVisible) this.hide();
         });
 
         // Form submission
-        form?.addEventListener('submit', (e) => {
+        form?.addEventListener("submit", (e) => {
             e.preventDefault();
             this.handleJoinSimulation();
         });
 
         // Auto-format invite code input
-        inviteCodeInput?.addEventListener('input', (e) => {
-            let value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+        inviteCodeInput?.addEventListener("input", (e) => {
+            let value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "");
             if (value.length > 6) value = value.slice(0, 6);
             e.target.value = value;
             
@@ -179,10 +179,10 @@ export class JoinSimulationModal {
         });
 
         // Paste handling for invite codes
-        inviteCodeInput?.addEventListener('paste', (e) => {
+        inviteCodeInput?.addEventListener("paste", (e) => {
             e.preventDefault();
-            const paste = (e.clipboardData || window.clipboardData).getData('text');
-            const cleaned = paste.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
+            const paste = (e.clipboardData || window.clipboardData).getData("text");
+            const cleaned = paste.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6);
             e.target.value = cleaned;
             
             if (cleaned.length === 6) {
@@ -205,24 +205,24 @@ export class JoinSimulationModal {
             } else {
                 this.hidePreview();
                 this.disableJoinButton();
-                this.showError('Invalid invite code');
+                this.showError("Invalid invite code");
             }
         } catch (error) {
-            console.error('Error previewing simulation:', error);
+            console.error("Error previewing simulation:", error);
             this.hidePreview();
             this.disableJoinButton();
-            this.showError('Error loading simulation details');
+            this.showError("Error loading simulation details");
         }
     }
 
     showPreview(simulation) {
-        const preview = document.getElementById('simulation-preview');
-        const nameEl = document.getElementById('preview-name');
-        const durationEl = document.getElementById('preview-duration');
-        const balanceEl = document.getElementById('preview-balance');
-        const membersEl = document.getElementById('preview-members');
-        const statusEl = document.getElementById('preview-status');
-        const descriptionEl = document.getElementById('preview-description');
+        const preview = document.getElementById("simulation-preview");
+        const nameEl = document.getElementById("preview-name");
+        const durationEl = document.getElementById("preview-duration");
+        const balanceEl = document.getElementById("preview-balance");
+        const membersEl = document.getElementById("preview-members");
+        const statusEl = document.getElementById("preview-status");
+        const descriptionEl = document.getElementById("preview-description");
 
         if (nameEl) nameEl.textContent = simulation.name;
         if (balanceEl) balanceEl.textContent = `$${simulation.startingBalance.toLocaleString()}`;
@@ -237,43 +237,43 @@ export class JoinSimulationModal {
         // Status with color
         if (statusEl) {
             statusEl.textContent = simulation.status.charAt(0).toUpperCase() + simulation.status.slice(1);
-            statusEl.className = simulation.status === 'active' ? 'text-green-400' : 
-                               simulation.status === 'pending' ? 'text-yellow-400' : 'text-gray-400';
+            statusEl.className = simulation.status === "active" ? "text-green-400" : 
+                               simulation.status === "pending" ? "text-yellow-400" : "text-gray-400";
         }
 
         // Description
         if (descriptionEl) {
             if (simulation.description && simulation.description.trim()) {
                 descriptionEl.textContent = simulation.description;
-                descriptionEl.style.display = 'block';
+                descriptionEl.style.display = "block";
             } else {
-                descriptionEl.style.display = 'none';
+                descriptionEl.style.display = "none";
             }
         }
 
-        if (preview) preview.classList.remove('hidden');
+        if (preview) preview.classList.remove("hidden");
     }
 
     hidePreview() {
-        const preview = document.getElementById('simulation-preview');
-        if (preview) preview.classList.add('hidden');
+        const preview = document.getElementById("simulation-preview");
+        if (preview) preview.classList.add("hidden");
     }
 
     enableJoinButton() {
-        const joinBtn = document.getElementById('join-sim-btn');
+        const joinBtn = document.getElementById("join-sim-btn");
         if (joinBtn) joinBtn.disabled = false;
     }
 
     disableJoinButton() {
-        const joinBtn = document.getElementById('join-sim-btn');
+        const joinBtn = document.getElementById("join-sim-btn");
         if (joinBtn) joinBtn.disabled = true;
     }
 
     async handleJoinSimulation() {
-        const inviteCode = document.getElementById('invite-code')?.value.trim();
+        const inviteCode = document.getElementById("invite-code")?.value.trim();
         
         if (!inviteCode || inviteCode.length !== 6) {
-            this.showError('Please enter a valid 6-character invite code');
+            this.showError("Please enter a valid 6-character invite code");
             return;
         }
 
@@ -284,7 +284,7 @@ export class JoinSimulationModal {
         try {
             const user = this.authService.getCurrentUser();
             if (!user) {
-                throw new Error('You must be signed in to join a simulation');
+                throw new Error("You must be signed in to join a simulation");
             }
 
             const userInfo = {
@@ -295,7 +295,7 @@ export class JoinSimulationModal {
             const result = await this.simulationService.joinSimulationByCode(inviteCode, user.uid, userInfo);
             
             if (result.success) {
-                console.log('Successfully joined simulation:', result.simulation);
+                console.log("Successfully joined simulation:", result.simulation);
                 this.showSuccess(`Successfully joined "${result.simulation.name}"!`);
                 
                 // Call callback if provided
@@ -310,7 +310,7 @@ export class JoinSimulationModal {
             }
 
         } catch (error) {
-            console.error('Error joining simulation:', error);
+            console.error("Error joining simulation:", error);
             this.showError(error.message);
         } finally {
             this.setLoading(false);
@@ -318,45 +318,45 @@ export class JoinSimulationModal {
     }
 
     setLoading(loading) {
-        const submitBtn = document.getElementById('join-sim-btn');
-        const submitText = document.getElementById('join-sim-text');
-        const loadingSpinner = document.getElementById('join-sim-loading');
+        const submitBtn = document.getElementById("join-sim-btn");
+        const submitText = document.getElementById("join-sim-text");
+        const loadingSpinner = document.getElementById("join-sim-loading");
         
         if (submitBtn) submitBtn.disabled = loading;
         if (submitText) {
             if (loading) {
-                submitText.classList.add('hidden');
-                loadingSpinner?.classList.remove('hidden');
+                submitText.classList.add("hidden");
+                loadingSpinner?.classList.remove("hidden");
             } else {
-                submitText.classList.remove('hidden');
-                loadingSpinner?.classList.add('hidden');
+                submitText.classList.remove("hidden");
+                loadingSpinner?.classList.add("hidden");
             }
         }
     }
 
     showError(message) {
-        const errorDiv = document.getElementById('join-sim-error');
-        const errorText = errorDiv?.querySelector('p');
+        const errorDiv = document.getElementById("join-sim-error");
+        const errorText = errorDiv?.querySelector("p");
         
         if (errorText) errorText.textContent = message;
-        if (errorDiv) errorDiv.classList.remove('hidden');
+        if (errorDiv) errorDiv.classList.remove("hidden");
     }
 
     hideError() {
-        const errorDiv = document.getElementById('join-sim-error');
-        if (errorDiv) errorDiv.classList.add('hidden');
+        const errorDiv = document.getElementById("join-sim-error");
+        if (errorDiv) errorDiv.classList.add("hidden");
     }
 
     showSuccess(message) {
-        const successDiv = document.getElementById('join-sim-success');
-        const successText = successDiv?.querySelector('p');
+        const successDiv = document.getElementById("join-sim-success");
+        const successText = successDiv?.querySelector("p");
         
         if (successText) successText.textContent = message;
-        if (successDiv) successDiv.classList.remove('hidden');
+        if (successDiv) successDiv.classList.remove("hidden");
     }
 
     hideSuccess() {
-        const successDiv = document.getElementById('join-sim-success');
-        if (successDiv) successDiv.classList.add('hidden');
+        const successDiv = document.getElementById("join-sim-success");
+        if (successDiv) successDiv.classList.add("hidden");
     }
 }

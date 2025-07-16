@@ -1,6 +1,6 @@
 // src/components/simulation/EmailInviteModal.js
-import { SimulationService } from '../../services/simulation.js';
-import { AuthService } from '../../services/auth.js';
+import { SimulationService } from "../../services/simulation.js";
+import { AuthService } from "../../services/auth.js";
 
 export class EmailInviteModal {
     constructor() {
@@ -20,14 +20,14 @@ export class EmailInviteModal {
         
         // Focus on email input
         setTimeout(() => {
-            const emailInput = document.getElementById('invite-emails');
+            const emailInput = document.getElementById("invite-emails");
             if (emailInput) emailInput.focus();
         }, 100);
     }
 
     hide() {
         this.isVisible = false;
-        const modal = document.getElementById('email-invite-modal');
+        const modal = document.getElementById("email-invite-modal");
         if (modal) {
             modal.remove();
         }
@@ -35,7 +35,7 @@ export class EmailInviteModal {
 
     render() {
         // Remove existing modal if any
-        const existingModal = document.getElementById('email-invite-modal');
+        const existingModal = document.getElementById("email-invite-modal");
         if (existingModal) {
             existingModal.remove();
         }
@@ -182,40 +182,40 @@ export class EmailInviteModal {
             </div>
         `;
 
-        document.body.insertAdjacentHTML('beforeend', modalHTML);
+        document.body.insertAdjacentHTML("beforeend", modalHTML);
     }
 
     attachEventListeners() {
-        const modal = document.getElementById('email-invite-modal');
-        const form = document.getElementById('email-invite-form');
-        const closeBtn = document.getElementById('close-email-modal-btn');
-        const cancelBtn = document.getElementById('cancel-email-btn');
-        const copyLinkBtn = document.getElementById('copy-link-btn');
-        const messageTextarea = document.getElementById('invite-message');
+        const modal = document.getElementById("email-invite-modal");
+        const form = document.getElementById("email-invite-form");
+        const closeBtn = document.getElementById("close-email-modal-btn");
+        const cancelBtn = document.getElementById("cancel-email-btn");
+        const copyLinkBtn = document.getElementById("copy-link-btn");
+        const messageTextarea = document.getElementById("invite-message");
 
         // Close modal events
-        closeBtn?.addEventListener('click', () => this.hide());
-        cancelBtn?.addEventListener('click', () => this.hide());
+        closeBtn?.addEventListener("click", () => this.hide());
+        cancelBtn?.addEventListener("click", () => this.hide());
         
         // Close on outside click
-        modal?.addEventListener('click', (e) => {
+        modal?.addEventListener("click", (e) => {
             if (e.target === modal) this.hide();
         });
 
         // Close on Escape key
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && this.isVisible) this.hide();
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "Escape" && this.isVisible) this.hide();
         });
 
         // Form submission
-        form?.addEventListener('submit', (e) => {
+        form?.addEventListener("submit", (e) => {
             e.preventDefault();
             this.handleSendInvites();
         });
 
         // Copy link functionality
-        copyLinkBtn?.addEventListener('click', async () => {
-            const linkInput = document.getElementById('shareable-link');
+        copyLinkBtn?.addEventListener("click", async () => {
+            const linkInput = document.getElementById("shareable-link");
             try {
                 await navigator.clipboard.writeText(linkInput.value);
                 
@@ -227,15 +227,15 @@ export class EmailInviteModal {
                     </svg>
                     Copied!
                 `;
-                copyLinkBtn.className = 'bg-green-600 text-white font-medium py-2 px-4 rounded-lg flex items-center gap-2';
+                copyLinkBtn.className = "bg-green-600 text-white font-medium py-2 px-4 rounded-lg flex items-center gap-2";
                 
                 setTimeout(() => {
                     copyLinkBtn.innerHTML = originalText;
-                    copyLinkBtn.className = 'bg-cyan-600 hover:bg-cyan-500 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 flex items-center gap-2';
+                    copyLinkBtn.className = "bg-cyan-600 hover:bg-cyan-500 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 flex items-center gap-2";
                 }, 2000);
                 
             } catch (err) {
-                console.error('Failed to copy link:', err);
+                console.error("Failed to copy link:", err);
                 // Fallback selection
                 linkInput.select();
                 linkInput.setSelectionRange(0, 99999);
@@ -243,17 +243,17 @@ export class EmailInviteModal {
         });
 
         // Character counter for message
-        messageTextarea?.addEventListener('input', (e) => {
+        messageTextarea?.addEventListener("input", (e) => {
             const count = e.target.value.length;
-            const counter = document.getElementById('message-count');
+            const counter = document.getElementById("message-count");
             if (counter) {
                 counter.textContent = `${count}/500`;
                 if (count > 450) {
-                    counter.className = 'text-xs text-yellow-400';
+                    counter.className = "text-xs text-yellow-400";
                 } else if (count === 500) {
-                    counter.className = 'text-xs text-red-400';
+                    counter.className = "text-xs text-red-400";
                 } else {
-                    counter.className = 'text-xs text-gray-500';
+                    counter.className = "text-xs text-gray-500";
                 }
             }
         });
@@ -296,11 +296,11 @@ export class EmailInviteModal {
     }
 
     async handleSendInvites() {
-        const emailsInput = document.getElementById('invite-emails')?.value.trim();
-        const personalMessage = document.getElementById('invite-message')?.value.trim();
+        const emailsInput = document.getElementById("invite-emails")?.value.trim();
+        const personalMessage = document.getElementById("invite-message")?.value.trim();
         
         if (!emailsInput) {
-            this.showError('Please enter at least one email address');
+            this.showError("Please enter at least one email address");
             return;
         }
 
@@ -308,12 +308,12 @@ export class EmailInviteModal {
         const { validEmails, invalidEmails } = this.parseEmailAddresses(emailsInput);
         
         if (invalidEmails.length > 0) {
-            this.showError(`Invalid email addresses: ${invalidEmails.join(', ')}`);
+            this.showError(`Invalid email addresses: ${invalidEmails.join(", ")}`);
             return;
         }
         
         if (validEmails.length === 0) {
-            this.showError('Please enter valid email addresses');
+            this.showError("Please enter valid email addresses");
             return;
         }
 
@@ -324,7 +324,7 @@ export class EmailInviteModal {
         try {
             const user = this.authService.getCurrentUser();
             if (!user) {
-                throw new Error('You must be signed in to send invitations');
+                throw new Error("You must be signed in to send invitations");
             }
 
             // Generate invitation data
@@ -344,7 +344,7 @@ export class EmailInviteModal {
             // For now, we'll simulate the process and provide a shareable message
             await this.simulateEmailSending(invitationData);
             
-            this.showSuccess(`Invitation details prepared for ${validEmails.length} recipient${validEmails.length !== 1 ? 's' : ''}! Copy the invitation text and send via your preferred method.`);
+            this.showSuccess(`Invitation details prepared for ${validEmails.length} recipient${validEmails.length !== 1 ? "s" : ""}! Copy the invitation text and send via your preferred method.`);
             
             // Call callback if provided
             if (this.onInvitesSent) {
@@ -357,7 +357,7 @@ export class EmailInviteModal {
             }, 3000);
 
         } catch (error) {
-            console.error('Error sending invitations:', error);
+            console.error("Error sending invitations:", error);
             this.showError(error.message);
         } finally {
             this.setLoading(false);
@@ -379,7 +379,7 @@ export class EmailInviteModal {
         }));
         
         // Show the invitation text in a way user can copy it
-        console.log('Generated invitation text:', inviteText);
+        console.log("Generated invitation text:", inviteText);
         
         // In a real implementation, this would call:
         // await this.emailService.sendInvitations(invitationData);
@@ -390,7 +390,7 @@ export class EmailInviteModal {
 
 ${invitationData.inviterName} has invited you to compete in "${invitationData.simulationName}" - a fun paper trading competition.
 
-${invitationData.personalMessage ? `Personal message: "${invitationData.personalMessage}"` : ''}
+${invitationData.personalMessage ? `Personal message: "${invitationData.personalMessage}"` : ""}
 
 🏆 Simulation Details:
 • Starting Balance: $${this.currentSimulation.startingBalance.toLocaleString()}
@@ -407,45 +407,45 @@ Start trading and see if you can beat your friends! 📈`;
     }
 
     setLoading(loading) {
-        const submitBtn = document.getElementById('send-invites-btn');
-        const submitText = document.getElementById('send-invites-text');
-        const loadingSpinner = document.getElementById('send-invites-loading');
+        const submitBtn = document.getElementById("send-invites-btn");
+        const submitText = document.getElementById("send-invites-text");
+        const loadingSpinner = document.getElementById("send-invites-loading");
         
         if (submitBtn) submitBtn.disabled = loading;
         if (submitText) {
             if (loading) {
-                submitText.classList.add('hidden');
-                loadingSpinner?.classList.remove('hidden');
+                submitText.classList.add("hidden");
+                loadingSpinner?.classList.remove("hidden");
             } else {
-                submitText.classList.remove('hidden');
-                loadingSpinner?.classList.add('hidden');
+                submitText.classList.remove("hidden");
+                loadingSpinner?.classList.add("hidden");
             }
         }
     }
 
     showError(message) {
-        const errorDiv = document.getElementById('email-invite-error');
-        const errorText = errorDiv?.querySelector('p');
+        const errorDiv = document.getElementById("email-invite-error");
+        const errorText = errorDiv?.querySelector("p");
         
         if (errorText) errorText.textContent = message;
-        if (errorDiv) errorDiv.classList.remove('hidden');
+        if (errorDiv) errorDiv.classList.remove("hidden");
     }
 
     hideError() {
-        const errorDiv = document.getElementById('email-invite-error');
-        if (errorDiv) errorDiv.classList.add('hidden');
+        const errorDiv = document.getElementById("email-invite-error");
+        if (errorDiv) errorDiv.classList.add("hidden");
     }
 
     showSuccess(message) {
-        const successDiv = document.getElementById('email-invite-success');
-        const successText = successDiv?.querySelector('p');
+        const successDiv = document.getElementById("email-invite-success");
+        const successText = successDiv?.querySelector("p");
         
         if (successText) successText.textContent = message;
-        if (successDiv) successDiv.classList.remove('hidden');
+        if (successDiv) successDiv.classList.remove("hidden");
     }
 
     hideSuccess() {
-        const successDiv = document.getElementById('email-invite-success');
-        if (successDiv) successDiv.classList.add('hidden');
+        const successDiv = document.getElementById("email-invite-success");
+        if (successDiv) successDiv.classList.add("hidden");
     }
 }

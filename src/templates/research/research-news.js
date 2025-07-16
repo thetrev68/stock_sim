@@ -14,7 +14,7 @@
  * @returns {string} HTML template string
  */
 export const getNewsArticleCardTemplate = (article) => {
-    const hasImage = article.image && article.image !== 'https://via.placeholder.com/400x200/1f2937/ffffff?text=News';
+    const hasImage = article.image && article.image !== "https://via.placeholder.com/400x200/1f2937/ffffff?text=News";
     
     return `
         <div class="bg-gray-700 rounded-lg p-4 hover:bg-gray-600 transition-colors duration-200 cursor-pointer border border-gray-600">
@@ -28,7 +28,7 @@ export const getNewsArticleCardTemplate = (article) => {
                             onerror="this.style.display='none'"
                         >
                     </div>
-                ` : ''}
+                ` : ""}
                 
                 <div class="flex-1 min-w-0">
                     <div class="flex items-start justify-between gap-4 mb-2">

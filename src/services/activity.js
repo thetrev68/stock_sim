@@ -1,8 +1,7 @@
 // src/services/activity.js
-import { getFirestoreDb } from './firebase.js';
+import { getFirestoreDb } from "./firebase.js";
 import { 
-    collection, 
-    doc, 
+    collection,
     addDoc, 
     getDocs, 
     query, 
@@ -10,12 +9,12 @@ import {
     orderBy, 
     limit,
     serverTimestamp 
-} from 'firebase/firestore';
-import { getTimeAgoCompact } from '../utils/date-utils.js';
+} from "firebase/firestore";
+import { getTimeAgoCompact } from "../utils/date-utils.js";
 
 
 
-const ACTIVITIES_COLLECTION = 'simulationActivities';
+const ACTIVITIES_COLLECTION = "simulationActivities";
 
 /**
  * Activity Data Model:
@@ -49,7 +48,7 @@ export class ActivityService {
     // Initialize service
     initialize() {
         this.db = getFirestoreDb();
-        console.log('ActivityService initialized');
+        console.log("ActivityService initialized");
     }
 
     /**
@@ -63,8 +62,8 @@ export class ActivityService {
                 simulationId,
                 userId,
                 userDisplayName,
-                type: 'join',
-                action: 'joined_simulation',
+                type: "join",
+                action: "joined_simulation",
                 data: {},
                 timestamp: serverTimestamp(),
                 isVisible: true
@@ -74,7 +73,7 @@ export class ActivityService {
             console.log(`Logged join activity for user ${userId} in simulation ${simulationId}`);
             
         } catch (error) {
-            console.error('Error logging join activity:', error);
+            console.error("Error logging join activity:", error);
         }
     }
 
@@ -89,8 +88,8 @@ export class ActivityService {
                 simulationId,
                 userId,
                 userDisplayName,
-                type: 'trade',
-                action: 'executed_trade',
+                type: "trade",
+                action: "executed_trade",
                 data: {
                     ticker: tradeData.ticker,
                     tradeType: tradeData.type,
@@ -106,7 +105,7 @@ export class ActivityService {
             console.log(`Logged trade activity for user ${userId}: ${tradeData.type} ${tradeData.quantity} ${tradeData.ticker}`);
             
         } catch (error) {
-            console.error('Error logging trade activity:', error);
+            console.error("Error logging trade activity:", error);
         }
     }
 
@@ -121,8 +120,8 @@ export class ActivityService {
                 simulationId,
                 userId,
                 userDisplayName,
-                type: 'achievement',
-                action: 'reached_milestone',
+                type: "achievement",
+                action: "reached_milestone",
                 data: {
                     milestone: achievementData.milestone,
                     value: achievementData.value,
@@ -136,7 +135,7 @@ export class ActivityService {
             console.log(`Logged achievement activity for user ${userId}: ${achievementData.milestone}`);
             
         } catch (error) {
-            console.error('Error logging achievement activity:', error);
+            console.error("Error logging achievement activity:", error);
         }
     }
 
@@ -151,8 +150,8 @@ export class ActivityService {
                 simulationId,
                 userId: adminUserId,
                 userDisplayName: adminDisplayName,
-                type: 'admin',
-                action: actionData.action || 'admin_action',
+                type: "admin",
+                action: actionData.action || "admin_action",
                 data: {
                     ...actionData,
                     isAdminAction: true
@@ -165,7 +164,7 @@ export class ActivityService {
             console.log(`Logged admin activity for user ${adminUserId}: ${actionData.action}`);
             
         } catch (error) {
-            console.error('Error logging admin activity:', error);
+            console.error("Error logging admin activity:", error);
         }
     }
 
@@ -178,9 +177,9 @@ export class ActivityService {
         try {
             const activitiesQuery = query(
                 collection(this.db, ACTIVITIES_COLLECTION),
-                where('simulationId', '==', simulationId),
-                where('isVisible', '==', true),
-                orderBy('timestamp', 'desc'),
+                where("simulationId", "==", simulationId),
+                where("isVisible", "==", true),
+                orderBy("timestamp", "desc"),
                 limit(maxActivities)
             );
 
@@ -192,7 +191,7 @@ export class ActivityService {
             }));
 
         } catch (error) {
-            console.error('Error getting simulation activities:', error);
+            console.error("Error getting simulation activities:", error);
             return [];
         }
     }
@@ -206,10 +205,10 @@ export class ActivityService {
         try {
             const activitiesQuery = query(
                 collection(this.db, ACTIVITIES_COLLECTION),
-                where('simulationId', '==', simulationId),
-                where('userId', '==', userId),
-                where('isVisible', '==', true),
-                orderBy('timestamp', 'desc'),
+                where("simulationId", "==", simulationId),
+                where("userId", "==", userId),
+                where("isVisible", "==", true),
+                orderBy("timestamp", "desc"),
                 limit(maxActivities)
             );
 
@@ -221,7 +220,7 @@ export class ActivityService {
             }));
 
         } catch (error) {
-            console.error('Error getting user activities:', error);
+            console.error("Error getting user activities:", error);
             return [];
         }
     }
@@ -234,108 +233,108 @@ export class ActivityService {
         const timeAgo = getTimeAgoCompact(timestamp);
 
         switch (activity.action) {
-            case 'joined_simulation':
+            case "joined_simulation":
                 return {
-                    icon: '👋',
-                    iconColor: 'text-green-400',
-                    iconBg: 'bg-green-400/10',
+                    icon: "👋",
+                    iconColor: "text-green-400",
+                    iconBg: "bg-green-400/10",
                     title: `${activity.userDisplayName} joined the simulation`,
-                    description: 'Welcome to the competition!',
+                    description: "Welcome to the competition!",
                     timeAgo,
-                    priority: 'low'
+                    priority: "low"
                 };
 
-            case 'executed_trade':
+            case "executed_trade":
                 const { ticker, tradeType, quantity, amount } = activity.data;
-                const tradeIcon = tradeType === 'buy' ? '📈' : '📉';
-                const tradeColor = tradeType === 'buy' ? 'text-green-400' : 'text-red-400';
-                const tradeBg = tradeType === 'buy' ? 'bg-green-400/10' : 'bg-red-400/10';
+                const tradeIcon = tradeType === "buy" ? "📈" : "📉";
+                const tradeColor = tradeType === "buy" ? "text-green-400" : "text-red-400";
+                const tradeBg = tradeType === "buy" ? "bg-green-400/10" : "bg-red-400/10";
                 
                 return {
                     icon: tradeIcon,
                     iconColor: tradeColor,
                     iconBg: tradeBg,
-                    title: `${activity.userDisplayName} ${tradeType === 'buy' ? 'bought' : 'sold'} ${ticker}`,
+                    title: `${activity.userDisplayName} ${tradeType === "buy" ? "bought" : "sold"} ${ticker}`,
                     description: `${quantity.toLocaleString()} shares for $${amount.toLocaleString()}`,
                     timeAgo,
-                    priority: 'medium'
+                    priority: "medium"
                 };
 
-            case 'reached_milestone':
+            case "reached_milestone":
                 const { milestone, value, rank } = activity.data;
-                let milestoneText = '';
-                let milestoneIcon = '🏆';
+                let milestoneText = "";
+                let milestoneIcon = "🏆";
                 
                 switch (milestone) {
-                    case 'first_trade':
-                        milestoneText = 'made their first trade';
-                        milestoneIcon = '🎯';
+                    case "first_trade":
+                        milestoneText = "made their first trade";
+                        milestoneIcon = "🎯";
                         break;
-                    case 'profitable_day':
-                        milestoneText = 'had a profitable day';
-                        milestoneIcon = '💰';
+                    case "profitable_day":
+                        milestoneText = "had a profitable day";
+                        milestoneIcon = "💰";
                         break;
-                    case 'big_winner':
+                    case "big_winner":
                         milestoneText = `earned $${value.toLocaleString()} in a single trade`;
-                        milestoneIcon = '🚀';
+                        milestoneIcon = "🚀";
                         break;
-                    case 'rank_change':
+                    case "rank_change":
                         milestoneText = `moved to rank #${rank}`;
-                        milestoneIcon = '📊';
+                        milestoneIcon = "📊";
                         break;
                     default:
-                        milestoneText = 'achieved a milestone';
+                        milestoneText = "achieved a milestone";
                 }
                 
                 return {
                     icon: milestoneIcon,
-                    iconColor: 'text-yellow-400',
-                    iconBg: 'bg-yellow-400/10',
+                    iconColor: "text-yellow-400",
+                    iconBg: "bg-yellow-400/10",
                     title: `${activity.userDisplayName} ${milestoneText}`,
-                    description: 'Great progress!',
+                    description: "Great progress!",
                     timeAgo,
-                    priority: 'high'
+                    priority: "high"
                 };
 
             default:
                 return {
-                    icon: '📱',
-                    iconColor: 'text-gray-400',
-                    iconBg: 'bg-gray-400/10',
+                    icon: "📱",
+                    iconColor: "text-gray-400",
+                    iconBg: "bg-gray-400/10",
                     title: `${activity.userDisplayName} did something`,
-                    description: 'Activity recorded',
+                    description: "Activity recorded",
                     timeAgo,
-                    priority: 'low'
+                    priority: "low"
                 };
             // Add this case in the formatActivity method switch statement:
-            case 'admin_action':
-            case 'simulation_ended_early':
-                let adminText = '';
-                let adminIcon = '⚙️';
+            case "admin_action":
+            case "simulation_ended_early":
+                let adminText = "";
+                let adminIcon = "⚙️";
                 
-                if (activity.action === 'simulation_ended_early' || activity.data?.milestone === 'simulation_ended_early') {
+                if (activity.action === "simulation_ended_early" || activity.data?.milestone === "simulation_ended_early") {
                     adminText = `${activity.userDisplayName} ended the simulation early`;
-                    adminIcon = '🏁';
+                    adminIcon = "🏁";
                     const reason = activity.data?.reason;
                     return {
                         icon: adminIcon,
-                        iconColor: 'text-orange-400',
-                        iconBg: 'bg-orange-400/10',
+                        iconColor: "text-orange-400",
+                        iconBg: "bg-orange-400/10",
                         title: adminText,
-                        description: reason ? `Reason: ${reason}` : 'Simulation ended by admin',
+                        description: reason ? `Reason: ${reason}` : "Simulation ended by admin",
                         timeAgo,
-                        priority: 'high'
+                        priority: "high"
                     };
                 } else {
                     adminText = `${activity.userDisplayName} performed an admin action`;
                     return {
                         icon: adminIcon,
-                        iconColor: 'text-purple-400',
-                        iconBg: 'bg-purple-400/10',
+                        iconColor: "text-purple-400",
+                        iconBg: "bg-purple-400/10",
                         title: adminText,
-                        description: activity.data?.description || 'Admin action performed',
+                        description: activity.data?.description || "Admin action performed",
                         timeAgo,
-                        priority: 'high'
+                        priority: "high"
                     };
                 }
         }
@@ -366,13 +365,13 @@ export class ActivityService {
 
         recentActivities.forEach(activity => {
             switch (activity.action) {
-                case 'joined_simulation':
+                case "joined_simulation":
                     summary.recentJoins++;
                     break;
-                case 'executed_trade':
+                case "executed_trade":
                     summary.recentTrades++;
                     break;
-                case 'reached_milestone':
+                case "reached_milestone":
                     summary.recentAchievements++;
                     break;
             }
@@ -398,7 +397,7 @@ export class ActivityService {
         }
 
         // Find biggest trade
-        const tradeActivities = activities.filter(a => a.action === 'executed_trade');
+        const tradeActivities = activities.filter(a => a.action === "executed_trade");
         if (tradeActivities.length > 0) {
             summary.biggestTrade = tradeActivities.reduce((biggest, current) => 
                 (current.data.amount > biggest.data.amount) ? current : biggest
@@ -419,7 +418,7 @@ export class ActivityService {
             // Check for first trade
             if (portfolioData.trades && portfolioData.trades.length === 1) {
                 await this.logAchievementActivity(simulationId, userId, userDisplayName, {
-                    milestone: 'first_trade',
+                    milestone: "first_trade",
                     value: tradeData.quantity * tradeData.price
                 });
             }
@@ -428,7 +427,7 @@ export class ActivityService {
             const tradeValue = tradeData.quantity * tradeData.price;
             if (tradeValue >= 10000) {
                 await this.logAchievementActivity(simulationId, userId, userDisplayName, {
-                    milestone: 'big_winner',
+                    milestone: "big_winner",
                     value: tradeValue
                 });
             }
@@ -439,13 +438,13 @@ export class ActivityService {
             
             if (currentValue > startingBalance * 1.05) { // 5% profit threshold
                 await this.logAchievementActivity(simulationId, userId, userDisplayName, {
-                    milestone: 'profitable_day',
+                    milestone: "profitable_day",
                     value: currentValue - startingBalance
                 });
             }
 
         } catch (error) {
-            console.error('Error detecting achievements:', error);
+            console.error("Error detecting achievements:", error);
         }
     }
 

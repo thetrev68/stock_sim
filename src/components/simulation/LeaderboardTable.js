@@ -3,7 +3,7 @@
 import { 
     formatCurrencyWithCommas,
     formatPrice
-} from '../../utils/currency-utils.js';
+} from "../../utils/currency-utils.js";
 
 export class LeaderboardTable {
     constructor() {
@@ -28,7 +28,7 @@ export class LeaderboardTable {
             return this.getEmptyState();
         }
 
-        const rankingRows = this.rankings.map(ranking => this.getRankingRow(ranking)).join('');
+        const rankingRows = this.rankings.map(ranking => this.getRankingRow(ranking)).join("");
 
         return `
             <div class="leaderboard-table-container bg-gray-800 rounded-lg shadow-lg border border-gray-700">
@@ -70,8 +70,8 @@ export class LeaderboardTable {
     getRankingRow(ranking) {
         const isCurrentUser = ranking.userId === this.currentUserId;
         const rowClass = isCurrentUser 
-            ? 'bg-cyan-900/30 hover:bg-cyan-900/50 border-l-4 border-cyan-400' 
-            : 'hover:bg-gray-700/50';
+            ? "bg-cyan-900/30 hover:bg-cyan-900/50 border-l-4 border-cyan-400" 
+            : "hover:bg-gray-700/50";
 
         const rankDisplay = this.getRankDisplay(ranking.rank);
         
@@ -83,8 +83,8 @@ export class LeaderboardTable {
         const holdingsCount = ranking.performance?.holdingsCount || 0;
         const winRate = ranking.performance?.winRate || 0;
 
-        const returnClass = totalReturn >= 0 ? 'text-green-400' : 'text-red-400';
-        const returnIcon = totalReturn >= 0 ? '↗' : '↘';
+        const returnClass = totalReturn >= 0 ? "text-green-400" : "text-red-400";
+        const returnIcon = totalReturn >= 0 ? "↗" : "↘";
 
         return `
             <tr class="${rowClass} transition-colors cursor-pointer ranking-row" 
@@ -93,7 +93,7 @@ export class LeaderboardTable {
                 <td class="px-6 py-4 whitespace-nowrap">
                     <div class="flex items-center">
                         ${rankDisplay}
-                        ${isCurrentUser ? '<div class="w-2 h-2 bg-cyan-400 rounded-full ml-2"></div>' : ''}
+                        ${isCurrentUser ? "<div class=\"w-2 h-2 bg-cyan-400 rounded-full ml-2\"></div>" : ""}
                     </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
@@ -104,8 +104,8 @@ export class LeaderboardTable {
                         <div>
                             <div class="flex items-center gap-2">
                                 <p class="text-white font-medium">${ranking.displayName}</p>
-                                ${isCurrentUser ? '<span class="text-cyan-400 text-xs font-medium">(You)</span>' : ''}
-                                ${ranking.role === 'creator' ? '<span class="text-yellow-400 text-xs font-medium">(Creator)</span>' : ''}
+                                ${isCurrentUser ? "<span class=\"text-cyan-400 text-xs font-medium\">(You)</span>" : ""}
+                                ${ranking.role === "creator" ? "<span class=\"text-yellow-400 text-xs font-medium\">(Creator)</span>" : ""}
                             </div>
                             <p class="text-gray-400 text-sm">${this.formatEmail(ranking.email)}</p>
                         </div>
@@ -125,7 +125,7 @@ export class LeaderboardTable {
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-right">
                     <span class="${returnClass} font-semibold">
-                        ${totalReturnPercent >= 0 ? '+' : ''}${totalReturnPercent.toFixed(2)}%
+                        ${totalReturnPercent >= 0 ? "+" : ""}${totalReturnPercent.toFixed(2)}%
                     </span>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-right">
@@ -181,17 +181,17 @@ export class LeaderboardTable {
     }
 
     formatEmail(email) {
-        if (!email) return '';
+        if (!email) return "";
         // Truncate long emails
         if (email.length > 20) {
-            return email.substring(0, 17) + '...';
+            return email.substring(0, 17) + "...";
         }
         return email;
     }
 
     getLastUpdatedText() {
         // This would be passed in with the rankings data
-        return 'Just now';
+        return "Just now";
     }
 
     getEmptyState() {
@@ -217,13 +217,13 @@ export class LeaderboardTable {
         if (!this.container) return;
 
         // Handle row clicks for user details
-        const rankingRows = this.container.querySelectorAll('.ranking-row');
+        const rankingRows = this.container.querySelectorAll(".ranking-row");
         rankingRows.forEach(row => {
-            row.addEventListener('click', (e) => {
+            row.addEventListener("click", (e) => {
                 const userId = e.currentTarget.dataset.userId;
                 const userName = e.currentTarget.dataset.userName;
                 
-                if (this.onUserClick && typeof this.onUserClick === 'function') {
+                if (this.onUserClick && typeof this.onUserClick === "function") {
                     this.onUserClick(userId, userName);
                 } else {
                     console.log(`Clicked on user: ${userName} (${userId})`);
@@ -243,16 +243,16 @@ export class LeaderboardTable {
         if (!this.container) return;
 
         // Remove existing highlights
-        const rows = this.container.querySelectorAll('.ranking-row');
+        const rows = this.container.querySelectorAll(".ranking-row");
         rows.forEach(row => {
-            row.classList.remove('ring-2', 'ring-cyan-400');
+            row.classList.remove("ring-2", "ring-cyan-400");
         });
 
         // Add highlight to specific user
         const userRow = this.container.querySelector(`[data-user-id="${userId}"]`);
         if (userRow) {
-            userRow.classList.add('ring-2', 'ring-cyan-400');
-            userRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            userRow.classList.add("ring-2", "ring-cyan-400");
+            userRow.scrollIntoView({ behavior: "smooth", block: "center" });
         }
     }
 }

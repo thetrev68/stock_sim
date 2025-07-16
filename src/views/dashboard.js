@@ -1,33 +1,23 @@
 // Enhanced Dashboard view with Email Invite integration - Session 8
-import { SimulationService } from '../services/simulation.js';
-import { AuthService } from '../services/auth.js';
-import { CreateSimulationModal } from '../components/simulation/CreateSimulationModal.js';
-import { JoinSimulationModal } from '../components/simulation/JoinSimulationModal.js';
-import { EmailInviteModal } from '../components/simulation/EmailInviteModal.js';
-import { SIMULATION_STATUS, STATUS_CONFIG, PENDING_STATES, USER_ROLES, ROLE_CONFIG } from '../constants/simulation-status.js';
-import { TIME_UNITS } from '../constants/app-config.js';
+import { SimulationService } from "../services/simulation.js";
+import { AuthService } from "../services/auth.js";
+import { CreateSimulationModal } from "../components/simulation/CreateSimulationModal.js";
+import { JoinSimulationModal } from "../components/simulation/JoinSimulationModal.js";
+import { EmailInviteModal } from "../components/simulation/EmailInviteModal.js";
+import { SIMULATION_STATUS, STATUS_CONFIG, PENDING_STATES, USER_ROLES, ROLE_CONFIG } from "../constants/simulation-status.js";
 import { 
     convertFirebaseDate, 
     calculateDaysUntilStart,
     calculateDaysRemaining,
     calculateDaysAgo
-} from '../utils/date-utils.js';
+} from "../utils/date-utils.js";
 import { 
-    formatCurrencyWithCommas,
-    formatCashPercentage,
-    formatPortfolioChange,
-    calculateGainLoss,
-    formatPrice,
-    formatNumberWithCommas,
-    formatGainLoss,
-    calculateMarketValue,
-    calculateCostBasis,
-    getTradeTypeColorClass
-} from '../utils/currency-utils.js';
+    formatCurrencyWithCommas
+} from "../utils/currency-utils.js";
 
 export default class DashboardView {
     constructor() {
-        this.name = 'dashboard';
+        this.name = "dashboard";
         this.simulationService = new SimulationService();
         this.authService = new AuthService();
         this.createSimModal = null;
@@ -157,34 +147,34 @@ export default class DashboardView {
 
     attachEventListeners(container) {
         // Primary action buttons
-        const createBtn = container.querySelector('#create-simulation-btn');
-        const joinBtn = container.querySelector('#join-simulation-btn');
+        const createBtn = container.querySelector("#create-simulation-btn");
+        const joinBtn = container.querySelector("#join-simulation-btn");
         
         // CTA buttons in empty state
-        const createCTA = container.querySelector('#create-sim-cta');
-        const joinCTA = container.querySelector('#join-sim-cta');
+        const createCTA = container.querySelector("#create-sim-cta");
+        const joinCTA = container.querySelector("#join-sim-cta");
 
         // Create simulation handlers
         [createBtn, createCTA].forEach(btn => {
             if (btn) {
-                btn.addEventListener('click', () => this.handleCreateSimulation());
+                btn.addEventListener("click", () => this.handleCreateSimulation());
             }
         });
 
         // Join simulation handlers
         [joinBtn, joinCTA].forEach(btn => {
             if (btn) {
-                btn.addEventListener('click', () => this.handleJoinSimulation());
+                btn.addEventListener("click", () => this.handleJoinSimulation());
             }
         });
     }
 
     async loadData() {
-        console.log('Loading dashboard data...');
+        console.log("Loading dashboard data...");
         
         const user = this.authService.getCurrentUser();
         if (!user) {
-            console.log('No user signed in for dashboard.');
+            console.log("No user signed in for dashboard.");
             return;
         }
 
@@ -194,43 +184,43 @@ export default class DashboardView {
             
             // Load user's simulations
             this.userSimulations = await this.simulationService.getUserSimulations(user.uid);
-            console.log('Loaded simulations:', this.userSimulations);
+            console.log("Loaded simulations:", this.userSimulations);
             
             // Update UI
             this.updateSimulationStats();
             this.renderSimulations();
             
         } catch (error) {
-            console.error('Error loading dashboard data:', error);
+            console.error("Error loading dashboard data:", error);
             this.showSimulationsError();
         }
     }
 
     updateSimulationStats() {
         const activeSimCount = this.userSimulations.filter(sim => sim.status === SIMULATION_STATUS.ACTIVE).length;
-        const activeSimCountEl = document.getElementById('active-sim-count');
+        const activeSimCountEl = document.getElementById("active-sim-count");
         if (activeSimCountEl) {
             activeSimCountEl.textContent = activeSimCount;
         }
     }
 
     renderSimulations() {
-        const loadingEl = document.getElementById('simulations-loading');
-        const emptyEl = document.getElementById('simulations-empty');
-        const containerEl = document.getElementById('simulations-container');
+        const loadingEl = document.getElementById("simulations-loading");
+        const emptyEl = document.getElementById("simulations-empty");
+        const containerEl = document.getElementById("simulations-container");
 
         // Hide loading
-        if (loadingEl) loadingEl.classList.add('hidden');
+        if (loadingEl) loadingEl.classList.add("hidden");
 
         if (this.userSimulations.length === 0) {
             // Show empty state
-            if (emptyEl) emptyEl.classList.remove('hidden');
-            if (containerEl) containerEl.innerHTML = '';
+            if (emptyEl) emptyEl.classList.remove("hidden");
+            if (containerEl) containerEl.innerHTML = "";
         } else {
             // Show simulations
-            if (emptyEl) emptyEl.classList.add('hidden');
+            if (emptyEl) emptyEl.classList.add("hidden");
             if (containerEl) {
-                containerEl.innerHTML = '';
+                containerEl.innerHTML = "";
                 
                 this.userSimulations.forEach(simulation => {
                     const simCard = this.createSimulationCard(simulation);
@@ -241,8 +231,8 @@ export default class DashboardView {
     }
 
     createSimulationCard(simulation) {
-        const card = document.createElement('div');
-        card.className = 'bg-gray-800 p-6 rounded-lg shadow-lg border border-gray-700 hover:border-gray-600 transition-colors duration-200';
+        const card = document.createElement("div");
+        card.className = "bg-gray-800 p-6 rounded-lg shadow-lg border border-gray-700 hover:border-gray-600 transition-colors duration-200";
         
         // Format dates
         const startDate = convertFirebaseDate(simulation.startDate);
@@ -277,25 +267,25 @@ export default class DashboardView {
         } else {
             // Fallback for unknown status
             statusText = simulation.status;
-            statusColor = 'text-gray-400';
-            statusBg = 'bg-gray-600';
+            statusColor = "text-gray-400";
+            statusBg = "bg-gray-600";
         }
 
         // Calculate time remaining or elapsed using TIME_UNITS
-        let timeInfo = '';
+        let timeInfo = "";
         if (simulation.status === SIMULATION_STATUS.PENDING && startDate > now) {
             const daysUntilStart = calculateDaysUntilStart(simulation.startDate);
-            timeInfo = `Starts in ${daysUntilStart} day${daysUntilStart !== 1 ? 's' : ''}`;
+            timeInfo = `Starts in ${daysUntilStart} day${daysUntilStart !== 1 ? "s" : ""}`;
         } else if (simulation.status === SIMULATION_STATUS.ACTIVE) {
             const daysRemaining = calculateDaysRemaining(simulation.endDate);
             if (daysRemaining > 0) {
-                timeInfo = `${daysRemaining} day${daysRemaining !== 1 ? 's' : ''} remaining`;
+                timeInfo = `${daysRemaining} day${daysRemaining !== 1 ? "s" : ""} remaining`;
             } else {
-                timeInfo = 'Ending soon';
+                timeInfo = "Ending soon";
             }
         } else if (simulation.status === SIMULATION_STATUS.ENDED) {
             const daysAgo = calculateDaysAgo(simulation.endDate);
-            timeInfo = `Ended ${daysAgo} day${daysAgo !== 1 ? 's' : ''} ago`;
+            timeInfo = `Ended ${daysAgo} day${daysAgo !== 1 ? "s" : ""} ago`;
         }
 
         // Role badge using constants
@@ -319,7 +309,7 @@ export default class DashboardView {
                     Invite Friends
                 </button>
             </div>
-        ` : '';
+        ` : "";
 
         card.innerHTML = `
             <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
@@ -334,7 +324,7 @@ export default class DashboardView {
                         </div>
                     </div>
                     
-                    ${simulation.description ? `<p class="text-gray-400 text-sm mb-3">${simulation.description}</p>` : ''}
+                    ${simulation.description ? `<p class="text-gray-400 text-sm mb-3">${simulation.description}</p>` : ""}
                     
                     <!-- Creator Actions -->
                     ${creatorButtons}
@@ -379,9 +369,9 @@ export default class DashboardView {
 
     attachCardEventListeners(card, simulation) {
         // Copy invite code button
-        const inviteBtn = card.querySelector('.invite-code-btn');
+        const inviteBtn = card.querySelector(".invite-code-btn");
         if (inviteBtn) {
-            inviteBtn.addEventListener('click', async (e) => {
+            inviteBtn.addEventListener("click", async (e) => {
                 const inviteCode = e.currentTarget.dataset.inviteCode;
                 try {
                     await navigator.clipboard.writeText(inviteCode);
@@ -394,15 +384,15 @@ export default class DashboardView {
                         </svg>
                         Copied!
                     `;
-                    inviteBtn.className = 'invite-code-btn bg-green-600 text-white text-xs font-medium py-1.5 px-3 rounded-md flex items-center gap-1.5';
+                    inviteBtn.className = "invite-code-btn bg-green-600 text-white text-xs font-medium py-1.5 px-3 rounded-md flex items-center gap-1.5";
                     
                     setTimeout(() => {
                         inviteBtn.innerHTML = originalText;
-                        inviteBtn.className = 'invite-code-btn bg-gray-700 hover:bg-gray-600 text-white text-xs font-medium py-1.5 px-3 rounded-md transition-colors duration-200 flex items-center gap-1.5';
+                        inviteBtn.className = "invite-code-btn bg-gray-700 hover:bg-gray-600 text-white text-xs font-medium py-1.5 px-3 rounded-md transition-colors duration-200 flex items-center gap-1.5";
                     }, 2000);
                     
                 } catch (err) {
-                    console.error('Failed to copy invite code:', err);
+                    console.error("Failed to copy invite code:", err);
                     // Fallback: show the code in an alert
                     alert(`Invite Code: ${inviteCode}`);
                 }
@@ -410,18 +400,18 @@ export default class DashboardView {
         }
 
         // Email invite button
-        const emailInviteBtn = card.querySelector('.email-invite-btn');
+        const emailInviteBtn = card.querySelector(".email-invite-btn");
         if (emailInviteBtn) {
-            emailInviteBtn.addEventListener('click', (e) => {
+            emailInviteBtn.addEventListener("click", (e) => {
                 e.preventDefault();
                 this.handleEmailInvite(simulation);
             });
         }
 
         // View simulation button
-        const viewBtn = card.querySelector('.view-sim-btn');
+        const viewBtn = card.querySelector(".view-sim-btn");
         if (viewBtn) {
-            viewBtn.addEventListener('click', (e) => {
+            viewBtn.addEventListener("click", (e) => {
                 const simId = e.currentTarget.dataset.simId;
                 console.log(`Viewing simulation: ${simId}`);
                 this.navigateToSimulation(simId);
@@ -443,10 +433,10 @@ export default class DashboardView {
     }
 
     showSimulationsError() {
-        const loadingEl = document.getElementById('simulations-loading');
-        const containerEl = document.getElementById('simulations-container');
+        const loadingEl = document.getElementById("simulations-loading");
+        const containerEl = document.getElementById("simulations-container");
         
-        if (loadingEl) loadingEl.classList.add('hidden');
+        if (loadingEl) loadingEl.classList.add("hidden");
         
         if (containerEl) {
             containerEl.innerHTML = `
@@ -470,7 +460,7 @@ export default class DashboardView {
         }
         
         this.createSimModal.show((result) => {
-            console.log('Simulation created:', result);
+            console.log("Simulation created:", result);
             // Refresh the simulations list
             this.loadData();
         });
@@ -482,7 +472,7 @@ export default class DashboardView {
         }
         
         this.joinSimModal.show((simulation) => {
-            console.log('Joined simulation:', simulation);
+            console.log("Joined simulation:", simulation);
             // Refresh the simulations list
             this.loadData();
             
@@ -501,7 +491,7 @@ export default class DashboardView {
         }
         
         this.emailInviteModal.show(simulation, (invitationData) => {
-            console.log('Email invitations sent:', invitationData);
+            console.log("Email invitations sent:", invitationData);
             
             // Show success notification (optional)
             console.log(`Invitations prepared for ${invitationData.recipients.length} recipients`);

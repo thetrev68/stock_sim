@@ -1,11 +1,10 @@
 // src/services/stocks.js - Enhanced with News Integration for Session 11
 
-import { API_LIMITS, CACHE_CONFIG, API_ERROR_CONFIG } from '../constants/app-config.js';
+import { API_LIMITS, CACHE_CONFIG, API_ERROR_CONFIG } from "../constants/app-config.js";
 import { 
-    formatNewsDate, 
     filterByDateRange, 
     sortByDateDesc 
-} from '../utils/date-utils.js';
+} from "../utils/date-utils.js";
 
 /**
  * StockService with live Finnhub API integration
@@ -14,17 +13,17 @@ import {
 export class StockService {
     constructor() {
         // Your Finnhub API key (current data)
-        this.apiKey = 'd1n5qs9r01qlvnp5lkugd1n5qs9r01qlvnp5lkv0';
-        this.baseUrl = 'https://finnhub.io/api/v1';
+        this.apiKey = "d1n5qs9r01qlvnp5lkugd1n5qs9r01qlvnp5lkv0";
+        this.baseUrl = "https://finnhub.io/api/v1";
 
         // Your Tiingo API key (historical data)
-        this.tiingoApiKey = '5630214e66cda21e12a6a1bcee38baa31eee76f3';
-        this.tiingoBaseUrl = 'https://api.tiingo.com/tiingo';
+        this.tiingoApiKey = "5630214e66cda21e12a6a1bcee38baa31eee76f3";
+        this.tiingoBaseUrl = "https://api.tiingo.com/tiingo";
 
         // NEW: Add this line - automatically detects development environment
-        this.useMockDataFallback = window.location.hostname === 'localhost' || 
-                                window.location.hostname === '127.0.0.1' ||
-                                window.location.hostname.includes('localhost');
+        this.useMockDataFallback = window.location.hostname === "localhost" || 
+                                window.location.hostname === "127.0.0.1" ||
+                                window.location.hostname.includes("localhost");
         
         // Client-side cache to minimize API calls
         this.priceCache = new Map();
@@ -49,90 +48,90 @@ export class StockService {
         
         // Mock prices (keep existing)
         this.mockPrices = {
-            'AAPL': 170.50,
-            'GOOG': 1500.25,
-            'MSFT': 420.00,
-            'TSLA': 180.75,
-            'F': 12.45,
-            'AMZN': 185.30,
-            'NVDA': 1000.00,
-            'SMCI': 800.00,
-            'AMD': 160.00,
-            'NFLX': 600.00,
-            'KO': 62.50,
-            'META': 450.00,
-            'GOOGL': 1495.00,
-            'INTC': 45.00,
-            'CRM': 280.00
+            "AAPL": 170.50,
+            "GOOG": 1500.25,
+            "MSFT": 420.00,
+            "TSLA": 180.75,
+            "F": 12.45,
+            "AMZN": 185.30,
+            "NVDA": 1000.00,
+            "SMCI": 800.00,
+            "AMD": 160.00,
+            "NFLX": 600.00,
+            "KO": 62.50,
+            "META": 450.00,
+            "GOOGL": 1495.00,
+            "INTC": 45.00,
+            "CRM": 280.00
         };
 
         // Mock profiles (keep existing)
         this.mockProfiles = {
-            'MSFT': {
-                name: 'Microsoft Corporation',
-                country: 'US',
-                currency: 'USD',
-                exchange: 'NASDAQ',
-                ipo: '1986-03-13',
+            "MSFT": {
+                name: "Microsoft Corporation",
+                country: "US",
+                currency: "USD",
+                exchange: "NASDAQ",
+                ipo: "1986-03-13",
                 marketCapitalization: 2800000,
                 shareOutstanding: 7430000,
-                ticker: 'MSFT',
-                weburl: 'https://www.microsoft.com/',
-                logo: 'https://static2.finnhub.io/file/publicdatany/finnhubimage/stock_logo/MSFT.png',
-                finnhubIndustry: 'Technology'
+                ticker: "MSFT",
+                weburl: "https://www.microsoft.com/",
+                logo: "https://static2.finnhub.io/file/publicdatany/finnhubimage/stock_logo/MSFT.png",
+                finnhubIndustry: "Technology"
             }
         };
 
         // NEW: Mock news data for fallback
         this.mockNews = {
-            'AAPL': [
+            "AAPL": [
                 {
-                    category: 'technology',
+                    category: "technology",
                     datetime: Date.now() - 3600000, // 1 hour ago
-                    headline: 'Apple Reports Strong Q4 Earnings Beat Expectations',
-                    id: 'mock_1',
-                    image: 'https://via.placeholder.com/400x200/1f2937/ffffff?text=Apple+News',
-                    related: 'AAPL',
-                    source: 'MarketWatch',
-                    summary: 'Apple Inc. reported quarterly earnings that exceeded analyst expectations, driven by strong iPhone sales and services revenue growth.',
-                    url: 'https://example.com/apple-earnings'
+                    headline: "Apple Reports Strong Q4 Earnings Beat Expectations",
+                    id: "mock_1",
+                    image: "https://via.placeholder.com/400x200/1f2937/ffffff?text=Apple+News",
+                    related: "AAPL",
+                    source: "MarketWatch",
+                    summary: "Apple Inc. reported quarterly earnings that exceeded analyst expectations, driven by strong iPhone sales and services revenue growth.",
+                    url: "https://example.com/apple-earnings"
                 },
                 {
-                    category: 'technology',
+                    category: "technology",
                     datetime: Date.now() - 7200000, // 2 hours ago
-                    headline: 'New iPhone Features Drive Consumer Interest',
-                    id: 'mock_2',
-                    image: 'https://via.placeholder.com/400x200/1f2937/ffffff?text=iPhone+News',
-                    related: 'AAPL',
-                    source: 'TechCrunch',
-                    summary: 'Latest iPhone models featuring advanced AI capabilities are generating significant consumer interest ahead of the holiday season.',
-                    url: 'https://example.com/iphone-features'
+                    headline: "New iPhone Features Drive Consumer Interest",
+                    id: "mock_2",
+                    image: "https://via.placeholder.com/400x200/1f2937/ffffff?text=iPhone+News",
+                    related: "AAPL",
+                    source: "TechCrunch",
+                    summary: "Latest iPhone models featuring advanced AI capabilities are generating significant consumer interest ahead of the holiday season.",
+                    url: "https://example.com/iphone-features"
                 }
             ],
-            'TSLA': [
+            "TSLA": [
                 {
-                    category: 'technology',
+                    category: "technology",
                     datetime: Date.now() - 1800000, // 30 minutes ago
-                    headline: 'Tesla Announces New Gigafactory Location',
-                    id: 'mock_3',
-                    image: 'https://via.placeholder.com/400x200/1f2937/ffffff?text=Tesla+News',
-                    related: 'TSLA',
-                    source: 'Reuters',
-                    summary: 'Tesla reveals plans for a new Gigafactory to meet growing demand for electric vehicles in the Asian market.',
-                    url: 'https://example.com/tesla-gigafactory'
+                    headline: "Tesla Announces New Gigafactory Location",
+                    id: "mock_3",
+                    image: "https://via.placeholder.com/400x200/1f2937/ffffff?text=Tesla+News",
+                    related: "TSLA",
+                    source: "Reuters",
+                    summary: "Tesla reveals plans for a new Gigafactory to meet growing demand for electric vehicles in the Asian market.",
+                    url: "https://example.com/tesla-gigafactory"
                 }
             ],
-            'MSFT': [
+            "MSFT": [
                 {
-                    category: 'technology',
+                    category: "technology",
                     datetime: Date.now() - 5400000, // 1.5 hours ago
-                    headline: 'Microsoft Azure Cloud Revenue Surges 30%',
-                    id: 'mock_4',
-                    image: 'https://via.placeholder.com/400x200/1f2937/ffffff?text=Microsoft+News',
-                    related: 'MSFT',
-                    source: 'Bloomberg',
-                    summary: 'Microsoft reports significant growth in cloud computing services, with Azure revenue increasing 30% year-over-year.',
-                    url: 'https://example.com/microsoft-azure'
+                    headline: "Microsoft Azure Cloud Revenue Surges 30%",
+                    id: "mock_4",
+                    image: "https://via.placeholder.com/400x200/1f2937/ffffff?text=Microsoft+News",
+                    related: "MSFT",
+                    source: "Bloomberg",
+                    summary: "Microsoft reports significant growth in cloud computing services, with Azure revenue increasing 30% year-over-year.",
+                    url: "https://example.com/microsoft-azure"
                 }
             ]
         };
@@ -172,8 +171,8 @@ export class StockService {
             const fromDate = new Date();
             fromDate.setDate(fromDate.getDate() - 30);
             
-            const fromDateStr = fromDate.toISOString().split('T')[0];
-            const toDateStr = toDate.toISOString().split('T')[0];
+            const fromDateStr = fromDate.toISOString().split("T")[0];
+            const toDateStr = toDate.toISOString().split("T")[0];
             
             // Build Finnhub company news URL
             const url = `${this.baseUrl}/company-news?symbol=${upperTicker}&from=${fromDateStr}&to=${toDateStr}&token=${this.apiKey}`;
@@ -214,14 +213,14 @@ export class StockService {
             
         } catch (error) {
             console.error(`Error fetching news for ${upperTicker}:`, error);
-            this.handleAPIError(error, 'news');
+            this.handleAPIError(error, "news");
             
             // Only use fallback data in development environment
             if (this.useMockDataFallback) {
-                console.log('Development environment detected - using mock news data');
+                console.log("Development environment detected - using mock news data");
                 return this.getFallbackNews(upperTicker, limit);
             } else {
-                console.log('Production environment - throwing error instead of using mock data');
+                console.log("Production environment - throwing error instead of using mock data");
                 throw new Error(`Unable to fetch news for ${upperTicker}: API temporarily unavailable`);
             }
         }
@@ -267,15 +266,15 @@ export class StockService {
                 id: rawArticle.id || `news_${rawArticle.datetime}_${Math.random().toString(36).substr(2, 9)}`,
                 headline: rawArticle.headline,
                 summary: rawArticle.summary || this.generateSummaryFromHeadline(rawArticle.headline),
-                source: rawArticle.source || 'Unknown Source',
+                source: rawArticle.source || "Unknown Source",
                 datetime: rawArticle.datetime * 1000, // Convert Unix timestamp to milliseconds
-                url: rawArticle.url || '#',
+                url: rawArticle.url || "#",
                 image: rawArticle.image || this.getDefaultNewsImage(),
-                category: rawArticle.category || 'business',
-                related: rawArticle.related || ''
+                category: rawArticle.category || "business",
+                related: rawArticle.related || ""
             };
         } catch (error) {
-            console.error('Error processing news article:', error);
+            console.error("Error processing news article:", error);
             return null;
         }
     }
@@ -288,7 +287,7 @@ export class StockService {
     generateSummaryFromHeadline(headline) {
         // Simple summary generation - could be enhanced
         if (headline.length > 100) {
-            return headline.substring(0, 97) + '...';
+            return headline.substring(0, 97) + "...";
         }
         return `${headline} - Read the full article for more details.`;
     }
@@ -298,7 +297,7 @@ export class StockService {
      * @returns {string} Default image URL
      */
     getDefaultNewsImage() {
-        return 'https://via.placeholder.com/400x200/1f2937/ffffff?text=News';
+        return "https://via.placeholder.com/400x200/1f2937/ffffff?text=News";
     }
 
     /**
@@ -337,11 +336,11 @@ export class StockService {
             id: `generic_${ticker}_${index}`,
             headline: headline,
             summary: `${headline} - Stay updated with the latest developments and market analysis.`,
-            source: 'Market News',
+            source: "Market News",
             datetime: Date.now() - (index * 3600000), // Stagger times by 1 hour
-            url: '#',
+            url: "#",
             image: this.getDefaultNewsImage(),
-            category: 'business',
+            category: "business",
             related: ticker
         }));
     }
@@ -374,14 +373,14 @@ export class StockService {
         
         // Check if API is in cooldown after failures
         if (this.apiStatus.isDown && (now - this.apiStatus.lastFailureTime) < this.apiStatus.cooldownPeriod) {
-            console.log('API in cooldown, using fallback data');
+            console.log("API in cooldown, using fallback data");
             return false;
         }
         
         // Check rate limiting
         this.callTimestamps = this.callTimestamps.filter(timestamp => now - timestamp < API_LIMITS.RATE_LIMIT_WINDOW);
         if (this.callTimestamps.length >= this.maxCallsPerMinute) {
-            console.log('Rate limit exceeded, using fallback data');
+            console.log("Rate limit exceeded, using fallback data");
             return false;
         }
         
@@ -392,10 +391,10 @@ export class StockService {
         console.error(`API Error at ${endpoint}:`, error.message);
         
         // If it's a 403 or 429, mark API as down temporarily
-        if (error.message.includes('403') || error.message.includes('429')) {
+        if (error.message.includes("403") || error.message.includes("429")) {
             this.apiStatus.isDown = true;
             this.apiStatus.lastFailureTime = Date.now();
-            console.warn('API marked as down due to rate limiting. Using fallback data for 5 minutes.');
+            console.warn("API marked as down due to rate limiting. Using fallback data for 5 minutes.");
         }
     }
 
@@ -422,9 +421,9 @@ export class StockService {
             openPrice: previousClose,
             volume: Math.floor(Math.random() * 10000000),
             marketCap: mockProfile?.marketCapitalization || null,
-            exchange: mockProfile?.exchange || 'NASDAQ',
-            currency: mockProfile?.currency || 'USD',
-            sector: mockProfile?.finnhubIndustry || 'Technology',
+            exchange: mockProfile?.exchange || "NASDAQ",
+            currency: mockProfile?.currency || "USD",
+            sector: mockProfile?.finnhubIndustry || "Technology",
             website: mockProfile?.weburl || null,
             logo: mockProfile?.logo || null,
             companyProfile: mockProfile,
@@ -512,9 +511,9 @@ export class StockService {
                 openPrice: quoteData.openPrice,
                 volume: quoteData.volume,
                 marketCap: profileData?.marketCapitalization || null,
-                exchange: profileData?.exchange || 'Unknown',
-                currency: profileData?.currency || 'USD',
-                sector: profileData?.finnhubIndustry || 'Unknown',
+                exchange: profileData?.exchange || "Unknown",
+                currency: profileData?.currency || "USD",
+                sector: profileData?.finnhubIndustry || "Unknown",
                 website: profileData?.weburl || null,
                 logo: profileData?.logo || null,
                 companyProfile: profileData,
@@ -589,7 +588,7 @@ export class StockService {
             return null;
             
         } catch (error) {
-            this.handleAPIError(error, 'quote');
+            this.handleAPIError(error, "quote");
             // Return fallback mock data
             const mockPrice = this.mockPrices[upperTicker];
             if (mockPrice) {
@@ -657,7 +656,7 @@ export class StockService {
             return null;
             
         } catch (error) {
-            this.handleAPIError(error, 'profile');
+            this.handleAPIError(error, "profile");
             
             // Return mock profile if available
             const mockProfile = this.mockProfiles[upperTicker];
@@ -701,7 +700,7 @@ export class StockService {
             
             if (data && data.result && Array.isArray(data.result)) {
                 const results = data.result
-                    .filter(item => item.type === 'Common Stock')
+                    .filter(item => item.type === "Common Stock")
                     .slice(0, 10)
                     .map(item => ({
                         symbol: item.symbol,
@@ -718,21 +717,21 @@ export class StockService {
             return this.getMockSearchResults(searchQuery);
             
         } catch (error) {
-            this.handleAPIError(error, 'search');
+            this.handleAPIError(error, "search");
             return this.getMockSearchResults(searchQuery);
         }
     }
 
     getMockSearchResults(query) {
         const mockResults = [
-            { symbol: 'AAPL', description: 'Apple Inc', type: 'Common Stock', displaySymbol: 'AAPL' },
-            { symbol: 'TSLA', description: 'Tesla Inc', type: 'Common Stock', displaySymbol: 'TSLA' },
-            { symbol: 'MSFT', description: 'Microsoft Corporation', type: 'Common Stock', displaySymbol: 'MSFT' },
-            { symbol: 'GOOG', description: 'Alphabet Inc Class C', type: 'Common Stock', displaySymbol: 'GOOG' },
-            { symbol: 'AMZN', description: 'Amazon.com Inc', type: 'Common Stock', displaySymbol: 'AMZN' },
-            { symbol: 'NVDA', description: 'NVIDIA Corporation', type: 'Common Stock', displaySymbol: 'NVDA' },
-            { symbol: 'META', description: 'Meta Platforms Inc', type: 'Common Stock', displaySymbol: 'META' },
-            { symbol: 'NFLX', description: 'Netflix Inc', type: 'Common Stock', displaySymbol: 'NFLX' }
+            { symbol: "AAPL", description: "Apple Inc", type: "Common Stock", displaySymbol: "AAPL" },
+            { symbol: "TSLA", description: "Tesla Inc", type: "Common Stock", displaySymbol: "TSLA" },
+            { symbol: "MSFT", description: "Microsoft Corporation", type: "Common Stock", displaySymbol: "MSFT" },
+            { symbol: "GOOG", description: "Alphabet Inc Class C", type: "Common Stock", displaySymbol: "GOOG" },
+            { symbol: "AMZN", description: "Amazon.com Inc", type: "Common Stock", displaySymbol: "AMZN" },
+            { symbol: "NVDA", description: "NVIDIA Corporation", type: "Common Stock", displaySymbol: "NVDA" },
+            { symbol: "META", description: "Meta Platforms Inc", type: "Common Stock", displaySymbol: "META" },
+            { symbol: "NFLX", description: "Netflix Inc", type: "Common Stock", displaySymbol: "NFLX" }
         ];
 
         return mockResults.filter(stock => 
@@ -741,7 +740,7 @@ export class StockService {
         );
     }
 
-    async getHistoricalData(ticker, resolution = 'D', days = 30) {
+    async getHistoricalData(ticker, resolution = "D", days = 30) {
         const upperTicker = ticker.toUpperCase();
         
         try {
@@ -752,8 +751,8 @@ export class StockService {
             const startDate = new Date();
             startDate.setDate(startDate.getDate() - days);
             
-            const startDateStr = startDate.toISOString().split('T')[0];
-            const endDateStr = endDate.toISOString().split('T')[0];
+            const startDateStr = startDate.toISOString().split("T")[0];
+            const endDateStr = endDate.toISOString().split("T")[0];
             
             // Build Tiingo URL
             const tiingoUrl = `https://api.tiingo.com/tiingo/daily/${upperTicker}/prices?startDate=${startDateStr}&endDate=${endDateStr}&token=${this.tiingoApiKey}`;
@@ -773,7 +772,7 @@ export class StockService {
             
             // Check if proxy succeeded
             if (!proxyData.contents) {
-                throw new Error('Proxy returned no data');
+                throw new Error("Proxy returned no data");
             }
             
             // Parse the actual Tiingo data
@@ -801,7 +800,7 @@ export class StockService {
             
         } catch (error) {
             console.error(`Error fetching historical data for ${upperTicker}:`, error);
-            this.handleAPIError(error, 'tiingo-proxy');
+            this.handleAPIError(error, "tiingo-proxy");
             
             // Fallback to mock data
             return this.generateMockHistoricalData(upperTicker, days);
@@ -916,7 +915,7 @@ export class StockService {
         this.profileCache.clear();
         this.searchCache.clear();
         this.newsCache.clear(); // NEW: Clear news cache too
-        console.log('All caches cleared');
+        console.log("All caches cleared");
     }
 
     getCacheStatus() {
@@ -933,10 +932,10 @@ export class StockService {
 
         return {
             cacheTimeout: this.cacheTimeout / 1000,
-            prices: cacheInfo(this.priceCache, 'prices'),
-            profiles: cacheInfo(this.profileCache, 'profiles'),
-            searches: cacheInfo(this.searchCache, 'searches'),
-            news: cacheInfo(this.newsCache, 'news') // NEW: Include news cache status
+            prices: cacheInfo(this.priceCache, "prices"),
+            profiles: cacheInfo(this.profileCache, "profiles"),
+            searches: cacheInfo(this.searchCache, "searches"),
+            news: cacheInfo(this.newsCache, "news") // NEW: Include news cache status
         };
     }
 }

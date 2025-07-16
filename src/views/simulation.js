@@ -1,48 +1,32 @@
 // src/views/simulation.js - Enhanced with Leaderboards - Session 9
 // Simulation view with member management, activity tracking, and leaderboards
-import { SimulationService } from '../services/simulation.js';
-import { AuthService } from '../services/auth.js';
-import { ActivityService } from '../services/activity.js';
-import { LeaderboardService } from '../services/leaderboard.js';
-import { LeaderboardOverview } from '../components/simulation/LeaderboardOverview.js';
-import { LeaderboardTable } from '../components/simulation/LeaderboardTable.js';
-import { getPortfolio, initializePortfolio, getRecentTrades } from '../services/trading.js';
-import { REFRESH_INTERVALS } from '../constants/app-config.js';
-import { SIMULATION_STATUS, STATUS_CONFIG, MEMBER_STATUS } from '../constants/simulation-status.js';
-import { TRADE_TYPES, TRADE_TYPE_CONFIG } from '../constants/trade-types.js';
-import { LOADING_MESSAGES } from '../constants/ui-messages.js';
-import { SUCCESS_MESSAGES, INFO_MESSAGES } from '../constants/ui-messages.js';
+import { SimulationService } from "../services/simulation.js";
+import { AuthService } from "../services/auth.js";
+import { ActivityService } from "../services/activity.js";
+import { LeaderboardService } from "../services/leaderboard.js";
+import { LeaderboardOverview } from "../components/simulation/LeaderboardOverview.js";
+import { LeaderboardTable } from "../components/simulation/LeaderboardTable.js";
+import { getPortfolio, initializePortfolio, getRecentTrades } from "../services/trading.js";
+import { REFRESH_INTERVALS } from "../constants/app-config.js";
+import { SIMULATION_STATUS, MEMBER_STATUS } from "../constants/simulation-status.js";
+import { TRADE_TYPE_CONFIG } from "../constants/trade-types.js";
+import { LOADING_MESSAGES } from "../constants/ui-messages.js";
+import { SUCCESS_MESSAGES, INFO_MESSAGES } from "../constants/ui-messages.js";
 import { 
     convertFirebaseDate, 
     formatDateRange, 
-    calculateDaysRemaining, 
-    calculateDaysUntilStart,
-    calculateDaysElapsed,
-    calculateTotalDuration,
-    calculateDaysAgo,
+    calculateDaysRemaining,
     getTimeAgo,
-    getTimeAgoCompact,
-    formatNewsDate,
-    getTomorrowISO,
-    filterByDateRange,
-    sortByDateDesc
-} from '../utils/date-utils.js';
+    getTomorrowISO
+} from "../utils/date-utils.js";
 import { 
     formatCurrencyWithCommas,
-    formatCashPercentage,
-    formatPortfolioChange,
-    calculateGainLoss,
-    formatPrice,
-    formatNumberWithCommas,
-    formatGainLoss,
-    calculateMarketValue,
-    calculateCostBasis,
-    getTradeTypeColorClass
-} from '../utils/currency-utils.js';
+    formatPrice
+} from "../utils/currency-utils.js";
 
 export default class SimulationView {
     constructor() {
-        this.name = 'simulation';
+        this.name = "simulation";
         this.simulationService = new SimulationService();
         this.authService = new AuthService();
         this.activityService = new ActivityService();
@@ -63,7 +47,7 @@ export default class SimulationView {
     async render(container) {
         // Extract simulation ID from URL parameters
         const urlParams = new URLSearchParams(window.location.search);
-        this.simulationId = urlParams.get('sim');
+        this.simulationId = urlParams.get("sim");
 
         container.innerHTML = this.getTemplate();
         this.attachEventListeners(container);
@@ -336,43 +320,43 @@ export default class SimulationView {
 
     attachEventListeners(container) {
         // Trade button
-        const tradeBtn = container.querySelector('#trade-in-sim-btn');
-        const startTradingBtn = container.querySelector('#start-trading-btn');
+        const tradeBtn = container.querySelector("#trade-in-sim-btn");
+        const startTradingBtn = container.querySelector("#start-trading-btn");
         
         [tradeBtn, startTradingBtn].forEach(btn => {
             if (btn) {
-                btn.addEventListener('click', () => this.handleTradeNavigation());
+                btn.addEventListener("click", () => this.handleTradeNavigation());
             }
         });
 
         // Navigation buttons
-        const membersBtn = container.querySelector('#view-members-btn');
-        const leaderboardBtn = container.querySelector('#view-leaderboard-btn');
+        const membersBtn = container.querySelector("#view-members-btn");
+        const leaderboardBtn = container.querySelector("#view-leaderboard-btn");
         
         if (membersBtn) {
-            membersBtn.addEventListener('click', () => this.showMembersTab());
+            membersBtn.addEventListener("click", () => this.showMembersTab());
         }
 
         if (leaderboardBtn) {
-            leaderboardBtn.addEventListener('click', () => this.showLeaderboardTab());
+            leaderboardBtn.addEventListener("click", () => this.showLeaderboardTab());
         }
 
         // Tab navigation
-        const tabBtns = container.querySelectorAll('.tab-btn');
+        const tabBtns = container.querySelectorAll(".tab-btn");
         tabBtns.forEach(btn => {
-            btn.addEventListener('click', (e) => this.switchTab(e.target.id));
+            btn.addEventListener("click", (e) => this.switchTab(e.target.id));
         });
 
         // Member management button
-        const manageMembersBtn = container.querySelector('#manage-members-btn');
+        const manageMembersBtn = container.querySelector("#manage-members-btn");
         if (manageMembersBtn) {
-            manageMembersBtn.addEventListener('click', () => this.handleMemberManagement());
+            manageMembersBtn.addEventListener("click", () => this.handleMemberManagement());
         }
 
         // Add this after the existing manageMembersBtn event listener
-        const settingsBtn = container.querySelector('#simulation-settings-btn');
+        const settingsBtn = container.querySelector("#simulation-settings-btn");
         if (settingsBtn) {
-            settingsBtn.addEventListener('click', () => this.handleSimulationSettings());
+            settingsBtn.addEventListener("click", () => this.handleSimulationSettings());
         }
     }
 
@@ -380,7 +364,7 @@ export default class SimulationView {
         this.currentUser = this.authService.getCurrentUser();
         
         if (!this.currentUser) {
-            console.log('No user signed in for simulation view.');
+            console.log("No user signed in for simulation view.");
             return;
         }
 
@@ -407,12 +391,12 @@ export default class SimulationView {
             try {
                 const statusRefresh = await this.simulationService.refreshSimulationStatus(this.simulationId);
                 if (statusRefresh.updated) {
-                    console.log('Status was updated during load:', statusRefresh);
+                    console.log("Status was updated during load:", statusRefresh);
                     // Reload simulation with fresh status
                     this.currentSimulation = await this.simulationService.getSimulation(this.simulationId);
                 }
             } catch (error) {
-                console.warn('Could not refresh simulation status:', error);
+                console.warn("Could not refresh simulation status:", error);
             }
 
             // Check if user is a member
@@ -440,14 +424,14 @@ export default class SimulationView {
             }
             
         } catch (error) {
-            console.error('Error loading simulation:', error);
+            console.error("Error loading simulation:", error);
             this.showError();
         }
     }
 
     async loadLeaderboard() {
         try {
-            console.log('Loading leaderboard...');
+            console.log("Loading leaderboard...");
             this.leaderboardData = await this.leaderboardService.getLeaderboard(
                 this.simulationId, 
                 false, // Don't force refresh on initial load
@@ -457,16 +441,16 @@ export default class SimulationView {
             // Update user rank in header
             this.updateUserRankDisplay();
             
-            console.log('Leaderboard loaded:', this.leaderboardData);
+            console.log("Leaderboard loaded:", this.leaderboardData);
         } catch (error) {
-            console.error('Error loading leaderboard:', error);
+            console.error("Error loading leaderboard:", error);
             // Don't fail the entire view if leaderboard fails
         }
     }
 
     async refreshLeaderboard() {
         try {
-            console.log('Refreshing leaderboard...');
+            console.log("Refreshing leaderboard...");
             this.leaderboardData = await this.leaderboardService.getLeaderboard(
                 this.simulationId, 
                 true, // Force refresh
@@ -477,9 +461,9 @@ export default class SimulationView {
             this.updateUserRankDisplay();
             this.renderLeaderboardComponents();
             
-            console.log('Leaderboard refreshed successfully');
+            console.log("Leaderboard refreshed successfully");
         } catch (error) {
-            console.error('Error refreshing leaderboard:', error);
+            console.error("Error refreshing leaderboard:", error);
             throw error; // Re-throw so UI can handle error state
         }
     }
@@ -490,8 +474,8 @@ export default class SimulationView {
         const userRanking = this.leaderboardData.rankings?.find(r => r.userId === this.currentUser.uid);
         
         // Update rank in header cards
-        const yourRankEl = document.getElementById('your-rank');
-        const totalParticipantsEl = document.getElementById('total-participants');
+        const yourRankEl = document.getElementById("your-rank");
+        const totalParticipantsEl = document.getElementById("total-participants");
         
         if (yourRankEl && userRanking) {
             yourRankEl.textContent = `#${userRanking.rank}`;
@@ -506,7 +490,7 @@ export default class SimulationView {
         if (!this.leaderboardData) return;
 
         // Render leaderboard overview
-        const overviewContainer = document.getElementById('leaderboard-overview-container');
+        const overviewContainer = document.getElementById("leaderboard-overview-container");
         if (overviewContainer) {
             this.leaderboardOverview.render(
                 overviewContainer,
@@ -517,7 +501,7 @@ export default class SimulationView {
         }
 
         // Render leaderboard table
-        const tableContainer = document.getElementById('leaderboard-table-container');
+        const tableContainer = document.getElementById("leaderboard-table-container");
         if (tableContainer && this.leaderboardData.rankings) {
             this.leaderboardTable.render(
                 tableContainer,
@@ -534,10 +518,10 @@ export default class SimulationView {
     async loadSimulationMembers() {
         try {
             this.simulationMembers = await this.simulationService.getSimulationMembers(this.simulationId);
-            console.log('Loaded simulation members:', this.simulationMembers);
+            console.log("Loaded simulation members:", this.simulationMembers);
             this.displayMembers();
         } catch (error) {
-            console.error('Error loading simulation members:', error);
+            console.error("Error loading simulation members:", error);
             this.showMembersError();
         }
     }
@@ -545,10 +529,10 @@ export default class SimulationView {
     async loadSimulationActivities() {
         try {
             this.simulationActivities = await this.activityService.getSimulationActivities(this.simulationId, 15);
-            console.log('Loaded simulation activities:', this.simulationActivities);
+            console.log("Loaded simulation activities:", this.simulationActivities);
             this.displayActivities();
         } catch (error) {
-            console.error('Error loading simulation activities:', error);
+            console.error("Error loading simulation activities:", error);
             this.showActivitiesError();
         }
     }
@@ -573,39 +557,39 @@ export default class SimulationView {
             }, 0);
             
         } catch (error) {
-            console.error('Error loading simulation portfolio:', error);
+            console.error("Error loading simulation portfolio:", error);
             this.showPortfolioError();
         }
     }
 
     switchTab(tabId) {
         // Update tab buttons
-        document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.classList.remove('border-cyan-500', 'text-cyan-400', 'bg-gray-750');
-            btn.classList.add('border-transparent', 'text-gray-400');
+        document.querySelectorAll(".tab-btn").forEach(btn => {
+            btn.classList.remove("border-cyan-500", "text-cyan-400", "bg-gray-750");
+            btn.classList.add("border-transparent", "text-gray-400");
         });
 
         // Hide all tab content
-        document.querySelectorAll('.tab-content').forEach(content => {
-            content.classList.add('hidden');
+        document.querySelectorAll(".tab-content").forEach(content => {
+            content.classList.add("hidden");
         });
 
         // Show selected tab
         const activeBtn = document.getElementById(tabId);
-        const contentId = tabId.replace('tab-', 'content-');
+        const contentId = tabId.replace("tab-", "content-");
         const activeContent = document.getElementById(contentId);
 
         if (activeBtn) {
-            activeBtn.classList.add('border-cyan-500', 'text-cyan-400', 'bg-gray-750');
-            activeBtn.classList.remove('border-transparent', 'text-gray-400');
+            activeBtn.classList.add("border-cyan-500", "text-cyan-400", "bg-gray-750");
+            activeBtn.classList.remove("border-transparent", "text-gray-400");
         }
 
         if (activeContent) {
-            activeContent.classList.remove('hidden');
+            activeContent.classList.remove("hidden");
         }
 
         // Render leaderboard components when tab is shown
-        if (tabId === 'tab-leaderboard') {
+        if (tabId === "tab-leaderboard") {
             this.renderLeaderboardComponents();
         }
 
@@ -614,29 +598,29 @@ export default class SimulationView {
     }
 
     updateNavigationButtonText(activeTabId) {
-        const membersBtnText = document.getElementById('members-btn-text');
-        const leaderboardBtnText = document.getElementById('leaderboard-btn-text');
+        const membersBtnText = document.getElementById("members-btn-text");
+        const leaderboardBtnText = document.getElementById("leaderboard-btn-text");
         
         if (membersBtnText && leaderboardBtnText) {
             // Reset to default text
-            membersBtnText.textContent = 'Members';
-            leaderboardBtnText.textContent = 'Leaderboard';
+            membersBtnText.textContent = "Members";
+            leaderboardBtnText.textContent = "Leaderboard";
             
             // Update based on current tab
-            if (activeTabId === 'tab-members') {
-                membersBtnText.textContent = 'Portfolio';
-            } else if (activeTabId === 'tab-leaderboard') {
-                leaderboardBtnText.textContent = 'Portfolio';
+            if (activeTabId === "tab-members") {
+                membersBtnText.textContent = "Portfolio";
+            } else if (activeTabId === "tab-leaderboard") {
+                leaderboardBtnText.textContent = "Portfolio";
             }
         }
     }
 
     showLeaderboardTab() {
-        this.switchTab('tab-leaderboard');
+        this.switchTab("tab-leaderboard");
     }
 
     showMembersTab() {
-        this.switchTab('tab-members');
+        this.switchTab("tab-members");
     }
 
     startAutoRefresh() {
@@ -648,7 +632,7 @@ export default class SimulationView {
                     this.loadSimulationActivities()
                 ]);
             } catch (error) {
-                console.error('Auto-refresh error:', error);
+                console.error("Auto-refresh error:", error);
             }
         }, REFRESH_INTERVALS.SIMULATION_DATA);
 
@@ -658,12 +642,12 @@ export default class SimulationView {
                 await this.loadLeaderboard();
                 
                 // Re-render if leaderboard tab is active
-                const activeTab = document.querySelector('.tab-btn.border-cyan-500');
-                if (activeTab && activeTab.id === 'tab-leaderboard') {
+                const activeTab = document.querySelector(".tab-btn.border-cyan-500");
+                if (activeTab && activeTab.id === "tab-leaderboard") {
                     this.renderLeaderboardComponents();
                 }
             } catch (error) {
-                console.error('Leaderboard auto-refresh error:', error);
+                console.error("Leaderboard auto-refresh error:", error);
             }
         }, REFRESH_INTERVALS.LEADERBOARD);
     }
@@ -694,13 +678,13 @@ export default class SimulationView {
     // [Copy all existing methods here - keeping them exactly the same]
     
     displayMembers() {
-        const membersLoading = document.getElementById('members-loading');
-        const membersList = document.getElementById('members-list');
+        const membersLoading = document.getElementById("members-loading");
+        const membersList = document.getElementById("members-list");
         
-        if (membersLoading) membersLoading.classList.add('hidden');
+        if (membersLoading) membersLoading.classList.add("hidden");
         if (membersList) {
-            membersList.classList.remove('hidden');
-            membersList.innerHTML = '';
+            membersList.classList.remove("hidden");
+            membersList.innerHTML = "";
 
             this.simulationMembers.forEach(member => {
                 const memberCard = this.createMemberCard(member);
@@ -710,24 +694,24 @@ export default class SimulationView {
 
         // Show creator actions if current user is creator
         const isCreator = this.simulationMembers.some(member => 
-            member.userId === this.currentUser.uid && member.role === 'creator'
+            member.userId === this.currentUser.uid && member.role === "creator"
         );
         
-        const creatorActions = document.getElementById('creator-actions');
+        const creatorActions = document.getElementById("creator-actions");
         if (creatorActions && isCreator) {
-            creatorActions.classList.remove('hidden');
+            creatorActions.classList.remove("hidden");
         }
     }
 
     createMemberCard(member) {
-        const memberDiv = document.createElement('div');
-        memberDiv.className = 'bg-gray-700 p-4 rounded-lg flex justify-between items-center';
+        const memberDiv = document.createElement("div");
+        memberDiv.className = "bg-gray-700 p-4 rounded-lg flex justify-between items-center";
 
         const joinedDate = member.joinedAt.toDate ? member.joinedAt.toDate() : new Date(member.joinedAt);
         const timeAgo = getTimeAgo(joinedDate);
 
-        const roleColor = member.role === 'creator' ? 'text-cyan-400 bg-cyan-400/10' : 'text-gray-400 bg-gray-400/10';
-        const statusColor = member.status === MEMBER_STATUS.ACTIVE ? 'text-green-400' : 'text-red-400';
+        const roleColor = member.role === "creator" ? "text-cyan-400 bg-cyan-400/10" : "text-gray-400 bg-gray-400/10";
+        const statusColor = member.status === MEMBER_STATUS.ACTIVE ? "text-green-400" : "text-red-400";
 
         memberDiv.innerHTML = `
             <div class="flex items-center gap-4">
@@ -746,7 +730,7 @@ export default class SimulationView {
             <div class="text-right">
                 ${member.userId === this.currentUser.uid ? `
                     <span class="text-cyan-400 text-sm font-medium">You</span>
-                ` : member.role === 'creator' ? `
+                ` : member.role === "creator" ? `
                     <span class="text-yellow-400 text-sm font-medium">Creator</span>
                 ` : `
                     <div class="flex items-center gap-2">
@@ -759,14 +743,14 @@ export default class SimulationView {
                     <button class="kick-member-btn mt-2 text-red-400 hover:text-red-300 text-xs font-medium" data-user-id="${member.userId}" data-user-name="${member.displayName}">
                         Remove
                     </button>
-                ` : ''}
+                ` : ""}
             </div>
         `;
 
         // Attach kick member event listener
-        const kickBtn = memberDiv.querySelector('.kick-member-btn');
+        const kickBtn = memberDiv.querySelector(".kick-member-btn");
         if (kickBtn) {
-            kickBtn.addEventListener('click', (e) => {
+            kickBtn.addEventListener("click", (e) => {
                 const userId = e.target.dataset.userId;
                 const userName = e.target.dataset.userName;
                 this.handleKickMember(userId, userName);
@@ -778,7 +762,7 @@ export default class SimulationView {
 
     isCurrentUserCreator() {
         return this.simulationMembers.some(member => 
-            member.userId === this.currentUser.uid && member.role === 'creator'
+            member.userId === this.currentUser.uid && member.role === "creator"
         );
     }
 
@@ -792,7 +776,7 @@ export default class SimulationView {
             const kickButtons = document.querySelectorAll(`[data-user-id="${userId}"]`);
             kickButtons.forEach(btn => {
                 btn.disabled = true;
-                btn.textContent = 'Removing...';
+                btn.textContent = "Removing...";
             });
 
             // Remove member via simulation service
@@ -803,7 +787,7 @@ export default class SimulationView {
             );
 
             // Show success message
-            this.showTemporaryMessage(`${userName} has been removed from the simulation.`, 'success');
+            this.showTemporaryMessage(`${userName} has been removed from the simulation.`, "success");
 
             // Reload member data
             await this.loadSimulationMembers();
@@ -812,17 +796,17 @@ export default class SimulationView {
             await this.loadLeaderboard();
 
         } catch (error) {
-            console.error('Error removing member:', error);
+            console.error("Error removing member:", error);
             
             // Reset button states
             const kickButtons = document.querySelectorAll(`[data-user-id="${userId}"]`);
             kickButtons.forEach(btn => {
                 btn.disabled = false;
-                btn.textContent = 'Remove';
+                btn.textContent = "Remove";
             });
             
             // Show error message
-            this.showTemporaryMessage(`Failed to remove ${userName}: ${error.message}`, 'error');
+            this.showTemporaryMessage(`Failed to remove ${userName}: ${error.message}`, "error");
         }
     }
 
@@ -837,14 +821,14 @@ export default class SimulationView {
             this.showMemberManagementModal(memberStats);
 
         } catch (error) {
-            console.error('Error loading member statistics:', error);
+            console.error("Error loading member statistics:", error);
             alert(`Failed to load member management: ${error.message}`);
         }
     }
 
     showMemberManagementModal(memberStats) {
         // Remove existing modal if any
-        const existingModal = document.getElementById('member-management-modal');
+        const existingModal = document.getElementById("member-management-modal");
         if (existingModal) {
             existingModal.remove();
         }
@@ -889,7 +873,7 @@ export default class SimulationView {
                                                     <button class="text-red-400 hover:text-red-300 text-xs font-medium px-2 py-1 rounded border border-red-500 hover:bg-red-500/10 transition" onclick="window.app.router.currentView.handleKickMember('${member.userId}', '${member.displayName}')">
                                                         Remove
                                                     </button>
-                                                ` : '<span class="text-cyan-400 text-xs font-medium">You</span>'}
+                                                ` : "<span class=\"text-cyan-400 text-xs font-medium\">You</span>"}
                                             </div>
                                             <div class="grid grid-cols-3 gap-2 mt-3 text-xs">
                                                 <div>
@@ -906,7 +890,7 @@ export default class SimulationView {
                                                 </div>
                                             </div>
                                         </div>
-                                    `).join('')}
+                                    `).join("")}
                                 </div>
                             </div>
 
@@ -923,11 +907,11 @@ export default class SimulationView {
                                                     </div>
                                                     <div>
                                                         <h4 class="text-gray-300 font-medium">${member.displayName}</h4>
-                                                        <p class="text-gray-500 text-sm">Removed ${member.removedAt ? new Date(member.removedAt.toDate()).toLocaleDateString() : 'recently'}</p>
+                                                        <p class="text-gray-500 text-sm">Removed ${member.removedAt ? new Date(member.removedAt.toDate()).toLocaleDateString() : "recently"}</p>
                                                     </div>
                                                 </div>
                                             </div>
-                                        `).join('')}
+                                        `).join("")}
                                     </div>
                                 ` : `
                                     <div class="text-center py-8 text-gray-500">
@@ -955,27 +939,27 @@ export default class SimulationView {
             </div>
         `;
 
-        document.body.insertAdjacentHTML('beforeend', modalHTML);
+        document.body.insertAdjacentHTML("beforeend", modalHTML);
 
         // Attach event listeners
-        document.getElementById('close-management-modal')?.addEventListener('click', () => {
-            document.getElementById('member-management-modal')?.remove();
+        document.getElementById("close-management-modal")?.addEventListener("click", () => {
+            document.getElementById("member-management-modal")?.remove();
         });
         
-        document.getElementById('close-management-modal-btn')?.addEventListener('click', () => {
-            document.getElementById('member-management-modal')?.remove();
+        document.getElementById("close-management-modal-btn")?.addEventListener("click", () => {
+            document.getElementById("member-management-modal")?.remove();
         });
 
         // Close on outside click
-        document.getElementById('member-management-modal')?.addEventListener('click', (e) => {
-            if (e.target.id === 'member-management-modal') {
+        document.getElementById("member-management-modal")?.addEventListener("click", (e) => {
+            if (e.target.id === "member-management-modal") {
                 e.target.remove();
             }
         });
     }
 
     displayActivities() {
-        const activityFeed = document.getElementById('activity-feed');
+        const activityFeed = document.getElementById("activity-feed");
         
         if (!activityFeed) return;
 
@@ -989,7 +973,7 @@ export default class SimulationView {
                 </div>
             `;
         } else {
-            activityFeed.innerHTML = '';
+            activityFeed.innerHTML = "";
             this.simulationActivities.forEach(activity => {
                 const activityElement = this.createActivityElement(activity);
                 activityFeed.appendChild(activityElement);
@@ -999,8 +983,8 @@ export default class SimulationView {
 
     createActivityElement(activity) {
         const formattedActivity = this.activityService.formatActivity(activity);
-        const element = document.createElement('div');
-        element.className = 'bg-gray-700 p-4 rounded-lg flex items-start gap-3';
+        const element = document.createElement("div");
+        element.className = "bg-gray-700 p-4 rounded-lg flex items-start gap-3";
         
         element.innerHTML = `
             <div class="w-10 h-10 ${formattedActivity.iconBg} rounded-lg flex items-center justify-center flex-shrink-0">
@@ -1017,7 +1001,7 @@ export default class SimulationView {
     }
 
     showActivitiesError() {
-        const activityFeed = document.getElementById('activity-feed');
+        const activityFeed = document.getElementById("activity-feed");
         if (activityFeed) {
             activityFeed.innerHTML = `
                 <div class="text-center py-6">
@@ -1032,10 +1016,10 @@ export default class SimulationView {
     }
 
     showMembersError() {
-        const membersLoading = document.getElementById('members-loading');
-        const membersList = document.getElementById('members-list');
+        const membersLoading = document.getElementById("members-loading");
+        const membersList = document.getElementById("members-list");
         
-        if (membersLoading) membersLoading.classList.add('hidden');
+        if (membersLoading) membersLoading.classList.add("hidden");
         if (membersList) {
             membersList.innerHTML = `
                 <div class="text-center py-8">
@@ -1046,34 +1030,34 @@ export default class SimulationView {
                     <p class="text-gray-400">Unable to load member information</p>
                 </div>
             `;
-            membersList.classList.remove('hidden');
+            membersList.classList.remove("hidden");
         }
     }
 
     async loadHoldings() {
-        const holdingsLoading = document.getElementById('sim-holdings-loading');
-        const holdingsEmpty = document.getElementById('sim-holdings-empty');
-        const holdingsList = document.getElementById('sim-holdings-list');
+        const holdingsLoading = document.getElementById("sim-holdings-loading");
+        const holdingsEmpty = document.getElementById("sim-holdings-empty");
+        const holdingsList = document.getElementById("sim-holdings-list");
 
         if (!this.simulationPortfolio || !this.simulationPortfolio.holdings) {
-            if (holdingsLoading) holdingsLoading.classList.add('hidden');
-            if (holdingsEmpty) holdingsEmpty.classList.remove('hidden');
-            if (holdingsList) holdingsList.classList.add('hidden');
+            if (holdingsLoading) holdingsLoading.classList.add("hidden");
+            if (holdingsEmpty) holdingsEmpty.classList.remove("hidden");
+            if (holdingsList) holdingsList.classList.add("hidden");
             return;
         }
 
         const holdings = this.simulationPortfolio.holdings;
         
         if (Object.keys(holdings).length === 0) {
-            if (holdingsLoading) holdingsLoading.classList.add('hidden');
-            if (holdingsEmpty) holdingsEmpty.classList.remove('hidden');
-            if (holdingsList) holdingsList.classList.add('hidden');
+            if (holdingsLoading) holdingsLoading.classList.add("hidden");
+            if (holdingsEmpty) holdingsEmpty.classList.remove("hidden");
+            if (holdingsList) holdingsList.classList.add("hidden");
         } else {
-            if (holdingsLoading) holdingsLoading.classList.add('hidden');
-            if (holdingsEmpty) holdingsEmpty.classList.add('hidden');
+            if (holdingsLoading) holdingsLoading.classList.add("hidden");
+            if (holdingsEmpty) holdingsEmpty.classList.add("hidden");
             if (holdingsList) {
-                holdingsList.classList.remove('hidden');
-                holdingsList.innerHTML = '';
+                holdingsList.classList.remove("hidden");
+                holdingsList.innerHTML = "";
 
                 for (const ticker in holdings) {
                     const holding = holdings[ticker];
@@ -1085,8 +1069,8 @@ export default class SimulationView {
     }
 
     createHoldingElement(ticker, holding) {
-        const element = document.createElement('div');
-        element.className = 'bg-gray-700 p-4 rounded-lg flex justify-between items-center';
+        const element = document.createElement("div");
+        element.className = "bg-gray-700 p-4 rounded-lg flex justify-between items-center";
         
         const currentValue = holding.quantity * holding.avgPrice;
         
@@ -1110,23 +1094,23 @@ export default class SimulationView {
     }
 
     async loadRecentTrades() {
-        const tradesLoading = document.getElementById('sim-trades-loading');
-        const tradesEmpty = document.getElementById('sim-trades-empty');
-        const tradesList = document.getElementById('sim-trades-list');
+        const tradesLoading = document.getElementById("sim-trades-loading");
+        const tradesEmpty = document.getElementById("sim-trades-empty");
+        const tradesList = document.getElementById("sim-trades-list");
 
         try {
             const trades = await getRecentTrades(this.currentUser.uid, 5, this.simulationId);
             
-            if (tradesLoading) tradesLoading.classList.add('hidden');
+            if (tradesLoading) tradesLoading.classList.add("hidden");
             
             if (trades.length === 0) {
-                if (tradesEmpty) tradesEmpty.classList.remove('hidden');
-                if (tradesList) tradesList.classList.add('hidden');
+                if (tradesEmpty) tradesEmpty.classList.remove("hidden");
+                if (tradesList) tradesList.classList.add("hidden");
             } else {
-                if (tradesEmpty) tradesEmpty.classList.add('hidden');
+                if (tradesEmpty) tradesEmpty.classList.add("hidden");
                 if (tradesList) {
-                    tradesList.classList.remove('hidden');
-                    tradesList.innerHTML = '';
+                    tradesList.classList.remove("hidden");
+                    tradesList.innerHTML = "";
 
                     trades.forEach(trade => {
                         const tradeElement = this.createTradeElement(trade);
@@ -1135,19 +1119,19 @@ export default class SimulationView {
                 }
             }
         } catch (error) {
-            console.error('Error loading recent trades:', error);
-            if (tradesLoading) tradesLoading.classList.add('hidden');
-            if (tradesEmpty) tradesEmpty.classList.remove('hidden');
+            console.error("Error loading recent trades:", error);
+            if (tradesLoading) tradesLoading.classList.add("hidden");
+            if (tradesEmpty) tradesEmpty.classList.remove("hidden");
         }
     }
 
     createTradeElement(trade) {
-        const element = document.createElement('div');
-        element.className = 'bg-gray-700 p-4 rounded-lg flex justify-between items-center';
+        const element = document.createElement("div");
+        element.className = "bg-gray-700 p-4 rounded-lg flex justify-between items-center";
         
         const tradeConfig = TRADE_TYPE_CONFIG[trade.type];
-        const tradeTypeClass = tradeConfig?.color || 'text-gray-400';
-        const tradeIcon = tradeConfig?.icon || '•';
+        const tradeTypeClass = tradeConfig?.color || "text-gray-400";
+        const tradeIcon = tradeConfig?.icon || "•";
         const tradeTime = new Date(trade.timestamp).toLocaleDateString();
         
         element.innerHTML = `
@@ -1173,47 +1157,47 @@ export default class SimulationView {
     }
 
     displaySimulation() {
-        const loadingEl = document.getElementById('simulation-loading');
-        const contentEl = document.getElementById('simulation-content');
+        const loadingEl = document.getElementById("simulation-loading");
+        const contentEl = document.getElementById("simulation-content");
         
-        if (loadingEl) loadingEl.classList.add('hidden');
-        if (contentEl) contentEl.classList.remove('hidden');
+        if (loadingEl) loadingEl.classList.add("hidden");
+        if (contentEl) contentEl.classList.remove("hidden");
 
         // Update header
-        const nameEl = document.getElementById('sim-name');
-        const descEl = document.getElementById('sim-description');
-        const statusEl = document.getElementById('sim-status');
-        const participantsEl = document.getElementById('sim-participants');
-        const durationEl = document.getElementById('sim-duration');
-        const tradeBtnTextEl = document.getElementById('trade-btn-text');
+        const nameEl = document.getElementById("sim-name");
+        const descEl = document.getElementById("sim-description");
+        const statusEl = document.getElementById("sim-status");
+        const participantsEl = document.getElementById("sim-participants");
+        const durationEl = document.getElementById("sim-duration");
+        const tradeBtnTextEl = document.getElementById("trade-btn-text");
 
         if (nameEl) nameEl.textContent = this.currentSimulation.name;
         if (descEl) {
             if (this.currentSimulation.description) {
                 descEl.textContent = this.currentSimulation.description;
-                descEl.style.display = 'block';
+                descEl.style.display = "block";
             } else {
-                descEl.style.display = 'none';
+                descEl.style.display = "none";
             }
         }
 
         // Status
         if (statusEl) {
             statusEl.textContent = this.currentSimulation.status.charAt(0).toUpperCase() + this.currentSimulation.status.slice(1);
-            const statusClass = this.currentSimulation.status === SIMULATION_STATUS.ACTIVE ? 'bg-green-600 text-white' :
-                               this.currentSimulation.status === SIMULATION_STATUS.PENDING ? 'bg-yellow-600 text-white' :
-                               'bg-gray-600 text-gray-300';
+            const statusClass = this.currentSimulation.status === SIMULATION_STATUS.ACTIVE ? "bg-green-600 text-white" :
+                               this.currentSimulation.status === SIMULATION_STATUS.PENDING ? "bg-yellow-600 text-white" :
+                               "bg-gray-600 text-gray-300";
             statusEl.className = `px-3 py-1 rounded-full text-sm font-semibold ${statusClass}`;
         }
 
         // Update trade button text based on status
         if (tradeBtnTextEl) {
             if (this.currentSimulation.status === SIMULATION_STATUS.PENDING) {
-                tradeBtnTextEl.textContent = 'Practice Trade';
+                tradeBtnTextEl.textContent = "Practice Trade";
             } else if (this.currentSimulation.status === SIMULATION_STATUS.ACTIVE) {
-                tradeBtnTextEl.textContent = 'Trade Now';
+                tradeBtnTextEl.textContent = "Trade Now";
             } else {
-                tradeBtnTextEl.textContent = 'View Portfolio';
+                tradeBtnTextEl.textContent = "View Portfolio";
             }
         }
 
@@ -1234,20 +1218,20 @@ export default class SimulationView {
         this.updateSimulationRules();
 
         // Calculate days remaining
-        const daysRemainingEl = document.getElementById('days-remaining');
+        const daysRemainingEl = document.getElementById("days-remaining");
         if (daysRemainingEl) {
             const diffDays = calculateDaysRemaining(this.currentSimulation.endDate);
             daysRemainingEl.textContent = diffDays;
         }
 
-        console.log('Simulation displayed:', this.currentSimulation);
+        console.log("Simulation displayed:", this.currentSimulation);
     }
 
     updatePortfolioStats() {
         if (!this.simulationPortfolio) return;
 
-        const portfolioValueEl = document.getElementById('sim-portfolio-value');
-        const portfolioChangeEl = document.getElementById('sim-portfolio-change');
+        const portfolioValueEl = document.getElementById("sim-portfolio-value");
+        const portfolioChangeEl = document.getElementById("sim-portfolio-change");
         
         if (portfolioValueEl) {
             const cash = this.simulationPortfolio.cash;
@@ -1268,29 +1252,29 @@ export default class SimulationView {
                 const change = totalValue - startingBalance;
                 const changePercent = (change / startingBalance * 100);
                 
-                const changeClass = change >= 0 ? 'text-green-400' : 'text-red-400';
+                const changeClass = change >= 0 ? "text-green-400" : "text-red-400";
                 portfolioChangeEl.className = `text-sm font-medium ${changeClass}`;
-                portfolioChangeEl.textContent = `${change >= 0 ? '+' : ''}${change.toFixed(2)} (${changePercent >= 0 ? '+' : ''}${changePercent.toFixed(2)}%)`;
+                portfolioChangeEl.textContent = `${change >= 0 ? "+" : ""}${change.toFixed(2)} (${changePercent >= 0 ? "+" : ""}${changePercent.toFixed(2)}%)`;
             }
         }
     }
 
     updateSimulationRules() {
-        const startingBalanceEl = document.getElementById('sim-starting-balance');
-        const shortSellingEl = document.getElementById('sim-short-selling');
-        const tradingHoursEl = document.getElementById('sim-trading-hours');
-        const commissionEl = document.getElementById('sim-commission');
+        const startingBalanceEl = document.getElementById("sim-starting-balance");
+        const shortSellingEl = document.getElementById("sim-short-selling");
+        const tradingHoursEl = document.getElementById("sim-trading-hours");
+        const commissionEl = document.getElementById("sim-commission");
 
         if (startingBalanceEl) {
             startingBalanceEl.textContent = formatCurrencyWithCommas(this.currentSimulation.startingBalance);
         }
 
         if (shortSellingEl) {
-            shortSellingEl.textContent = this.currentSimulation.rules?.allowShortSelling ? 'Allowed' : 'Not Allowed';
+            shortSellingEl.textContent = this.currentSimulation.rules?.allowShortSelling ? "Allowed" : "Not Allowed";
         }
 
         if (tradingHoursEl) {
-            const hours = this.currentSimulation.rules?.tradingHours === '24/7' ? '24/7' : 'Market Hours';
+            const hours = this.currentSimulation.rules?.tradingHours === "24/7" ? "24/7" : "Market Hours";
             tradingHoursEl.textContent = hours;
         }
 
@@ -1301,8 +1285,8 @@ export default class SimulationView {
     }
 
     showPortfolioError() {
-        const holdingsContainer = document.getElementById('sim-holdings-container');
-        const tradesContainer = document.getElementById('sim-trades-container');
+        const holdingsContainer = document.getElementById("sim-holdings-container");
+        const tradesContainer = document.getElementById("sim-trades-container");
         
         const errorContent = `
             <div class="text-center py-8">
@@ -1320,13 +1304,13 @@ export default class SimulationView {
 
     handleTradeNavigation() {
         if (!this.simulationId) {
-            console.error('No simulation ID available for trading');
+            console.error("No simulation ID available for trading");
             return;
         }
 
-        const tradeBtnTextEl = document.getElementById('trade-btn-text');
+        const tradeBtnTextEl = document.getElementById("trade-btn-text");
         if (tradeBtnTextEl) {
-            tradeBtnTextEl.textContent = 'Loading...';
+            tradeBtnTextEl.textContent = "Loading...";
         }
 
         const tradeUrl = `/trade?sim=${this.simulationId}`;
@@ -1341,15 +1325,15 @@ export default class SimulationView {
     }
 
     showNotFound() {
-        const loadingEl = document.getElementById('simulation-loading');
-        const notFoundEl = document.getElementById('simulation-not-found');
+        const loadingEl = document.getElementById("simulation-loading");
+        const notFoundEl = document.getElementById("simulation-not-found");
         
-        if (loadingEl) loadingEl.classList.add('hidden');
-        if (notFoundEl) notFoundEl.classList.remove('hidden');
+        if (loadingEl) loadingEl.classList.add("hidden");
+        if (notFoundEl) notFoundEl.classList.remove("hidden");
     }
 
     showError() {
-        const loadingEl = document.getElementById('simulation-loading');
+        const loadingEl = document.getElementById("simulation-loading");
         
         if (loadingEl) {
             loadingEl.innerHTML = `
@@ -1370,17 +1354,17 @@ export default class SimulationView {
         }
     }
 
-    showTemporaryMessage(message, type = 'info') {
+    showTemporaryMessage(message, type = "info") {
         // Remove existing message if any
-        const existingMessage = document.getElementById('temp-message');
+        const existingMessage = document.getElementById("temp-message");
         if (existingMessage) {
             existingMessage.remove();
         }
 
         const colorClasses = {
-            success: 'bg-green-900/20 border-green-500 text-green-400',
-            error: 'bg-red-900/20 border-red-500 text-red-400',
-            info: 'bg-blue-900/20 border-blue-500 text-blue-400'
+            success: "bg-green-900/20 border-green-500 text-green-400",
+            error: "bg-red-900/20 border-red-500 text-red-400",
+            info: "bg-blue-900/20 border-blue-500 text-blue-400"
         };
 
         const messageHTML = `
@@ -1398,11 +1382,11 @@ export default class SimulationView {
             </div>
         `;
 
-        document.body.insertAdjacentHTML('beforeend', messageHTML);
+        document.body.insertAdjacentHTML("beforeend", messageHTML);
 
         // Auto-remove after 5 seconds
         setTimeout(() => {
-            document.getElementById('temp-message')?.remove();
+            document.getElementById("temp-message")?.remove();
         }, 5000);
     }
 
@@ -1417,14 +1401,14 @@ export default class SimulationView {
             this.showSimulationSettingsModal(managementStats);
 
         } catch (error) {
-            console.error('Error loading simulation settings:', error);
-            this.showTemporaryMessage(`Failed to load settings: ${error.message}`, 'error');
+            console.error("Error loading simulation settings:", error);
+            this.showTemporaryMessage(`Failed to load settings: ${error.message}`, "error");
         }
     }
 
     showSimulationSettingsModal(stats) {
         // Remove existing modal if any
-        const existingModal = document.getElementById('simulation-settings-modal');
+        const existingModal = document.getElementById("simulation-settings-modal");
         if (existingModal) {
             existingModal.remove();
         }
@@ -1520,7 +1504,7 @@ export default class SimulationView {
                                         rows="3"
                                         class="w-full bg-gray-700 text-white rounded-lg px-4 py-2 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-cyan-500 resize-none"
                                         maxlength="500"
-                                    >${simulation.description || ''}</textarea>
+                                    >${simulation.description || ""}</textarea>
                                 </div>
 
                                 <div class="flex gap-3">
@@ -1560,7 +1544,7 @@ export default class SimulationView {
                                                 <span class="text-gray-400">Original End:</span>
                                                 <span class="text-yellow-400">${convertFirebaseDate(simulation.originalEndDate).toLocaleDateString()}</span>
                                             </div>
-                                        ` : ''}
+                                        ` : ""}
                                     </div>
                                 </div>
 
@@ -1595,7 +1579,7 @@ export default class SimulationView {
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path>
                                             </svg>
                                             <p>Simulation has ended</p>
-                                            ${simulation.endedEarly ? '<p class="text-sm">Ended early by admin</p>' : ''}
+                                            ${simulation.endedEarly ? "<p class=\"text-sm\">Ended early by admin</p>" : ""}
                                         </div>
                                     `}
                                 </div>
@@ -1648,7 +1632,7 @@ export default class SimulationView {
                                             <p class="text-sm text-gray-400">Allow participants to sell stocks they don't own</p>
                                         </div>
                                         <label class="relative inline-flex items-center cursor-pointer">
-                                            <input type="checkbox" id="short-selling-toggle" ${simulation.rules?.allowShortSelling ? 'checked' : ''} class="sr-only peer">
+                                            <input type="checkbox" id="short-selling-toggle" ${simulation.rules?.allowShortSelling ? "checked" : ""} class="sr-only peer">
                                             <div class="w-11 h-6 bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-cyan-300/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-600"></div>
                                         </label>
                                     </div>
@@ -1657,11 +1641,11 @@ export default class SimulationView {
                                         <h4 class="text-white font-medium mb-3">Trading Hours</h4>
                                         <div class="space-y-2">
                                             <label class="flex items-center">
-                                                <input type="radio" name="trading-hours" value="market" ${simulation.rules?.tradingHours !== '24/7' ? 'checked' : ''} class="w-4 h-4 text-cyan-600 bg-gray-600 border-gray-500 focus:ring-cyan-500">
+                                                <input type="radio" name="trading-hours" value="market" ${simulation.rules?.tradingHours !== "24/7" ? "checked" : ""} class="w-4 h-4 text-cyan-600 bg-gray-600 border-gray-500 focus:ring-cyan-500">
                                                 <span class="ml-3 text-white">Market Hours Only</span>
                                             </label>
                                             <label class="flex items-center">
-                                                <input type="radio" name="trading-hours" value="24/7" ${simulation.rules?.tradingHours === '24/7' ? 'checked' : ''} class="w-4 h-4 text-cyan-600 bg-gray-600 border-gray-500 focus:ring-cyan-500">
+                                                <input type="radio" name="trading-hours" value="24/7" ${simulation.rules?.tradingHours === "24/7" ? "checked" : ""} class="w-4 h-4 text-cyan-600 bg-gray-600 border-gray-500 focus:ring-cyan-500">
                                                 <span class="ml-3 text-white">24/7 Trading</span>
                                             </label>
                                         </div>
@@ -1672,7 +1656,7 @@ export default class SimulationView {
                                     </button>
                                 </div>
                             </div>
-                        ` : ''}
+                        ` : ""}
                     </div>
 
                     <div class="p-6 border-t border-gray-700">
@@ -1689,63 +1673,63 @@ export default class SimulationView {
             </div>
         `;
 
-        document.body.insertAdjacentHTML('beforeend', modalHTML);
+        document.body.insertAdjacentHTML("beforeend", modalHTML);
 
         // Attach all event listeners
         this.attachSettingsModalListeners(stats);
     }
 
     attachSettingsModalListeners(stats) {
-        const modal = document.getElementById('simulation-settings-modal');
+        const modal = document.getElementById("simulation-settings-modal");
         
         // Close modal handlers
-        document.getElementById('close-settings-modal')?.addEventListener('click', () => {
+        document.getElementById("close-settings-modal")?.addEventListener("click", () => {
             modal?.remove();
         });
         
-        document.getElementById('close-settings-modal-btn')?.addEventListener('click', () => {
+        document.getElementById("close-settings-modal-btn")?.addEventListener("click", () => {
             modal?.remove();
         });
 
         // Close on outside click
-        modal?.addEventListener('click', (e) => {
-            if (e.target.id === 'simulation-settings-modal') {
+        modal?.addEventListener("click", (e) => {
+            if (e.target.id === "simulation-settings-modal") {
                 modal.remove();
             }
         });
 
         // Save basic settings
-        document.getElementById('save-basic-settings')?.addEventListener('click', async () => {
+        document.getElementById("save-basic-settings")?.addEventListener("click", async () => {
             await this.handleSaveBasicSettings(stats.simulation);
         });
 
         // Reset basic settings
-        document.getElementById('reset-basic-settings')?.addEventListener('click', () => {
-            document.getElementById('sim-name-input').value = stats.simulation.name;
-            document.getElementById('max-members-input').value = stats.simulation.maxMembers;
-            document.getElementById('sim-description-input').value = stats.simulation.description || '';
+        document.getElementById("reset-basic-settings")?.addEventListener("click", () => {
+            document.getElementById("sim-name-input").value = stats.simulation.name;
+            document.getElementById("max-members-input").value = stats.simulation.maxMembers;
+            document.getElementById("sim-description-input").value = stats.simulation.description || "";
         });
 
         // Extend simulation
-        document.getElementById('extend-simulation')?.addEventListener('click', async () => {
+        document.getElementById("extend-simulation")?.addEventListener("click", async () => {
             await this.handleExtendSimulation();
         });
 
         // End simulation early
-        document.getElementById('end-simulation')?.addEventListener('click', async () => {
+        document.getElementById("end-simulation")?.addEventListener("click", async () => {
             await this.handleEndSimulation();
         });
 
         // Save rules (if available)
-        document.getElementById('save-rules')?.addEventListener('click', async () => {
+        document.getElementById("save-rules")?.addEventListener("click", async () => {
             await this.handleSaveRules(stats.simulation);
         });
         }
 
         async handleSaveBasicSettings(originalSimulation) {
-        const nameInput = document.getElementById('sim-name-input');
-        const maxMembersInput = document.getElementById('max-members-input');
-        const descriptionInput = document.getElementById('sim-description-input');
+        const nameInput = document.getElementById("sim-name-input");
+        const maxMembersInput = document.getElementById("max-members-input");
+        const descriptionInput = document.getElementById("sim-description-input");
         
         const settings = {
             name: nameInput.value.trim(),
@@ -1754,12 +1738,12 @@ export default class SimulationView {
         };
 
         if (!settings.name) {
-            this.showTemporaryMessage('Simulation name cannot be empty', 'error');
+            this.showTemporaryMessage("Simulation name cannot be empty", "error");
             return;
         }
 
         try {
-            const saveBtn = document.getElementById('save-basic-settings');
+            const saveBtn = document.getElementById("save-basic-settings");
             saveBtn.disabled = true;
             saveBtn.textContent = INFO_MESSAGES.SAVING_SETTINGS;
 
@@ -1770,7 +1754,7 @@ export default class SimulationView {
             );
 
             if (result.success) {
-                this.showTemporaryMessage(SUCCESS_MESSAGES.SETTINGS_UPDATED, 'success');
+                this.showTemporaryMessage(SUCCESS_MESSAGES.SETTINGS_UPDATED, "success");
                 
                 // Update local simulation data
                 this.currentSimulation.name = settings.name;
@@ -1781,28 +1765,28 @@ export default class SimulationView {
                 this.displaySimulation();
                 
                 if (result.changes.length > 0) {
-                    console.log('Settings changes applied:', result.changes);
+                    console.log("Settings changes applied:", result.changes);
                 }
             }
 
         } catch (error) {
-            console.error('Error saving basic settings:', error);
-            this.showTemporaryMessage(`Failed to save settings: ${error.message}`, 'error');
+            console.error("Error saving basic settings:", error);
+            this.showTemporaryMessage(`Failed to save settings: ${error.message}`, "error");
         } finally {
-            const saveBtn = document.getElementById('save-basic-settings');
+            const saveBtn = document.getElementById("save-basic-settings");
             if (saveBtn) {
                 saveBtn.disabled = false;
-                saveBtn.textContent = 'Save Changes';
+                saveBtn.textContent = "Save Changes";
             }
         }
         }
 
         async handleExtendSimulation() {
-        const newEndDateInput = document.getElementById('new-end-date');
+        const newEndDateInput = document.getElementById("new-end-date");
         const newEndDate = newEndDateInput.value;
 
         if (!newEndDate) {
-            this.showTemporaryMessage('Please select a new end date', 'error');
+            this.showTemporaryMessage("Please select a new end date", "error");
             return;
         }
 
@@ -1812,12 +1796,12 @@ export default class SimulationView {
             return;
         }
 
-        const reason = prompt('Optional: Reason for extension (will be visible to participants):') || 'Extended by admin';
+        const reason = prompt("Optional: Reason for extension (will be visible to participants):") || "Extended by admin";
 
         try {
-            const extendBtn = document.getElementById('extend-simulation');
+            const extendBtn = document.getElementById("extend-simulation");
             extendBtn.disabled = true;
-            extendBtn.textContent = 'Extending...';
+            extendBtn.textContent = "Extending...";
 
             await this.simulationService.extendSimulation(
                 this.simulationId,
@@ -1826,23 +1810,23 @@ export default class SimulationView {
                 reason
             );
 
-            this.showTemporaryMessage('Simulation extended successfully!', 'success');
+            this.showTemporaryMessage("Simulation extended successfully!", "success");
             
             // Reload simulation data
             this.currentSimulation = await this.simulationService.getSimulation(this.simulationId);
             this.displaySimulation();
             
             // Close modal and refresh
-            document.getElementById('simulation-settings-modal')?.remove();
+            document.getElementById("simulation-settings-modal")?.remove();
 
         } catch (error) {
-            console.error('Error extending simulation:', error);
-            this.showTemporaryMessage(`Failed to extend simulation: ${error.message}`, 'error');
+            console.error("Error extending simulation:", error);
+            this.showTemporaryMessage(`Failed to extend simulation: ${error.message}`, "error");
         } finally {
-            const extendBtn = document.getElementById('extend-simulation');
+            const extendBtn = document.getElementById("extend-simulation");
             if (extendBtn) {
                 extendBtn.disabled = false;
-                extendBtn.textContent = 'Extend Simulation';
+                extendBtn.textContent = "Extend Simulation";
             }
         }
         }
@@ -1854,19 +1838,19 @@ export default class SimulationView {
                 return;
             }
 
-            const reason = prompt('Reason for ending early (required - will be visible to all participants):');
+            const reason = prompt("Reason for ending early (required - will be visible to all participants):");
             
-            if (!reason || reason.trim() === '') {
-                this.showTemporaryMessage('Reason is required to end simulation early', 'error');
+            if (!reason || reason.trim() === "") {
+                this.showTemporaryMessage("Reason is required to end simulation early", "error");
                 return;
             }
 
             try {
-                const endBtn = document.getElementById('end-simulation');
+                const endBtn = document.getElementById("end-simulation");
                 endBtn.disabled = true;
-                endBtn.textContent = 'Ending Simulation...';
+                endBtn.textContent = "Ending Simulation...";
 
-                console.log('Calling endSimulationEarly...');
+                console.log("Calling endSimulationEarly...");
                 
                 await this.simulationService.endSimulationEarly(
                     this.simulationId,
@@ -1874,37 +1858,37 @@ export default class SimulationView {
                     reason.trim()
                 );
 
-                console.log('endSimulationEarly completed, refreshing view...');
+                console.log("endSimulationEarly completed, refreshing view...");
 
-                this.showTemporaryMessage('Simulation ended successfully', 'success');
+                this.showTemporaryMessage("Simulation ended successfully", "success");
                 
                 // Close modal first
-                document.getElementById('simulation-settings-modal')?.remove();
+                document.getElementById("simulation-settings-modal")?.remove();
                 
                 // Force complete reload of simulation data
-                console.log('Forcing simulation data reload...');
+                console.log("Forcing simulation data reload...");
                 await this.forceReloadSimulationData();
                 
                 // Show final results message
                 setTimeout(() => {
-                    this.showTemporaryMessage('Simulation has ended. Final results are now available.', 'info');
+                    this.showTemporaryMessage("Simulation has ended. Final results are now available.", "info");
                 }, 1000);
 
             } catch (error) {
-                console.error('Error ending simulation:', error);
-                this.showTemporaryMessage(`Failed to end simulation: ${error.message}`, 'error');
+                console.error("Error ending simulation:", error);
+                this.showTemporaryMessage(`Failed to end simulation: ${error.message}`, "error");
             } finally {
-                const endBtn = document.getElementById('end-simulation');
+                const endBtn = document.getElementById("end-simulation");
                 if (endBtn) {
                     endBtn.disabled = false;
-                    endBtn.textContent = 'End Simulation Early';
+                    endBtn.textContent = "End Simulation Early";
                 }
             }
         }
 
         async handleSaveRules(originalSimulation) {
-        const allowShortSelling = document.getElementById('short-selling-toggle')?.checked || false;
-        const tradingHours = document.querySelector('input[name="trading-hours"]:checked')?.value || 'market';
+        const allowShortSelling = document.getElementById("short-selling-toggle")?.checked || false;
+        const tradingHours = document.querySelector("input[name=\"trading-hours\"]:checked")?.value || "market";
 
         const rules = {
             allowShortSelling,
@@ -1913,9 +1897,9 @@ export default class SimulationView {
         };
 
         try {
-            const saveBtn = document.getElementById('save-rules');
+            const saveBtn = document.getElementById("save-rules");
             saveBtn.disabled = true;
-            saveBtn.textContent = 'Saving Rules...';
+            saveBtn.textContent = "Saving Rules...";
 
             const result = await this.simulationService.updateSimulationSettings(
                 this.simulationId,
@@ -1924,7 +1908,7 @@ export default class SimulationView {
             );
 
             if (result.success) {
-                this.showTemporaryMessage('Trading rules updated successfully', 'success');
+                this.showTemporaryMessage("Trading rules updated successfully", "success");
                 
                 // Update local simulation data
                 this.currentSimulation.rules = rules;
@@ -1932,26 +1916,26 @@ export default class SimulationView {
             }
 
         } catch (error) {
-            console.error('Error saving rules:', error);
-            this.showTemporaryMessage(`Failed to save rules: ${error.message}`, 'error');
+            console.error("Error saving rules:", error);
+            this.showTemporaryMessage(`Failed to save rules: ${error.message}`, "error");
         } finally {
-            const saveBtn = document.getElementById('save-rules');
+            const saveBtn = document.getElementById("save-rules");
             if (saveBtn) {
                 saveBtn.disabled = false;
-                saveBtn.textContent = 'Save Rule Changes';
+                saveBtn.textContent = "Save Rule Changes";
             }
         }
 
         // Add these at the end of the attachSettingsModalListeners method:
 
         // Export results
-        document.getElementById('export-results')?.addEventListener('click', async () => {
+        document.getElementById("export-results")?.addEventListener("click", async () => {
             await this.handleExportResults();
         });
 
         // Archive from settings modal
-        document.getElementById('archive-simulation')?.addEventListener('click', async () => {
-            document.getElementById('simulation-settings-modal')?.remove();
+        document.getElementById("archive-simulation")?.addEventListener("click", async () => {
+            document.getElementById("simulation-settings-modal")?.remove();
             await this.handleArchiveSimulation();
         });
     }
@@ -1959,13 +1943,13 @@ export default class SimulationView {
     showArchivePrompt() {
         // Only show to creators
         const isCreator = this.simulationMembers.some(member => 
-            member.userId === this.currentUser.uid && member.role === 'creator'
+            member.userId === this.currentUser.uid && member.role === "creator"
         );
         
         if (!isCreator) return;
 
         // Show archive suggestion banner
-        const existingBanner = document.getElementById('archive-banner');
+        const existingBanner = document.getElementById("archive-banner");
         if (existingBanner) return; // Don't show multiple times
 
         const bannerHTML = `
@@ -1997,17 +1981,17 @@ export default class SimulationView {
         `;
 
         // Insert banner at top of simulation content
-        const simulationContent = document.getElementById('simulation-content');
+        const simulationContent = document.getElementById("simulation-content");
         if (simulationContent) {
-            simulationContent.insertAdjacentHTML('afterbegin', bannerHTML);
+            simulationContent.insertAdjacentHTML("afterbegin", bannerHTML);
 
             // Attach event listeners
-            document.getElementById('archive-now-btn')?.addEventListener('click', () => {
+            document.getElementById("archive-now-btn")?.addEventListener("click", () => {
                 this.handleArchiveSimulation();
             });
 
-            document.getElementById('dismiss-archive-btn')?.addEventListener('click', () => {
-                document.getElementById('archive-banner')?.remove();
+            document.getElementById("dismiss-archive-btn")?.addEventListener("click", () => {
+                document.getElementById("archive-banner")?.remove();
             });
         }
     }
@@ -2018,10 +2002,10 @@ export default class SimulationView {
         if (!confirmed) return;
 
         try {
-            const archiveBtn = document.getElementById('archive-now-btn');
+            const archiveBtn = document.getElementById("archive-now-btn");
             if (archiveBtn) {
                 archiveBtn.disabled = true;
-                archiveBtn.textContent = 'Archiving...';
+                archiveBtn.textContent = "Archiving...";
             }
 
             // Archive the simulation with current leaderboard
@@ -2032,27 +2016,27 @@ export default class SimulationView {
             );
 
             if (result.success) {
-                this.showTemporaryMessage('Simulation archived successfully!', 'success');
+                this.showTemporaryMessage("Simulation archived successfully!", "success");
                 
                 // Update local simulation data
                 this.currentSimulation.archived = true;
                 this.currentSimulation.archiveId = result.archiveId;
                 
                 // Remove archive banner
-                document.getElementById('archive-banner')?.remove();
+                document.getElementById("archive-banner")?.remove();
                 
                 // Show archive access info
                 this.showArchiveSuccessInfo(result.archiveId);
             }
 
         } catch (error) {
-            console.error('Error archiving simulation:', error);
-            this.showTemporaryMessage(`Failed to archive simulation: ${error.message}`, 'error');
+            console.error("Error archiving simulation:", error);
+            this.showTemporaryMessage(`Failed to archive simulation: ${error.message}`, "error");
         } finally {
-            const archiveBtn = document.getElementById('archive-now-btn');
+            const archiveBtn = document.getElementById("archive-now-btn");
             if (archiveBtn) {
                 archiveBtn.disabled = false;
-                archiveBtn.textContent = 'Archive Now';
+                archiveBtn.textContent = "Archive Now";
             }
         }
     }
@@ -2086,23 +2070,23 @@ export default class SimulationView {
             </div>
         `;
 
-        const simulationContent = document.getElementById('simulation-content');
+        const simulationContent = document.getElementById("simulation-content");
         if (simulationContent) {
-            simulationContent.insertAdjacentHTML('afterbegin', infoHTML);
+            simulationContent.insertAdjacentHTML("afterbegin", infoHTML);
 
             // Attach event listeners
-            document.getElementById('view-archive-btn')?.addEventListener('click', (e) => {
+            document.getElementById("view-archive-btn")?.addEventListener("click", (e) => {
                 const archiveId = e.target.dataset.archiveId;
                 this.navigateToArchive(archiveId);
             });
 
-            document.getElementById('dismiss-success-btn')?.addEventListener('click', () => {
-                document.getElementById('archive-success-banner')?.remove();
+            document.getElementById("dismiss-success-btn")?.addEventListener("click", () => {
+                document.getElementById("archive-success-banner")?.remove();
             });
 
             // Auto-dismiss after 10 seconds
             setTimeout(() => {
-                document.getElementById('archive-success-banner')?.remove();
+                document.getElementById("archive-success-banner")?.remove();
             }, 10000);
         }
     }
@@ -2119,7 +2103,7 @@ export default class SimulationView {
 
     async handleExportResults() {
         try {
-            const exportBtn = document.getElementById('export-results');
+            const exportBtn = document.getElementById("export-results");
             if (exportBtn) {
                 exportBtn.disabled = true;
                 exportBtn.innerHTML = `
@@ -2143,23 +2127,23 @@ export default class SimulationView {
             });
 
             // Create and download file
-            const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+            const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: "application/json" });
             const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
+            const a = document.createElement("a");
             a.href = url;
-            a.download = `${this.currentSimulation.name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_results_${new Date().toISOString().split('T')[0]}.json`;
+            a.download = `${this.currentSimulation.name.replace(/[^a-z0-9]/gi, "_").toLowerCase()}_results_${new Date().toISOString().split("T")[0]}.json`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
 
-            this.showTemporaryMessage('Results exported successfully!', 'success');
+            this.showTemporaryMessage("Results exported successfully!", "success");
 
         } catch (error) {
-            console.error('Error exporting results:', error);
-            this.showTemporaryMessage(`Failed to export results: ${error.message}`, 'error');
+            console.error("Error exporting results:", error);
+            this.showTemporaryMessage(`Failed to export results: ${error.message}`, "error");
         } finally {
-            const exportBtn = document.getElementById('export-results');
+            const exportBtn = document.getElementById("export-results");
             if (exportBtn) {
                 exportBtn.disabled = false;
                 exportBtn.innerHTML = `
@@ -2174,7 +2158,7 @@ export default class SimulationView {
 
     async forceReloadSimulationData() {
         try {
-            console.log('Force reloading simulation data...');
+            console.log("Force reloading simulation data...");
             
             // Clear any caches if they exist
             if (this.simulationService.clearCache) {
@@ -2182,14 +2166,14 @@ export default class SimulationView {
             }
             
             // Force refresh simulation status first
-            console.log('Refreshing simulation status...');
+            console.log("Refreshing simulation status...");
             const statusRefresh = await this.simulationService.refreshSimulationStatus(this.simulationId);
-            console.log('Status refresh result:', statusRefresh);
+            console.log("Status refresh result:", statusRefresh);
             
             // Reload simulation with fresh data
-            console.log('Reloading simulation details...');
+            console.log("Reloading simulation details...");
             this.currentSimulation = await this.simulationService.getSimulation(this.simulationId);
-            console.log('Current simulation after reload:', {
+            console.log("Current simulation after reload:", {
                 id: this.currentSimulation.id,
                 status: this.currentSimulation.status,
                 endedEarly: this.currentSimulation.endedEarly,
@@ -2197,7 +2181,7 @@ export default class SimulationView {
             });
             
             // Reload all data components
-            console.log('Reloading all data components...');
+            console.log("Reloading all data components...");
             await Promise.all([
                 this.loadSimulationMembers(),
                 this.loadSimulationActivities(),
@@ -2206,45 +2190,45 @@ export default class SimulationView {
             ]);
             
             // Update the display
-            console.log('Updating display...');
+            console.log("Updating display...");
             this.displaySimulation();
             
             // Check if archive prompt should be shown
             if (this.currentSimulation.status === SIMULATION_STATUS.ENDED && !this.currentSimulation.archived) {
-                console.log('Showing archive prompt...');
+                console.log("Showing archive prompt...");
                 this.showArchivePrompt();
             }
             
-            console.log('Force reload completed successfully');
+            console.log("Force reload completed successfully");
             
         } catch (error) {
-            console.error('Error during force reload:', error);
-            this.showTemporaryMessage('Warning: Some data may not have refreshed properly', 'error');
+            console.error("Error during force reload:", error);
+            this.showTemporaryMessage("Warning: Some data may not have refreshed properly", "error");
         }
     }
 
     // TEMPORARY DEBUG METHOD - Remove after testing
     async debugFirestoreUpdate() {
         try {
-            console.log('Testing direct Firestore update...');
+            console.log("Testing direct Firestore update...");
             
-            const { getFirestoreDb } = await import('../services/firebase.js');
-            const { doc, updateDoc, serverTimestamp } = await import('firebase/firestore');
+            const { getFirestoreDb } = await import("../services/firebase.js");
+            const { doc, updateDoc, serverTimestamp } = await import("firebase/firestore");
             
             const db = getFirestoreDb();
-            const simRef = doc(db, 'simulations', this.simulationId);
+            const simRef = doc(db, "simulations", this.simulationId);
             
             await updateDoc(simRef, {
-                debugTest: 'test_value',
+                debugTest: "test_value",
                 debugTimestamp: serverTimestamp()
             });
             
-            console.log('Direct Firestore update succeeded');
-            this.showTemporaryMessage('Firestore update test succeeded', 'success');
+            console.log("Direct Firestore update succeeded");
+            this.showTemporaryMessage("Firestore update test succeeded", "success");
             
         } catch (error) {
-            console.error('Direct Firestore update failed:', error);
-            this.showTemporaryMessage(`Firestore test failed: ${error.message}`, 'error');
+            console.error("Direct Firestore update failed:", error);
+            this.showTemporaryMessage(`Firestore test failed: ${error.message}`, "error");
         }
     }
 }

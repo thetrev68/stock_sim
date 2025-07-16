@@ -1,6 +1,6 @@
 // src/components/simulation/CreateSimulationModal.js
-import { SimulationService } from '../../services/simulation.js';
-import { AuthService } from '../../services/auth.js';
+import { SimulationService } from "../../services/simulation.js";
+import { AuthService } from "../../services/auth.js";
 
 export class CreateSimulationModal {
     constructor() {
@@ -17,31 +17,31 @@ export class CreateSimulationModal {
         this.attachEventListeners();
         
         setTimeout(() => {
-            const nameInput = document.getElementById('sim-name');
+            const nameInput = document.getElementById("sim-name");
             if (nameInput) nameInput.focus();
         }, 100);
     }
 
     hide() {
         this.isVisible = false;
-        const modal = document.getElementById('create-simulation-modal');
+        const modal = document.getElementById("create-simulation-modal");
         if (modal) {
             modal.remove();
         }
     }
 
     render() {
-        const existingModal = document.getElementById('create-simulation-modal');
+        const existingModal = document.getElementById("create-simulation-modal");
         if (existingModal) {
             existingModal.remove();
         }
 
         const today = new Date();
-        const todayStr = today.toISOString().split('T')[0];
+        const todayStr = today.toISOString().split("T")[0];
         
         const defaultEndDate = new Date();
         defaultEndDate.setDate(defaultEndDate.getDate() + 7);
-        const defaultEndStr = defaultEndDate.toISOString().split('T')[0];
+        const defaultEndStr = defaultEndDate.toISOString().split("T")[0];
 
         const modalHTML = `
             <div id="create-simulation-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -221,42 +221,42 @@ export class CreateSimulationModal {
             </div>
         `;
 
-        document.body.insertAdjacentHTML('beforeend', modalHTML);
+        document.body.insertAdjacentHTML("beforeend", modalHTML);
     }
 
     attachEventListeners() {
-        const modal = document.getElementById('create-simulation-modal');
-        const form = document.getElementById('create-simulation-form');
-        const closeBtn = document.getElementById('close-modal-btn');
-        const cancelBtn = document.getElementById('cancel-create-btn');
+        const modal = document.getElementById("create-simulation-modal");
+        const form = document.getElementById("create-simulation-form");
+        const closeBtn = document.getElementById("close-modal-btn");
+        const cancelBtn = document.getElementById("cancel-create-btn");
 
-        closeBtn?.addEventListener('click', () => this.hide());
-        cancelBtn?.addEventListener('click', () => this.hide());
+        closeBtn?.addEventListener("click", () => this.hide());
+        cancelBtn?.addEventListener("click", () => this.hide());
         
-        modal?.addEventListener('click', (e) => {
+        modal?.addEventListener("click", (e) => {
             if (e.target === modal) this.hide();
         });
 
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && this.isVisible) this.hide();
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "Escape" && this.isVisible) this.hide();
         });
 
-        form?.addEventListener('submit', (e) => {
+        form?.addEventListener("submit", (e) => {
             e.preventDefault();
             this.handleCreateSimulation();
         });
 
-        const startDateInput = document.getElementById('sim-start-date');
-        const endDateInput = document.getElementById('sim-end-date');
+        const startDateInput = document.getElementById("sim-start-date");
+        const endDateInput = document.getElementById("sim-end-date");
         
-        startDateInput?.addEventListener('change', () => {
+        startDateInput?.addEventListener("change", () => {
             const startDate = startDateInput.value;
             if (startDate) {
                 endDateInput.min = startDate;
                 if (endDateInput.value && endDateInput.value < startDate) {
                     const newEndDate = new Date(startDate);
                     newEndDate.setDate(newEndDate.getDate() + 7);
-                    endDateInput.value = newEndDate.toISOString().split('T')[0];
+                    endDateInput.value = newEndDate.toISOString().split("T")[0];
                 }
             }
         });
@@ -273,7 +273,7 @@ export class CreateSimulationModal {
         try {
             const user = this.authService.getCurrentUser();
             if (!user) {
-                throw new Error('You must be signed in to create a simulation');
+                throw new Error("You must be signed in to create a simulation");
             }
 
             this.simulationService.initialize();
@@ -281,7 +281,7 @@ export class CreateSimulationModal {
             const result = await this.simulationService.createSimulation(user.uid, formData);
             
             if (result.success) {
-                console.log('Simulation created successfully:', result);
+                console.log("Simulation created successfully:", result);
                 
                 this.showSuccess(result.inviteCode);
                 
@@ -295,7 +295,7 @@ export class CreateSimulationModal {
             }
 
         } catch (error) {
-            console.error('Error creating simulation:', error);
+            console.error("Error creating simulation:", error);
             this.showError(error.message);
         } finally {
             this.setLoading(false);
@@ -303,32 +303,32 @@ export class CreateSimulationModal {
     }
 
     getFormData() {
-        const name = document.getElementById('sim-name')?.value.trim();
-        const description = document.getElementById('sim-description')?.value.trim();
-        const startDate = document.getElementById('sim-start-date')?.value;
-        const endDate = document.getElementById('sim-end-date')?.value;
-        const startingBalance = parseInt(document.getElementById('sim-starting-balance')?.value);
-        const maxMembers = parseInt(document.getElementById('sim-max-members')?.value);
-        const allowShortSelling = document.getElementById('sim-short-selling')?.checked;
-        const tradingHours = document.querySelector('input[name="trading-hours"]:checked')?.value;
+        const name = document.getElementById("sim-name")?.value.trim();
+        const description = document.getElementById("sim-description")?.value.trim();
+        const startDate = document.getElementById("sim-start-date")?.value;
+        const endDate = document.getElementById("sim-end-date")?.value;
+        const startingBalance = parseInt(document.getElementById("sim-starting-balance")?.value);
+        const maxMembers = parseInt(document.getElementById("sim-max-members")?.value);
+        const allowShortSelling = document.getElementById("sim-short-selling")?.checked;
+        const tradingHours = document.querySelector("input[name=\"trading-hours\"]:checked")?.value;
 
         if (!name) {
-            this.showError('Simulation name is required');
+            this.showError("Simulation name is required");
             return null;
         }
 
         if (!startDate || !endDate) {
-            this.showError('Start and end dates are required');
+            this.showError("Start and end dates are required");
             return null;
         }
 
         if (new Date(endDate) <= new Date(startDate)) {
-            this.showError('End date must be after start date');
+            this.showError("End date must be after start date");
             return null;
         }
 
         if (!startingBalance || startingBalance < 1000) {
-            this.showError('Starting balance must be at least $1,000');
+            this.showError("Starting balance must be at least $1,000");
             return null;
         }
 
@@ -346,37 +346,37 @@ export class CreateSimulationModal {
     }
 
     setLoading(loading) {
-        const submitBtn = document.getElementById('create-sim-btn');
-        const submitText = document.getElementById('create-sim-text');
-        const loadingSpinner = document.getElementById('create-sim-loading');
+        const submitBtn = document.getElementById("create-sim-btn");
+        const submitText = document.getElementById("create-sim-text");
+        const loadingSpinner = document.getElementById("create-sim-loading");
         
         if (submitBtn) submitBtn.disabled = loading;
         if (submitText) {
             if (loading) {
-                submitText.classList.add('hidden');
-                loadingSpinner?.classList.remove('hidden');
+                submitText.classList.add("hidden");
+                loadingSpinner?.classList.remove("hidden");
             } else {
-                submitText.classList.remove('hidden');
-                loadingSpinner?.classList.add('hidden');
+                submitText.classList.remove("hidden");
+                loadingSpinner?.classList.add("hidden");
             }
         }
     }
 
     showError(message) {
-        const errorDiv = document.getElementById('create-sim-error');
-        const errorText = errorDiv?.querySelector('p');
+        const errorDiv = document.getElementById("create-sim-error");
+        const errorText = errorDiv?.querySelector("p");
         
         if (errorText) errorText.textContent = message;
-        if (errorDiv) errorDiv.classList.remove('hidden');
+        if (errorDiv) errorDiv.classList.remove("hidden");
     }
 
     hideError() {
-        const errorDiv = document.getElementById('create-sim-error');
-        if (errorDiv) errorDiv.classList.add('hidden');
+        const errorDiv = document.getElementById("create-sim-error");
+        if (errorDiv) errorDiv.classList.add("hidden");
     }
 
     showSuccess(inviteCode) {
-        const submitBtn = document.getElementById('create-sim-btn');
+        const submitBtn = document.getElementById("create-sim-btn");
         if (submitBtn) {
             submitBtn.innerHTML = `
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -384,7 +384,7 @@ export class CreateSimulationModal {
                 </svg>
                 Created! Code: ${inviteCode}
             `;
-            submitBtn.className = 'flex-1 bg-green-600 text-white font-bold py-3 px-6 rounded-lg flex items-center justify-center';
+            submitBtn.className = "flex-1 bg-green-600 text-white font-bold py-3 px-6 rounded-lg flex items-center justify-center";
         }
     }
 }

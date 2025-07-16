@@ -4,16 +4,8 @@
 
 import { 
     formatCurrencyWithCommas,
-    formatCashPercentage,
-    formatPortfolioChange,
-    calculateGainLoss,
-    formatPrice,
-    formatNumberWithCommas,
-    formatGainLoss,
-    calculateMarketValue,
-    calculateCostBasis,
-    getTradeTypeColorClass
-} from '../utils/currency-utils.js';
+    formatGainLoss
+} from "../../utils/currency-utils.js";
 
 /**
  * Generate the member management modal template
@@ -44,7 +36,7 @@ export const getMemberManagementModalTemplate = (memberStats, activeMemberCount,
                         <div>
                             <h3 class="text-lg font-semibold text-white mb-4">Active Members (${activeMemberCount})</h3>
                             <div class="space-y-3">
-                                ${memberStats.filter(m => m.status === 'active').map(member => `
+                                ${memberStats.filter(m => m.status === "active").map(member => `
                                     <div class="bg-gray-700 p-4 rounded-lg">
                                         <div class="flex justify-between items-start">
                                             <div class="flex items-center gap-3">
@@ -64,7 +56,7 @@ export const getMemberManagementModalTemplate = (memberStats, activeMemberCount,
                                                         </svg>
                                                     </button>
                                                 </div>
-                                            ` : ''}
+                                            ` : ""}
                                         </div>
                                         
                                         <div class="mt-3 grid grid-cols-2 gap-4 text-sm">
@@ -78,32 +70,32 @@ export const getMemberManagementModalTemplate = (memberStats, activeMemberCount,
                                             </div>
                                             <div>
                                                 <span class="text-gray-400">Gain/Loss</span>
-                                                <p class="font-medium ${(member.totalGainLoss || 0) >= 0 ? 'text-green-400' : 'text-red-400'}">
+                                                <p class="font-medium ${(member.totalGainLoss || 0) >= 0 ? "text-green-400" : "text-red-400"}">
                                                     ${formatGainLoss(member.totalGainLoss || 0, 0).amount}
                                                 </p>
                                             </div>
                                             <div>
                                                 <span class="text-gray-400">Joined</span>
-                                                <p class="text-white font-medium">${member.joinedAt ? new Date(member.joinedAt).toLocaleDateString() : 'N/A'}</p>
+                                                <p class="text-white font-medium">${member.joinedAt ? new Date(member.joinedAt).toLocaleDateString() : "N/A"}</p>
                                             </div>
                                         </div>
                                     </div>
-                                `).join('')}
+                                `).join("")}
                             </div>
                         </div>
 
                         <!-- Removed Members -->
                         <div>
-                            <h3 class="text-lg font-semibold text-white mb-4">Removed Members (${memberStats.filter(m => m.status === 'removed').length})</h3>
+                            <h3 class="text-lg font-semibold text-white mb-4">Removed Members (${memberStats.filter(m => m.status === "removed").length})</h3>
                             <div class="space-y-3">
-                                ${memberStats.filter(m => m.status === 'removed').length === 0 ? `
+                                ${memberStats.filter(m => m.status === "removed").length === 0 ? `
                                     <div class="text-center py-8 text-gray-400">
                                         <svg class="w-12 h-12 mx-auto mb-3 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
                                         </svg>
                                         <p>No removed members</p>
                                     </div>
-                                ` : memberStats.filter(m => m.status === 'removed').map(member => `
+                                ` : memberStats.filter(m => m.status === "removed").map(member => `
                                     <div class="bg-gray-700 p-4 rounded-lg opacity-75">
                                         <div class="flex items-center gap-3">
                                             <div class="w-10 h-10 bg-gray-600 rounded-full flex items-center justify-center">
@@ -126,17 +118,17 @@ export const getMemberManagementModalTemplate = (memberStats, activeMemberCount,
                                             </div>
                                             <div>
                                                 <span class="text-gray-500">Final Gain/Loss</span>
-                                                <p class="font-medium ${(member.totalGainLoss || 0) >= 0 ? 'text-green-500' : 'text-red-500'}">
+                                                <p class="font-medium ${(member.totalGainLoss || 0) >= 0 ? "text-green-500" : "text-red-500"}">
                                                     ${formatGainLoss(member.totalGainLoss || 0, 0).amount}
                                                 </p>
                                             </div>
                                             <div>
                                                 <span class="text-gray-500">Removed</span>
-                                                <p class="text-gray-400 font-medium">${member.removedAt ? new Date(member.removedAt).toLocaleDateString() : 'N/A'}</p>
+                                                <p class="text-gray-400 font-medium">${member.removedAt ? new Date(member.removedAt).toLocaleDateString() : "N/A"}</p>
                                             </div>
                                         </div>
                                     </div>
-                                `).join('')}
+                                `).join("")}
                             </div>
                         </div>
                     </div>
@@ -213,7 +205,7 @@ export const getSimulationSettingsModalTemplate = (simulation, stats, isActive) 
                                         rows="3"
                                         class="w-full bg-gray-700 text-white rounded-lg px-4 py-2 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-cyan-500 resize-none"
                                         maxlength="500"
-                                    >${simulation.description || ''}</textarea>
+                                    >${simulation.description || ""}</textarea>
                                     <p class="text-xs text-gray-500 mt-1">Optional description for participants</p>
                                 </div>
                             </div>
@@ -228,7 +220,7 @@ export const getSimulationSettingsModalTemplate = (simulation, stats, isActive) 
                                             <input 
                                                 type="date" 
                                                 id="new-end-date" 
-                                                min="${new Date(Date.now() + 24*60*60*1000).toISOString().split('T')[0]}"
+                                                min="${new Date(Date.now() + 24*60*60*1000).toISOString().split("T")[0]}"
                                                 class="w-full bg-gray-700 text-white rounded-lg px-4 py-2 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-cyan-500"
                                             >
                                             <button type="button" id="extend-simulation" class="mt-2 w-full bg-yellow-600 hover:bg-yellow-500 text-white font-medium py-2 px-4 rounded-lg transition-colors">
@@ -249,7 +241,7 @@ export const getSimulationSettingsModalTemplate = (simulation, stats, isActive) 
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path>
                                         </svg>
                                         <p>Simulation has ended</p>
-                                        ${simulation.endedEarly ? '<p class="text-sm text-yellow-400 mt-1">Ended early by creator</p>' : ''}
+                                        ${simulation.endedEarly ? "<p class=\"text-sm text-yellow-400 mt-1\">Ended early by creator</p>" : ""}
                                     </div>
                                 `}
                             </div>
@@ -280,14 +272,14 @@ export const getSimulationSettingsModalTemplate = (simulation, stats, isActive) 
  * @param {string} maxWidth - Max width class (default: 'max-w-2xl')
  * @returns {string} HTML template string
  */
-export const getModalWrapperTemplate = (id, title, subtitle, content, footer, maxWidth = 'max-w-2xl') => {
+export const getModalWrapperTemplate = (id, title, subtitle, content, footer, maxWidth = "max-w-2xl") => {
     return `
         <div id="${id}" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div class="bg-gray-800 border border-gray-700 rounded-lg shadow-2xl w-full ${maxWidth} mx-4">
                 <div class="flex justify-between items-center p-6 border-b border-gray-700">
                     <div>
                         <h3 class="text-xl font-semibold text-white">${title}</h3>
-                        ${subtitle ? `<p class="text-gray-400 text-sm mt-1">${subtitle}</p>` : ''}
+                        ${subtitle ? `<p class="text-gray-400 text-sm mt-1">${subtitle}</p>` : ""}
                     </div>
                     <button class="modal-close-btn text-gray-400 hover:text-white transition-colors">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -304,7 +296,7 @@ export const getModalWrapperTemplate = (id, title, subtitle, content, footer, ma
                     <div class="flex justify-end gap-3 p-6 border-t border-gray-700">
                         ${footer}
                     </div>
-                ` : ''}
+                ` : ""}
             </div>
         </div>
     `;

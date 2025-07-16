@@ -133,10 +133,10 @@ export const getArchiveTradeHistoryTemplate = () => {
  * @returns {string} HTML template string
  */
 export const getTradeRowTemplate = (trade) => {
-    const typeClass = trade.type === 'buy' ? 'text-green-400 bg-green-900/20' : 'text-red-400 bg-red-900/20';
-    const typeIcon = trade.type === 'buy' ? '↗' : '↘';
+    const typeClass = trade.type === "buy" ? "text-green-400 bg-green-900/20" : "text-red-400 bg-red-900/20";
+    const typeIcon = trade.type === "buy" ? "↗" : "↘";
     const formattedDate = new Date(trade.timestamp).toLocaleDateString();
-    const formattedTime = new Date(trade.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const formattedTime = new Date(trade.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
     
     return `
         <tr class="hover:bg-gray-750 transition-colors duration-200">
@@ -156,7 +156,7 @@ export const getTradeRowTemplate = (trade) => {
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
                 <div class="text-sm font-medium text-white">${trade.ticker}</div>
-                <div class="text-sm text-gray-400">${trade.companyName || ''}</div>
+                <div class="text-sm text-gray-400">${trade.companyName || ""}</div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${typeClass}">
@@ -184,7 +184,7 @@ export const getTradeRowTemplate = (trade) => {
 export const getParticipantFilterOptions = (participants) => {
     return participants.map(participant => 
         `<option value="${participant.userId}">${participant.displayName}</option>`
-    ).join('');
+    ).join("");
 };
 
 /**
@@ -195,5 +195,5 @@ export const getParticipantFilterOptions = (participants) => {
 export const getStockFilterOptions = (stocks) => {
     return stocks.map(stock => 
         `<option value="${stock}">${stock}</option>`
-    ).join('');
+    ).join("");
 };

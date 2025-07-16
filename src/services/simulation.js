@@ -1,5 +1,5 @@
 // src/services/simulation.js - Enhanced with Auto Status Updates
-import { getFirestoreDb } from './firebase.js';
+import { getFirestoreDb } from "./firebase.js";
 import { 
     collection, 
     doc, 
@@ -10,29 +10,18 @@ import {
     query, 
     where, 
     orderBy, 
-    serverTimestamp,
-    arrayUnion,
-    arrayRemove 
-} from 'firebase/firestore';
-import { SIMULATION_STATUS } from '../constants/simulation-status.js';
+    serverTimestamp 
+} from "firebase/firestore";
+import { SIMULATION_STATUS } from "../constants/simulation-status.js";
 import { 
     convertFirebaseDate, 
-    formatDateRange, 
-    calculateDaysRemaining, 
-    calculateDaysUntilStart,
+    calculateDaysRemaining,
     calculateDaysElapsed,
-    calculateTotalDuration,
-    calculateDaysAgo,
-    getTimeAgo,
-    getTimeAgoCompact,
-    formatNewsDate,
-    getTomorrowISO,
-    filterByDateRange,
-    sortByDateDesc
-} from '../utils/date-utils.js';
+    calculateTotalDuration
+} from "../utils/date-utils.js";
 
-const SIMULATIONS_COLLECTION = 'simulations';
-const SIMULATION_MEMBERS_COLLECTION = 'simulationMembers';
+const SIMULATIONS_COLLECTION = "simulations";
+const SIMULATION_MEMBERS_COLLECTION = "simulationMembers";
 
 export class SimulationService {
     constructor() {
@@ -42,7 +31,7 @@ export class SimulationService {
     // Initialize service
     initialize() {
         this.db = getFirestoreDb();
-        console.log('SimulationService initialized');
+        console.log("SimulationService initialized");
     }
 
     /**
@@ -51,24 +40,24 @@ export class SimulationService {
     async getCurrentUserInfo(userId) {
         try {
             // Try to get from Firebase Auth if available
-            const { getFirebaseAuth } = await import('./firebase.js');
+            const { getFirebaseAuth } = await import("./firebase.js");
             const auth = getFirebaseAuth();
             const currentUser = auth.currentUser;
             
             if (currentUser && currentUser.uid === userId) {
                 return {
-                    displayName: currentUser.displayName || currentUser.email || 'Anonymous User',
-                    email: currentUser.email || ''
+                    displayName: currentUser.displayName || currentUser.email || "Anonymous User",
+                    email: currentUser.email || ""
                 };
             }
         } catch (error) {
-            console.error('Error getting current user info:', error);
+            console.error("Error getting current user info:", error);
         }
         
         // Fallback
         return {
-            displayName: 'Anonymous User',
-            email: ''
+            displayName: "Anonymous User",
+            email: ""
         };
     }
 
@@ -103,7 +92,7 @@ export class SimulationService {
     /**
      * End a simulation early (admin only) - Enhanced with debugging and activity logging
      */
-    async endSimulationEarly(simulationId, adminUserId, reason = '') {
+    async endSimulationEarly(simulationId, adminUserId, reason = "") {
         this.db = this.db || getFirestoreDb();
 
         try {
@@ -114,23 +103,23 @@ export class SimulationService {
             const simSnap = await getDoc(simRef);
             
             if (!simSnap.exists()) {
-                throw new Error('Simulation not found');
+                throw new Error("Simulation not found");
             }
 
             const simulation = simSnap.data();
-            console.log('Current simulation status:', simulation.status);
-            console.log('Simulation creator:', simulation.createdBy);
-            console.log('Admin user:', adminUserId);
+            console.log("Current simulation status:", simulation.status);
+            console.log("Simulation creator:", simulation.createdBy);
+            console.log("Admin user:", adminUserId);
             
             if (simulation.createdBy !== adminUserId) {
-                throw new Error('Only simulation creator can end simulation');
+                throw new Error("Only simulation creator can end simulation");
             }
 
             if (simulation.status === SIMULATION_STATUS.ENDED) {
-                throw new Error('Simulation is already ended');
+                throw new Error("Simulation is already ended");
             }
 
-            console.log('Updating simulation status to ended...');
+            console.log("Updating simulation status to ended...");
             
             // Update simulation status
             const updateData = {
@@ -144,40 +133,40 @@ export class SimulationService {
             };
             
             await updateDoc(simRef, updateData);
-            console.log('Simulation status updated successfully');
+            console.log("Simulation status updated successfully");
 
             // Log admin activity
             try {
-                const { ActivityService } = await import('./activity.js');
+                const { ActivityService } = await import("./activity.js");
                 const activityService = new ActivityService();
                 activityService.initialize();
                 
                 // Get admin display name
-                const { getFirebaseAuth } = await import('./firebase.js');
+                const { getFirebaseAuth } = await import("./firebase.js");
                 const auth = getFirebaseAuth();
-                const adminDisplayName = auth.currentUser?.displayName || auth.currentUser?.email || 'Admin';
+                const adminDisplayName = auth.currentUser?.displayName || auth.currentUser?.email || "Admin";
                 
-                console.log('Logging admin activity...');
+                console.log("Logging admin activity...");
                 
                 // Log custom admin activity
                 await activityService.logAchievementActivity(simulationId, adminUserId, adminDisplayName, {
-                    milestone: 'simulation_ended_early',
+                    milestone: "simulation_ended_early",
                     value: 0,
                     rank: null,
                     reason: reason
                 });
                 
-                console.log('Admin activity logged successfully');
+                console.log("Admin activity logged successfully");
                 
             } catch (activityError) {
-                console.error('Error logging admin activity (non-fatal):', activityError);
+                console.error("Error logging admin activity (non-fatal):", activityError);
             }
 
             console.log(`Simulation ${simulationId} ended early by ${adminUserId} successfully`);
             return { success: true };
 
         } catch (error) {
-            console.error('Error ending simulation early:', error);
+            console.error("Error ending simulation early:", error);
             throw error;
         }
     }
@@ -185,7 +174,7 @@ export class SimulationService {
     /**
      * Extend simulation duration (admin only)
      */
-    async extendSimulation(simulationId, adminUserId, newEndDate, reason = '') {
+    async extendSimulation(simulationId, adminUserId, newEndDate, reason = "") {
         this.db = this.db || getFirestoreDb();
 
         try {
@@ -194,16 +183,16 @@ export class SimulationService {
             const simSnap = await getDoc(simRef);
             
             if (!simSnap.exists()) {
-                throw new Error('Simulation not found');
+                throw new Error("Simulation not found");
             }
 
             const simulation = simSnap.data();
             if (simulation.createdBy !== adminUserId) {
-                throw new Error('Only simulation creator can extend simulation');
+                throw new Error("Only simulation creator can extend simulation");
             }
 
             if (simulation.status === SIMULATION_STATUS.ENDED) {
-                throw new Error('Cannot extend an ended simulation');
+                throw new Error("Cannot extend an ended simulation");
             }
 
             // Validate new end date
@@ -211,11 +200,11 @@ export class SimulationService {
             const extensionDate = new Date(newEndDate);
             
             if (extensionDate <= currentEndDate) {
-                throw new Error('New end date must be after current end date');
+                throw new Error("New end date must be after current end date");
             }
 
             if (extensionDate <= new Date()) {
-                throw new Error('New end date must be in the future');
+                throw new Error("New end date must be in the future");
             }
 
             // Update simulation
@@ -232,7 +221,7 @@ export class SimulationService {
             return { success: true };
 
         } catch (error) {
-            console.error('Error extending simulation:', error);
+            console.error("Error extending simulation:", error);
             throw error;
         }
     }
@@ -249,12 +238,12 @@ export class SimulationService {
             const simSnap = await getDoc(simRef);
             
             if (!simSnap.exists()) {
-                throw new Error('Simulation not found');
+                throw new Error("Simulation not found");
             }
 
             const simulation = simSnap.data();
             if (simulation.createdBy !== adminUserId) {
-                throw new Error('Only simulation creator can update settings');
+                throw new Error("Only simulation creator can update settings");
             }
 
             // Prepare update object with safe changes only
@@ -290,13 +279,13 @@ export class SimulationService {
             if (Object.keys(updateData).length > 2) { // More than just timestamps
                 await updateDoc(simRef, updateData);
                 console.log(`Simulation ${simulationId} settings updated by ${adminUserId}`);
-                return { success: true, changes: Object.keys(updateData).filter(k => !k.includes('At') && k !== 'updatedBy') };
+                return { success: true, changes: Object.keys(updateData).filter(k => !k.includes("At") && k !== "updatedBy") };
             } else {
                 return { success: true, changes: [] };
             }
 
         } catch (error) {
-            console.error('Error updating simulation settings:', error);
+            console.error("Error updating simulation settings:", error);
             throw error;
         }
     }
@@ -313,23 +302,23 @@ export class SimulationService {
             const simSnap = await getDoc(simRef);
             
             if (!simSnap.exists()) {
-                throw new Error('Simulation not found');
+                throw new Error("Simulation not found");
             }
 
             const simulation = simSnap.data();
             if (simulation.createdBy !== adminUserId) {
-                throw new Error('Only simulation creator can view management stats');
+                throw new Error("Only simulation creator can view management stats");
             }
 
             // Get member statistics
             const memberQuery = query(
                 collection(this.db, SIMULATION_MEMBERS_COLLECTION),
-                where('simulationId', '==', simulationId)
+                where("simulationId", "==", simulationId)
             );
             const memberDocs = await getDocs(memberQuery);
 
             const activeMembers = memberDocs.docs.filter(doc => doc.data().status === SIMULATION_STATUS.ACTIVE).length;
-            const removedMembers = memberDocs.docs.filter(doc => doc.data().status === 'removed').length;
+            const removedMembers = memberDocs.docs.filter(doc => doc.data().status === "removed").length;
             const totalJoined = memberDocs.docs.length;
 
             // Get activity statistics
@@ -337,16 +326,16 @@ export class SimulationService {
             let totalVolume = 0;
             
             try {
-                const { ActivityService } = await import('./activity.js');
+                const { ActivityService } = await import("./activity.js");
                 const activityService = new ActivityService();
                 activityService.initialize();
                 const activities = await activityService.getSimulationActivities(simulationId, 1000);
                 
-                const tradeActivities = activities.filter(a => a.action === 'executed_trade');
+                const tradeActivities = activities.filter(a => a.action === "executed_trade");
                 totalTrades = tradeActivities.length;
                 totalVolume = tradeActivities.reduce((sum, activity) => sum + (activity.data.amount || 0), 0);
             } catch (error) {
-                console.warn('Could not load activity stats:', error);
+                console.warn("Could not load activity stats:", error);
             }
 
             // Calculate time statistics
@@ -386,7 +375,7 @@ export class SimulationService {
             };
 
         } catch (error) {
-            console.error('Error getting simulation management stats:', error);
+            console.error("Error getting simulation management stats:", error);
             throw error;
         }
     }
@@ -403,27 +392,27 @@ export class SimulationService {
             const simSnap = await getDoc(simRef);
             
             if (!simSnap.exists()) {
-                throw new Error('Simulation not found');
+                throw new Error("Simulation not found");
             }
 
             const simulation = simSnap.data();
             if (simulation.createdBy !== adminUserId) {
-                throw new Error('Only simulation creator can archive simulation');
+                throw new Error("Only simulation creator can archive simulation");
             }
 
             if (simulation.status !== SIMULATION_STATUS.ENDED) {
-                throw new Error('Only ended simulations can be archived');
+                throw new Error("Only ended simulations can be archived");
             }
 
             // Get final leaderboard if not provided
             if (!finalLeaderboard) {
                 try {
-                    const { LeaderboardService } = await import('./leaderboard.js');
+                    const { LeaderboardService } = await import("./leaderboard.js");
                     const leaderboardService = new LeaderboardService();
                     leaderboardService.initialize();
                     finalLeaderboard = await leaderboardService.getLeaderboard(simulationId, true, simulation);
                 } catch (error) {
-                    console.warn('Could not generate final leaderboard for archive:', error);
+                    console.warn("Could not generate final leaderboard for archive:", error);
                 }
             }
 
@@ -445,7 +434,7 @@ export class SimulationService {
             };
 
             // Save to archives collection
-            const archiveRef = await addDoc(collection(this.db, 'simulationArchives'), archiveData);
+            const archiveRef = await addDoc(collection(this.db, "simulationArchives"), archiveData);
 
             // Update original simulation with archive reference
             await updateDoc(simRef, {
@@ -458,7 +447,7 @@ export class SimulationService {
             return { success: true, archiveId: archiveRef.id };
 
         } catch (error) {
-            console.error('Error archiving simulation:', error);
+            console.error("Error archiving simulation:", error);
             throw error;
         }
     }
@@ -470,7 +459,7 @@ export class SimulationService {
         this.db = this.db || getFirestoreDb();
 
         try {
-            const archiveRef = doc(this.db, 'simulationArchives', archiveId);
+            const archiveRef = doc(this.db, "simulationArchives", archiveId);
             const archiveSnap = await getDoc(archiveRef);
 
             if (!archiveSnap.exists()) {
@@ -483,7 +472,7 @@ export class SimulationService {
             };
 
         } catch (error) {
-            console.error('Error getting archived simulation:', error);
+            console.error("Error getting archived simulation:", error);
             throw error;
         }
     }
@@ -497,16 +486,16 @@ export class SimulationService {
         try {
             // Get archives where user was the creator
             const creatorArchivesQuery = query(
-                collection(this.db, 'simulationArchives'),
-                where('archivedBy', '==', userId),
-                orderBy('archivedAt', 'desc')
+                collection(this.db, "simulationArchives"),
+                where("archivedBy", "==", userId),
+                orderBy("archivedAt", "desc")
             );
             const creatorArchives = await getDocs(creatorArchivesQuery);
 
             // Get simulations where user was a member (check original member records)
             const memberQuery = query(
                 collection(this.db, SIMULATION_MEMBERS_COLLECTION),
-                where('userId', '==', userId)
+                where("userId", "==", userId)
             );
             const memberDocs = await getDocs(memberQuery);
             
@@ -521,8 +510,8 @@ export class SimulationService {
                 for (let i = 0; i < memberSimulationIds.length; i += batchSize) {
                     const batch = memberSimulationIds.slice(i, i + batchSize);
                     const batchQuery = query(
-                        collection(this.db, 'simulationArchives'),
-                        where('simulationId', 'in', batch)
+                        collection(this.db, "simulationArchives"),
+                        where("simulationId", "in", batch)
                     );
                     const batchResults = await getDocs(batchQuery);
                     participantArchives.push(...batchResults.docs);
@@ -537,7 +526,7 @@ export class SimulationService {
                 allArchives.set(doc.id, {
                     id: doc.id,
                     ...doc.data(),
-                    userRole: 'creator'
+                    userRole: "creator"
                 });
             });
 
@@ -548,7 +537,7 @@ export class SimulationService {
                     allArchives.set(doc.id, {
                         id: doc.id,
                         ...doc.data(),
-                        userRole: 'participant'
+                        userRole: "participant"
                     });
                 }
             });
@@ -563,7 +552,7 @@ export class SimulationService {
             return results;
 
         } catch (error) {
-            console.error('Error getting user archived simulations:', error);
+            console.error("Error getting user archived simulations:", error);
             throw error;
         }
     }
@@ -579,7 +568,7 @@ export class SimulationService {
             const exportData = {
                 simulationInfo: {
                     name: sim.name,
-                    description: sim.description || '',
+                    description: sim.description || "",
                     startDate: sim.startDate.toDate ? sim.startDate.toDate().toISOString() : sim.startDate,
                     endDate: sim.endDate.toDate ? sim.endDate.toDate().toISOString() : sim.endDate,
                     duration: archivedSimulation.duration,
@@ -594,13 +583,13 @@ export class SimulationService {
                 finalRankings: results?.rankings || [],
                 winner: archivedSimulation.winner,
                 exportedAt: new Date().toISOString(),
-                exportVersion: '1.0'
+                exportVersion: "1.0"
             };
 
             return exportData;
 
         } catch (error) {
-            console.error('Error generating simulation export:', error);
+            console.error("Error generating simulation export:", error);
             throw error;
         }
     }
@@ -618,22 +607,22 @@ export class SimulationService {
             const simSnap = await getDoc(simRef);
             
             if (!simSnap.exists()) {
-                throw new Error('Simulation not found');
+                throw new Error("Simulation not found");
             }
 
             const simulation = simSnap.data();
-            console.log('Current stored status:', simulation.status);
-            console.log('Manual status override:', simulation.manualStatusOverride);
+            console.log("Current stored status:", simulation.status);
+            console.log("Manual status override:", simulation.manualStatusOverride);
             
             // If there's a manual override (like admin ending early), respect it
             if (simulation.manualStatusOverride && simulation.status === SIMULATION_STATUS.ENDED) {
-                console.log('Manual override detected, keeping ended status');
-                return { updated: false, status: simulation.status, reason: 'manual_override' };
+                console.log("Manual override detected, keeping ended status");
+                return { updated: false, status: simulation.status, reason: "manual_override" };
             }
             
             // Calculate what the status should be based on current time
             const realTimeStatus = this.calculateRealTimeStatus(simulation);
-            console.log('Calculated real-time status:', realTimeStatus);
+            console.log("Calculated real-time status:", realTimeStatus);
             
             // Update if status is different
             if (simulation.status !== realTimeStatus) {
@@ -649,11 +638,11 @@ export class SimulationService {
                 return { updated: true, oldStatus: simulation.status, newStatus: realTimeStatus };
             }
             
-            console.log('No status update needed');
+            console.log("No status update needed");
             return { updated: false, status: realTimeStatus };
 
         } catch (error) {
-            console.error('Error refreshing simulation status:', error);
+            console.error("Error refreshing simulation status:", error);
             throw error;
         }
     }
@@ -687,7 +676,7 @@ export class SimulationService {
                 console.log(`Auto-updated simulation ${simulationId} status: ${currentStoredStatus} → ${calculatedStatus}`);
                 return true;
             } catch (error) {
-                console.error('Error auto-updating simulation status:', error);
+                console.error("Error auto-updating simulation status:", error);
                 return false;
             }
         }
@@ -698,8 +687,8 @@ export class SimulationService {
      * Generate a unique 6-character invite code
      */
     generateInviteCode() {
-        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-        let result = '';
+        const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        let result = "";
         for (let i = 0; i < 6; i++) {
             result += chars.charAt(Math.floor(Math.random() * chars.length));
         }
@@ -715,7 +704,7 @@ export class SimulationService {
         try {
             // Validate required fields
             if (!simulationData.name || !simulationData.startDate || !simulationData.endDate) {
-                throw new Error('Missing required simulation data: name, startDate, or endDate');
+                throw new Error("Missing required simulation data: name, startDate, or endDate");
             }
 
             // Generate unique invite code
@@ -727,7 +716,7 @@ export class SimulationService {
                 inviteCode = this.generateInviteCode();
                 const existingSimQuery = query(
                     collection(this.db, SIMULATIONS_COLLECTION),
-                    where('inviteCode', '==', inviteCode)
+                    where("inviteCode", "==", inviteCode)
                 );
                 const existingSims = await getDocs(existingSimQuery);
                 codeExists = !existingSims.empty;
@@ -735,7 +724,7 @@ export class SimulationService {
             }
 
             if (codeExists) {
-                throw new Error('Unable to generate unique invite code. Please try again.');
+                throw new Error("Unable to generate unique invite code. Please try again.");
             }
 
             // Calculate initial status based on dates
@@ -744,7 +733,7 @@ export class SimulationService {
             // Create simulation document
             const simulation = {
                 name: simulationData.name.trim(),
-                description: simulationData.description?.trim() || '',
+                description: simulationData.description?.trim() || "",
                 createdBy: creatorUserId,
                 createdAt: serverTimestamp(),
                 startDate: simulationData.startDate,
@@ -758,7 +747,7 @@ export class SimulationService {
                 isPublic: false,
                 rules: {
                     allowShortSelling: simulationData.allowShortSelling || false,
-                    tradingHours: simulationData.tradingHours || 'market',
+                    tradingHours: simulationData.tradingHours || "market",
                     commissionPerTrade: simulationData.commissionPerTrade || 0
                 }
             };
@@ -769,7 +758,7 @@ export class SimulationService {
 
             // Add creator as first member
             const user = await this.getCurrentUserInfo(creatorUserId);
-            await this.addMemberToSimulation(simulationId, creatorUserId, 'creator', {
+            await this.addMemberToSimulation(simulationId, creatorUserId, "creator", {
                 displayName: user.displayName,
                 email: user.email
             });
@@ -784,7 +773,7 @@ export class SimulationService {
             };
 
         } catch (error) {
-            console.error('Error creating simulation:', error);
+            console.error("Error creating simulation:", error);
             throw error;
         }
     }
@@ -792,21 +781,21 @@ export class SimulationService {
     /**
      * Add a member to a simulation
      */
-    async addMemberToSimulation(simulationId, userId, role = 'member', userInfo = null) {
+    async addMemberToSimulation(simulationId, userId, role = "member", userInfo = null) {
         this.db = this.db || getFirestoreDb();
 
         try {
             // Check if user is already a member
             const existingMemberQuery = query(
                 collection(this.db, SIMULATION_MEMBERS_COLLECTION),
-                where('simulationId', '==', simulationId),
-                where('userId', '==', userId),
-                where('status', '==', SIMULATION_STATUS.ACTIVE)
+                where("simulationId", "==", simulationId),
+                where("userId", "==", userId),
+                where("status", "==", SIMULATION_STATUS.ACTIVE)
             );
             const existingMembers = await getDocs(existingMemberQuery);
             
             if (!existingMembers.empty) {
-                throw new Error('User is already a member of this simulation');
+                throw new Error("User is already a member of this simulation");
             }
 
             // Get simulation to check member limit
@@ -814,12 +803,12 @@ export class SimulationService {
             const simSnap = await getDoc(simRef);
             
             if (!simSnap.exists()) {
-                throw new Error('Simulation not found');
+                throw new Error("Simulation not found");
             }
 
             const simulation = simSnap.data();
             if (simulation.memberCount >= simulation.maxMembers) {
-                throw new Error('Simulation has reached maximum member limit');
+                throw new Error("Simulation has reached maximum member limit");
             }
 
             // Add member record
@@ -828,8 +817,8 @@ export class SimulationService {
                 userId: userId,
                 joinedAt: serverTimestamp(),
                 role: role,
-                displayName: userInfo?.displayName || 'Anonymous User',
-                email: userInfo?.email || '',
+                displayName: userInfo?.displayName || "Anonymous User",
+                email: userInfo?.email || "",
                 status: SIMULATION_STATUS.ACTIVE
             };
 
@@ -844,7 +833,7 @@ export class SimulationService {
             return { success: true };
 
         } catch (error) {
-            console.error('Error adding member to simulation:', error);
+            console.error("Error adding member to simulation:", error);
             throw error;
         }
     }
@@ -859,12 +848,12 @@ export class SimulationService {
             // Find simulation by invite code
             const simQuery = query(
                 collection(this.db, SIMULATIONS_COLLECTION),
-                where('inviteCode', '==', inviteCode.toUpperCase())
+                where("inviteCode", "==", inviteCode.toUpperCase())
             );
             const simResults = await getDocs(simQuery);
 
             if (simResults.empty) {
-                throw new Error('Invalid invite code. Please check and try again.');
+                throw new Error("Invalid invite code. Please check and try again.");
             }
 
             const simDoc = simResults.docs[0];
@@ -879,11 +868,11 @@ export class SimulationService {
 
             // Check simulation status (use real-time status)
             if (realTimeStatus === SIMULATION_STATUS.ENDED) {
-                throw new Error('This simulation has already ended.');
+                throw new Error("This simulation has already ended.");
             }
 
             // Add user as member
-            await this.addMemberToSimulation(simulationId, userId, 'member', userInfo);
+            await this.addMemberToSimulation(simulationId, userId, "member", userInfo);
 
             return {
                 success: true,
@@ -895,7 +884,7 @@ export class SimulationService {
             };
 
         } catch (error) {
-            console.error('Error joining simulation:', error);
+            console.error("Error joining simulation:", error);
             throw error;
         }
     }
@@ -910,8 +899,8 @@ export class SimulationService {
             // Get user's simulation memberships
             const memberQuery = query(
                 collection(this.db, SIMULATION_MEMBERS_COLLECTION),
-                where('userId', '==', userId),
-                where('status', '==', SIMULATION_STATUS.ACTIVE)
+                where("userId", "==", userId),
+                where("status", "==", SIMULATION_STATUS.ACTIVE)
             );
             const memberDocs = await getDocs(memberQuery);
 
@@ -937,14 +926,14 @@ export class SimulationService {
                     // Update status in background if needed (don't await to avoid blocking)
                     if (simData.status !== realTimeStatus) {
                         this.updateSimulationStatusIfNeeded(simId, simData.status, realTimeStatus)
-                            .catch(error => console.error('Background status update failed:', error));
+                            .catch(error => console.error("Background status update failed:", error));
                     }
                     
                     simulations.push({
                         ...simData,
                         id: simId,
                         status: realTimeStatus, // Use real-time status for display
-                        userRole: memberData?.role || 'member',
+                        userRole: memberData?.role || "member",
                         joinedAt: memberData?.joinedAt
                     });
                 }
@@ -960,7 +949,7 @@ export class SimulationService {
             return simulations;
 
         } catch (error) {
-            console.error('Error getting user simulations:', error);
+            console.error("Error getting user simulations:", error);
             throw error;
         }
     }
@@ -994,7 +983,7 @@ export class SimulationService {
             };
 
         } catch (error) {
-            console.error('Error getting simulation:', error);
+            console.error("Error getting simulation:", error);
             throw error;
         }
     }
@@ -1008,9 +997,9 @@ export class SimulationService {
         try {
             const memberQuery = query(
                 collection(this.db, SIMULATION_MEMBERS_COLLECTION),
-                where('simulationId', '==', simulationId),
-                where('status', '==', SIMULATION_STATUS.ACTIVE),
-                orderBy('joinedAt', 'asc')
+                where("simulationId", "==", simulationId),
+                where("status", "==", SIMULATION_STATUS.ACTIVE),
+                orderBy("joinedAt", "asc")
             );
             const memberDocs = await getDocs(memberQuery);
 
@@ -1020,7 +1009,7 @@ export class SimulationService {
             }));
 
         } catch (error) {
-            console.error('Error getting simulation members:', error);
+            console.error("Error getting simulation members:", error);
             throw error;
         }
     }
@@ -1034,16 +1023,16 @@ export class SimulationService {
         try {
             const memberQuery = query(
                 collection(this.db, SIMULATION_MEMBERS_COLLECTION),
-                where('simulationId', '==', simulationId),
-                where('userId', '==', userId),
-                where('status', '==', SIMULATION_STATUS.ACTIVE)
+                where("simulationId", "==", simulationId),
+                where("userId", "==", userId),
+                where("status", "==", SIMULATION_STATUS.ACTIVE)
             );
             const memberDocs = await getDocs(memberQuery);
 
             return !memberDocs.empty;
 
         } catch (error) {
-            console.error('Error checking simulation membership:', error);
+            console.error("Error checking simulation membership:", error);
             return false;
         }
     }
@@ -1060,37 +1049,37 @@ export class SimulationService {
             const simSnap = await getDoc(simRef);
             
             if (!simSnap.exists()) {
-                throw new Error('Simulation not found');
+                throw new Error("Simulation not found");
             }
 
             const simulation = simSnap.data();
             if (simulation.createdBy !== adminUserId) {
-                throw new Error('Only simulation creator can remove members');
+                throw new Error("Only simulation creator can remove members");
             }
 
             // Prevent creator from removing themselves
             if (userId === adminUserId) {
-                throw new Error('Creator cannot remove themselves from simulation');
+                throw new Error("Creator cannot remove themselves from simulation");
             }
 
             // Find and update the member record
             const memberQuery = query(
                 collection(this.db, SIMULATION_MEMBERS_COLLECTION),
-                where('simulationId', '==', simulationId),
-                where('userId', '==', userId),
-                where('status', '==', SIMULATION_STATUS.ACTIVE)
+                where("simulationId", "==", simulationId),
+                where("userId", "==", userId),
+                where("status", "==", SIMULATION_STATUS.ACTIVE)
             );
             const memberDocs = await getDocs(memberQuery);
 
             if (memberDocs.empty) {
-                throw new Error('Member not found in simulation');
+                throw new Error("Member not found in simulation");
             }
 
             const memberDoc = memberDocs.docs[0];
             
             // Update member status to 'removed'
             await updateDoc(memberDoc.ref, {
-                status: 'removed',
+                status: "removed",
                 removedAt: serverTimestamp(),
                 removedBy: adminUserId
             });
@@ -1104,7 +1093,7 @@ export class SimulationService {
             return { success: true };
 
         } catch (error) {
-            console.error('Error removing member from simulation:', error);
+            console.error("Error removing member from simulation:", error);
             throw error;
         }
     }
@@ -1121,19 +1110,19 @@ export class SimulationService {
             const simSnap = await getDoc(simRef);
             
             if (!simSnap.exists()) {
-                throw new Error('Simulation not found');
+                throw new Error("Simulation not found");
             }
 
             const simulation = simSnap.data();
             if (simulation.createdBy !== adminUserId) {
-                throw new Error('Only simulation creator can view detailed statistics');
+                throw new Error("Only simulation creator can view detailed statistics");
             }
 
             // Get all members (active and removed)
             const memberQuery = query(
                 collection(this.db, SIMULATION_MEMBERS_COLLECTION),
-                where('simulationId', '==', simulationId),
-                orderBy('joinedAt', 'asc')
+                where("simulationId", "==", simulationId),
+                orderBy("joinedAt", "asc")
             );
             const memberDocs = await getDocs(memberQuery);
 
@@ -1146,7 +1135,7 @@ export class SimulationService {
                 let portfolioData = null;
                 if (member.status === SIMULATION_STATUS.ACTIVE) {
                     try {
-                        const { getPortfolio } = await import('./trading.js');
+                        const { getPortfolio } = await import("./trading.js");
                         portfolioData = await getPortfolio(member.userId, simulationId);
                     } catch (error) {
                         console.warn(`Could not load portfolio for ${member.userId}:`, error);
@@ -1156,7 +1145,7 @@ export class SimulationService {
                 // Get activity count
                 let activityCount = 0;
                 try {
-                    const { ActivityService } = await import('./activity.js');
+                    const { ActivityService } = await import("./activity.js");
                     const activityService = new ActivityService();
                     activityService.initialize();
                     const activities = await activityService.getUserActivities(simulationId, member.userId, 100);
@@ -1179,7 +1168,7 @@ export class SimulationService {
             return memberStats;
 
         } catch (error) {
-            console.error('Error getting member statistics:', error);
+            console.error("Error getting member statistics:", error);
             throw error;
         }
     }
@@ -1208,7 +1197,7 @@ export class SimulationService {
         try {
             const simQuery = query(
                 collection(this.db, SIMULATIONS_COLLECTION),
-                where('inviteCode', '==', inviteCode.toUpperCase())
+                where("inviteCode", "==", inviteCode.toUpperCase())
             );
             const simResults = await getDocs(simQuery);
 
@@ -1229,7 +1218,7 @@ export class SimulationService {
             };
 
         } catch (error) {
-            console.error('Error finding simulation by code:', error);
+            console.error("Error finding simulation by code:", error);
             throw error;
         }
     }
@@ -1252,7 +1241,7 @@ export class SimulationService {
             return { success: true };
 
         } catch (error) {
-            console.error('Error updating simulation status:', error);
+            console.error("Error updating simulation status:", error);
             throw error;
         }
     }

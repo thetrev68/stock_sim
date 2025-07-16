@@ -36,7 +36,7 @@ export const getSearchResultsListTemplate = (searchResults) => {
         return getSearchEmptyStateTemplate();
     }
     
-    return searchResults.map(stock => getSearchResultItemTemplate(stock)).join('');
+    return searchResults.map(stock => getSearchResultItemTemplate(stock)).join("");
 };
 
 /**
@@ -215,7 +215,7 @@ export const getEnhancedSearchResultItemTemplate = (stock) => {
                 <div class="flex-1 min-w-0">
                     <div class="flex items-center gap-2 mb-1">
                         <h4 class="text-white font-semibold text-lg">${stock.symbol}</h4>
-                        ${stock.exchange ? `<span class="text-xs text-gray-500 bg-gray-600 px-2 py-1 rounded">${stock.exchange}</span>` : ''}
+                        ${stock.exchange ? `<span class="text-xs text-gray-500 bg-gray-600 px-2 py-1 rounded">${stock.exchange}</span>` : ""}
                     </div>
                     <p class="text-gray-400 text-sm line-clamp-2">${stock.description}</p>
                 </div>

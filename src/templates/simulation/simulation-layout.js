@@ -35,8 +35,8 @@ export const getHeaderSectionTemplate = (simulation, isActive) => {
                     <div>
                         <h1 id="simulation-title" class="text-3xl font-bold text-white mb-2">${simulation.name}</h1>
                         <div class="flex items-center gap-4 text-cyan-100">
-                            <span id="simulation-status" class="text-sm font-medium px-3 py-1 rounded-full ${isActive ? 'bg-green-500/20 text-green-300' : 'bg-red-500/20 text-red-300'}">
-                                ${isActive ? 'Active' : 'Ended'}
+                            <span id="simulation-status" class="text-sm font-medium px-3 py-1 rounded-full ${isActive ? "bg-green-500/20 text-green-300" : "bg-red-500/20 text-red-300"}">
+                                ${isActive ? "Active" : "Ended"}
                             </span>
                             <span class="text-sm">${new Date(simulation.startDate).toLocaleDateString()} - ${new Date(simulation.endDate).toLocaleDateString()}</span>
                         </div>
@@ -215,7 +215,7 @@ export const getOtherTabContentsTemplate = () => {
  * @param {string} message - Loading message text
  * @returns {string} HTML template string
  */
-export const getLoadingStateTemplate = (message = 'Loading...') => {
+export const getLoadingStateTemplate = (message = "Loading...") => {
     return `
         <div class="text-center py-8">
             <div class="w-8 h-8 border-4 border-cyan-400 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>

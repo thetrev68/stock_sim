@@ -176,7 +176,7 @@ export const getPortfolioInitializationTemplate = () => {
  * @param {string} sectionName - Name of the section loading
  * @returns {string} HTML template string
  */
-export const getSectionLoadingTemplate = (sectionName = 'data') => {
+export const getSectionLoadingTemplate = (sectionName = "data") => {
     return `
         <div class="text-center py-8">
             <div class="w-6 h-6 border-4 border-cyan-400 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
@@ -190,7 +190,7 @@ export const getSectionLoadingTemplate = (sectionName = 'data') => {
  * @param {string} sectionName - Name of the section that failed
  * @returns {string} HTML template string
  */
-export const getSectionErrorTemplate = (sectionName = 'data') => {
+export const getSectionErrorTemplate = (sectionName = "data") => {
     return `
         <div class="text-center py-8">
             <div class="w-10 h-10 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-3">
@@ -209,7 +209,7 @@ export const getSectionErrorTemplate = (sectionName = 'data') => {
  * @param {string} onClick - JavaScript code to execute
  * @returns {string} HTML template string
  */
-export const getRetryButtonTemplate = (buttonText = 'Try Again', onClick = 'location.reload()') => {
+export const getRetryButtonTemplate = (buttonText = "Try Again", onClick = "location.reload()") => {
     return `
         <button 
             onclick="${onClick}" 

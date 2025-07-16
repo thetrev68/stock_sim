@@ -94,7 +94,7 @@ export const getTimeAgo = (date) => {
     const now = new Date();
     const diffInSeconds = Math.floor((now - date) / 1000);
     
-    if (diffInSeconds < 60) return 'just now';
+    if (diffInSeconds < 60) return "just now";
     if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`;
     if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`;
     if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)} days ago`;
@@ -112,7 +112,7 @@ export const getTimeAgoCompact = (date) => {
     const now = new Date();
     const diffInSeconds = Math.floor((now - date) / 1000);
     
-    if (diffInSeconds < 60) return 'just now';
+    if (diffInSeconds < 60) return "just now";
     if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
     if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
     if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)}d ago`;
@@ -132,7 +132,7 @@ export const formatNewsDate = (timestamp) => {
     const diffInMinutes = Math.floor((now - newsDate) / (1000 * 60));
     
     if (diffInMinutes < 1) {
-        return 'Just now';
+        return "Just now";
     } else if (diffInMinutes < 60) {
         return `${diffInMinutes}m ago`;
     } else if (diffInMinutes < 1440) { // Less than 24 hours
@@ -141,7 +141,7 @@ export const formatNewsDate = (timestamp) => {
     } else {
         const days = Math.floor(diffInMinutes / 1440);
         if (days === 1) {
-            return 'Yesterday';
+            return "Yesterday";
         } else if (days < 7) {
             return `${days} days ago`;
         } else {
@@ -156,7 +156,7 @@ export const formatNewsDate = (timestamp) => {
  * @returns {string} ISO date string for tomorrow
  */
 export const getTomorrowISO = () => {
-    return new Date(Date.now() + 24*60*60*1000).toISOString().split('T')[0];
+    return new Date(Date.now() + 24*60*60*1000).toISOString().split("T")[0];
 };
 
 /**

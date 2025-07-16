@@ -1,18 +1,18 @@
 // src/views/research.js - Enhanced Research View - Session 10
-import { StockService } from '../services/stocks.js';
-import { TIMEOUTS } from '../constants/app-config.js';
-import { ERROR_MESSAGES } from '../constants/ui-messages.js';
+import { StockService } from "../services/stocks.js";
+import { TIMEOUTS } from "../constants/app-config.js";
+import { ERROR_MESSAGES } from "../constants/ui-messages.js";
 import { 
     formatPrice,
     formatNumberWithCommas,
     formatPriceChange,
     getGainLossColorClass
-} from '../utils/currency-utils.js';
-import { formatNewsDate } from '../utils/date-utils.js';
+} from "../utils/currency-utils.js";
+import { formatNewsDate } from "../utils/date-utils.js";
 
 export default class ResearchView {
     constructor() {
-        this.name = 'research';
+        this.name = "research";
         this.stockService = new StockService();
         this.viewContainer = null;
         this.currentStockData = null;
@@ -21,8 +21,8 @@ export default class ResearchView {
         this.searchTimeout = null;
         this.currentNewsData = [];
         this.filteredNewsData = [];
-        this.currentNewsFilter = 'all';
-        this.newsSearchQuery = '';
+        this.currentNewsFilter = "all";
+        this.newsSearchQuery = "";
     }
 
     async render(container) {
@@ -35,12 +35,12 @@ export default class ResearchView {
         
         // Check for pre-filled ticker from URL
         const urlParams = new URLSearchParams(window.location.search);
-        const prefilledTicker = urlParams.get('ticker');
+        const prefilledTicker = urlParams.get("ticker");
         
         if (prefilledTicker) {
             console.log(`Pre-filling research with ticker: ${prefilledTicker}`);
             // Set the input value
-            const tickerInput = document.getElementById('research-ticker-input');
+            const tickerInput = document.getElementById("research-ticker-input");
             if (tickerInput) {
                 tickerInput.value = prefilledTicker.toUpperCase();
             }
@@ -56,20 +56,20 @@ export default class ResearchView {
 
     async loadChartJS() {
         // Check if Chart.js is already loaded
-        if (typeof Chart !== 'undefined') {
-            console.log('Chart.js already loaded');
+        if (typeof Chart !== "undefined") {
+            console.log("Chart.js already loaded");
             return;
         }
 
         return new Promise((resolve, reject) => {
-            const script = document.createElement('script');
-            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js';
+            const script = document.createElement("script");
+            script.src = "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js";
             script.onload = () => {
-                console.log('Chart.js loaded successfully');
+                console.log("Chart.js loaded successfully");
                 resolve();
             };
             script.onerror = () => {
-                console.error('Failed to load Chart.js');
+                console.error("Failed to load Chart.js");
                 // Fallback: show static message instead of chart
                 resolve(); // Don't reject so the app continues working
             };
@@ -415,28 +415,28 @@ export default class ResearchView {
     }
 
     attachEventListeners(container) {
-        const tickerInput = container.querySelector('#research-ticker-input');
-        const researchBtn = container.querySelector('#research-btn');
-        const quickBtns = container.querySelectorAll('.quick-research-btn');
-        const chartPeriodBtns = container.querySelectorAll('.chart-period-btn');
-        const refreshChartBtn = container.querySelector('#refresh-chart-btn');
-        const addWatchlistBtn = container.querySelector('#add-to-watchlist-btn');
-        const quickTradeBtn = container.querySelector('#quick-trade-btn');
+        const tickerInput = container.querySelector("#research-ticker-input");
+        const researchBtn = container.querySelector("#research-btn");
+        const quickBtns = container.querySelectorAll(".quick-research-btn");
+        const chartPeriodBtns = container.querySelectorAll(".chart-period-btn");
+        const refreshChartBtn = container.querySelector("#refresh-chart-btn");
+        const addWatchlistBtn = container.querySelector("#add-to-watchlist-btn");
+        const quickTradeBtn = container.querySelector("#quick-trade-btn");
         // News-related event listeners
-        const newsFilterBtns = container.querySelectorAll('.news-filter-btn');
-        const refreshNewsBtn = container.querySelector('#refresh-news-btn');
-        const newsSearchInput = container.querySelector('#news-search-input');                                                                                  
+        const newsFilterBtns = container.querySelectorAll(".news-filter-btn");
+        const refreshNewsBtn = container.querySelector("#refresh-news-btn");
+        const newsSearchInput = container.querySelector("#news-search-input");                                                                                  
 
         // Search input events
         if (tickerInput) {
-            tickerInput.addEventListener('input', this.handleSearchInput.bind(this));
-            tickerInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
+            tickerInput.addEventListener("input", this.handleSearchInput.bind(this));
+            tickerInput.addEventListener("keypress", (e) => {
+                if (e.key === "Enter") {
                     this.handleResearch();
                 }
             });
-            tickerInput.addEventListener('focus', this.showSearchResults.bind(this));
-            tickerInput.addEventListener('blur', () => {
+            tickerInput.addEventListener("focus", this.showSearchResults.bind(this));
+            tickerInput.addEventListener("blur", () => {
                 // Delay hiding to allow click on results
                 setTimeout(() => this.hideSearchResults(), 200);
             });
@@ -444,12 +444,12 @@ export default class ResearchView {
 
         // Research button
         if (researchBtn) {
-            researchBtn.addEventListener('click', this.handleResearch.bind(this));
+            researchBtn.addEventListener("click", this.handleResearch.bind(this));
         }
 
         // Quick research buttons
         quickBtns.forEach(btn => {
-            btn.addEventListener('click', (e) => {
+            btn.addEventListener("click", (e) => {
                 const ticker = e.target.dataset.ticker;
                 this.researchStock(ticker);
             });
@@ -457,27 +457,27 @@ export default class ResearchView {
 
         // Chart period buttons
         chartPeriodBtns.forEach(btn => {
-            btn.addEventListener('click', (e) => {
+            btn.addEventListener("click", (e) => {
                 this.switchChartPeriod(e.target);
             });
         });
 
         // Refresh chart button
         if (refreshChartBtn) {
-            refreshChartBtn.addEventListener('click', this.refreshChart.bind(this));
+            refreshChartBtn.addEventListener("click", this.refreshChart.bind(this));
         }
 
         // Action buttons
         if (addWatchlistBtn) {
-            addWatchlistBtn.addEventListener('click', this.handleAddToWatchlist.bind(this));
+            addWatchlistBtn.addEventListener("click", this.handleAddToWatchlist.bind(this));
         }
 
         if (quickTradeBtn) {
-            quickTradeBtn.addEventListener('click', this.handleQuickTrade.bind(this));
+            quickTradeBtn.addEventListener("click", this.handleQuickTrade.bind(this));
         }
 
         // Click outside to hide search results
-        document.addEventListener('click', (e) => {
+        document.addEventListener("click", (e) => {
             if (!container.contains(e.target)) {
                 this.hideSearchResults();
             }
@@ -485,20 +485,20 @@ export default class ResearchView {
 
         // News filter buttons
         newsFilterBtns.forEach(btn => {
-            btn.addEventListener('click', (e) => {
+            btn.addEventListener("click", (e) => {
                 this.switchNewsFilter(e.target);
             });
         });
 
         // Refresh news button
         if (refreshNewsBtn) {
-            refreshNewsBtn.addEventListener('click', this.refreshNews.bind(this));
+            refreshNewsBtn.addEventListener("click", this.refreshNews.bind(this));
         }
 
         // News search input with debouncing
         if (newsSearchInput) {
             let searchTimeout;
-            newsSearchInput.addEventListener('input', (e) => {
+            newsSearchInput.addEventListener("input", (e) => {
                 clearTimeout(searchTimeout);
                 searchTimeout = setTimeout(() => {
                     this.searchNews(e.target.value);
@@ -529,7 +529,7 @@ export default class ResearchView {
                 this.searchResults = await this.stockService.searchStocks(query);
                 this.displaySearchResults();
             } catch (error) {
-                console.error('Search error:', error);
+                console.error("Search error:", error);
                 this.hideSearchResults();
             } finally {
                 this.showSearchLoading(false);
@@ -538,21 +538,21 @@ export default class ResearchView {
     }
 
     showSearchLoading(show) {
-        const searchIcon = document.querySelector('#research-ticker-input + div svg');
-        const loadingIcon = document.getElementById('search-loading');
+        const searchIcon = document.querySelector("#research-ticker-input + div svg");
+        const loadingIcon = document.getElementById("search-loading");
         
         if (show) {
-            if (searchIcon) searchIcon.style.display = 'none';
-            if (loadingIcon) loadingIcon.classList.remove('hidden');
+            if (searchIcon) searchIcon.style.display = "none";
+            if (loadingIcon) loadingIcon.classList.remove("hidden");
         } else {
-            if (searchIcon) searchIcon.style.display = 'block';
-            if (loadingIcon) loadingIcon.classList.add('hidden');
+            if (searchIcon) searchIcon.style.display = "block";
+            if (loadingIcon) loadingIcon.classList.add("hidden");
         }
     }
 
     displaySearchResults() {
-        const resultsContainer = document.getElementById('search-results');
-        const resultsList = document.getElementById('search-results-list');
+        const resultsContainer = document.getElementById("search-results");
+        const resultsList = document.getElementById("search-results-list");
         
         if (!resultsContainer || !resultsList) return;
 
@@ -578,11 +578,11 @@ export default class ResearchView {
                         </div>
                     </div>
                 </div>
-            `).join('');
+            `).join("");
 
             // Attach click events to search results
-            resultsList.querySelectorAll('.search-result-item').forEach(item => {
-                item.addEventListener('click', (e) => {
+            resultsList.querySelectorAll(".search-result-item").forEach(item => {
+                item.addEventListener("click", (e) => {
                     const ticker = e.currentTarget.dataset.ticker;
                     this.researchStock(ticker);
                     this.hideSearchResults();
@@ -594,21 +594,21 @@ export default class ResearchView {
     }
 
     showSearchResults() {
-        const resultsContainer = document.getElementById('search-results');
+        const resultsContainer = document.getElementById("search-results");
         if (resultsContainer && this.searchResults.length > 0) {
-            resultsContainer.classList.remove('hidden');
+            resultsContainer.classList.remove("hidden");
         }
     }
 
     hideSearchResults() {
-        const resultsContainer = document.getElementById('search-results');
+        const resultsContainer = document.getElementById("search-results");
         if (resultsContainer) {
-            resultsContainer.classList.add('hidden');
+            resultsContainer.classList.add("hidden");
         }
     }
 
     async handleResearch() {
-        const ticker = document.getElementById('research-ticker-input')?.value.trim();
+        const ticker = document.getElementById("research-ticker-input")?.value.trim();
         
         if (!ticker) {
             this.showError(ERROR_MESSAGES.STOCK_TICKER_REQUIRED);
@@ -622,7 +622,7 @@ export default class ResearchView {
         const upperTicker = ticker.toUpperCase();
         
         // Update input field
-        const tickerInput = document.getElementById('research-ticker-input');
+        const tickerInput = document.getElementById("research-ticker-input");
         if (tickerInput) {
             tickerInput.value = upperTicker;
         }
@@ -647,8 +647,8 @@ export default class ResearchView {
             await this.loadStockNews(); // NEW: Add this line
 
         } catch (error) {
-            console.error('Research error:', error);
-            this.showError(error.message || 'Failed to fetch stock data. Please try again.');
+            console.error("Research error:", error);
+            this.showError(error.message || "Failed to fetch stock data. Please try again.");
         } finally {
             this.hideLoading();
         }
@@ -660,17 +660,17 @@ export default class ResearchView {
         const data = this.currentStockData;
 
         // Update header information
-        this.updateElement('company-name', data.companyName);
-        this.updateElement('quote-ticker', data.ticker);
-        this.updateElement('company-exchange', data.exchange);
-        this.updateElement('company-sector', data.sector);
-        this.updateElement('company-currency', data.currency);
+        this.updateElement("company-name", data.companyName);
+        this.updateElement("quote-ticker", data.ticker);
+        this.updateElement("company-exchange", data.exchange);
+        this.updateElement("company-sector", data.sector);
+        this.updateElement("company-currency", data.currency);
 
         // Update price information
-        this.updateElement('current-price', formatPrice(data.currentPrice));
+        this.updateElement("current-price", formatPrice(data.currentPrice));
         
         // Price change with color
-        const changeEl = document.getElementById('price-change');
+        const changeEl = document.getElementById("price-change");
         if (changeEl && data.priceChange !== undefined) {
             const changeFormatted = formatPriceChange(data.priceChange, data.priceChangePercent);
             const colorClass = getGainLossColorClass(data.priceChange);
@@ -680,30 +680,30 @@ export default class ResearchView {
         }
 
         // Update quick stats
-        this.updateElement('open-price', formatPrice(data.openPrice, false));
-        this.updateElement('day-high', formatPrice(data.dayHigh, false));
-        this.updateElement('day-low', formatPrice(data.dayLow, false));
-        this.updateElement('volume', data.volume ? formatNumberWithCommas(data.volume) : '--');
+        this.updateElement("open-price", formatPrice(data.openPrice, false));
+        this.updateElement("day-high", formatPrice(data.dayHigh, false));
+        this.updateElement("day-low", formatPrice(data.dayLow, false));
+        this.updateElement("volume", data.volume ? formatNumberWithCommas(data.volume) : "--");
 
         // Update last updated
-        this.updateElement('last-updated', `Last updated: ${new Date().toLocaleTimeString()}`);
+        this.updateElement("last-updated", `Last updated: ${new Date().toLocaleTimeString()}`);
 
         // Update company logo
-        const logoImg = document.getElementById('logo-img');
-        const logoContainer = document.getElementById('company-logo');
-        const logoFallback = document.getElementById('company-logo-fallback');
-        const companyInitial = document.getElementById('company-initial');
+        const logoImg = document.getElementById("logo-img");
+        const logoContainer = document.getElementById("company-logo");
+        const logoFallback = document.getElementById("company-logo-fallback");
+        const companyInitial = document.getElementById("company-initial");
 
         if (data.logo && logoImg && logoContainer && logoFallback) {
             logoImg.src = data.logo;
             logoImg.onerror = () => {
-                logoContainer.classList.add('hidden');
-                logoFallback.classList.remove('hidden');
+                logoContainer.classList.add("hidden");
+                logoFallback.classList.remove("hidden");
             };
             logoImg.onload = () => {
-                logoContainer.classList.remove('hidden');
-                logoContainer.classList.add('flex');
-                logoFallback.classList.add('hidden');
+                logoContainer.classList.remove("hidden");
+                logoContainer.classList.add("flex");
+                logoFallback.classList.add("hidden");
             };
         }
 
@@ -715,9 +715,9 @@ export default class ResearchView {
         this.showResults();
     }
 
-    async loadPriceChart(period = 7, resolution = 'D') {
+    async loadPriceChart(period = 7, resolution = "D") {
         if (!this.currentStockData) {
-            console.warn('No current stock data for chart');
+            console.warn("No current stock data for chart");
             return;
         }
 
@@ -725,8 +725,8 @@ export default class ResearchView {
 
         try {
             // Check if Chart.js is available
-            if (typeof Chart === 'undefined') {
-                console.warn('Chart.js not available, showing fallback message');
+            if (typeof Chart === "undefined") {
+                console.warn("Chart.js not available, showing fallback message");
                 this.showChartUnavailable();
                 return;
             }
@@ -741,27 +741,27 @@ export default class ResearchView {
                 await this.renderChart(historicalData);
                 this.showChart();
             } else {
-                console.warn('No historical data available');
-                this.showChartUnavailable('No historical data available');
+                console.warn("No historical data available");
+                this.showChartUnavailable("No historical data available");
             }
 
         } catch (error) {
-            console.error('Chart loading error:', error);
-            this.showChartUnavailable('Chart temporarily unavailable');
+            console.error("Chart loading error:", error);
+            this.showChartUnavailable("Chart temporarily unavailable");
         }
     }
 
     async renderChart(historicalData) {
-        const canvas = document.getElementById('price-chart');
+        const canvas = document.getElementById("price-chart");
     if (!canvas) {
-        console.error('Chart canvas not found');
+        console.error("Chart canvas not found");
         return;
     }
 
     // Check if Chart.js is available
-    if (typeof Chart === 'undefined') {
-        console.error('Chart.js not loaded');
-        this.showChartUnavailable('Chart library not available');
+    if (typeof Chart === "undefined") {
+        console.error("Chart.js not loaded");
+        this.showChartUnavailable("Chart library not available");
         return;
     }
 
@@ -770,13 +770,13 @@ export default class ResearchView {
         try {
             this.currentChart.destroy();
         } catch (error) {
-            console.warn('Error destroying previous chart:', error);
+            console.warn("Error destroying previous chart:", error);
         }
         this.currentChart = null;
     }
 
     try {
-        const ctx = canvas.getContext('2d');
+        const ctx = canvas.getContext("2d");
         
         // Prepare data for Chart.js
         const labels = historicalData.timestamps.map(timestamp => {
@@ -787,30 +787,30 @@ export default class ResearchView {
 
         // Validate data
         if (!labels.length || !prices.length) {
-            throw new Error('No chart data available');
+            throw new Error("No chart data available");
         }
 
         // Create gradient
         const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-        gradient.addColorStop(0, 'rgba(6, 182, 212, 0.1)');
-        gradient.addColorStop(1, 'rgba(6, 182, 212, 0)');
+        gradient.addColorStop(0, "rgba(6, 182, 212, 0.1)");
+        gradient.addColorStop(1, "rgba(6, 182, 212, 0)");
 
         const chartConfig = {
-            type: 'line',
+            type: "line",
             data: {
                 labels: labels,
                 datasets: [{
                     label: `${this.currentStockData.ticker} Price`,
                     data: prices,
-                    borderColor: '#06B6D4',
+                    borderColor: "#06B6D4",
                     backgroundColor: gradient,
                     borderWidth: 2,
                     fill: true,
                     tension: 0.1,
                     pointRadius: 0,
                     pointHoverRadius: 4,
-                    pointHoverBackgroundColor: '#06B6D4',
-                    pointHoverBorderColor: '#ffffff',
+                    pointHoverBackgroundColor: "#06B6D4",
+                    pointHoverBorderColor: "#ffffff",
                     pointHoverBorderWidth: 2
                 }]
             },
@@ -819,17 +819,17 @@ export default class ResearchView {
                 maintainAspectRatio: false,
                 interaction: {
                     intersect: false,
-                    mode: 'index'
+                    mode: "index"
                 },
                 plugins: {
                     legend: {
                         display: false
                     },
                     tooltip: {
-                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                        titleColor: '#ffffff',
-                        bodyColor: '#ffffff',
-                        borderColor: '#06B6D4',
+                        backgroundColor: "rgba(0, 0, 0, 0.8)",
+                        titleColor: "#ffffff",
+                        bodyColor: "#ffffff",
+                        borderColor: "#06B6D4",
                         borderWidth: 1,
                         callbacks: {
                             label: function(context) {
@@ -841,23 +841,23 @@ export default class ResearchView {
                 scales: {
                     x: {
                         grid: {
-                            color: 'rgba(75, 85, 99, 0.3)',
+                            color: "rgba(75, 85, 99, 0.3)",
                             drawBorder: false
                         },
                         ticks: {
-                            color: '#9CA3AF',
+                            color: "#9CA3AF",
                             maxTicksLimit: 8
                         }
                     },
                     y: {
                         grid: {
-                            color: 'rgba(75, 85, 99, 0.3)',
+                            color: "rgba(75, 85, 99, 0.3)",
                             drawBorder: false
                         },
                         ticks: {
-                            color: '#9CA3AF',
+                            color: "#9CA3AF",
                             callback: function(value) {
-                                return '$' + value.toFixed(2);
+                                return "$" + value.toFixed(2);
                             }
                         }
                     }
@@ -866,22 +866,22 @@ export default class ResearchView {
         };
 
         this.currentChart = new Chart(ctx, chartConfig);
-            console.log('Chart rendered successfully');
+            console.log("Chart rendered successfully");
 
         } catch (error) {
-            console.error('Error rendering chart:', error);
-            this.showChartUnavailable('Unable to render chart');
+            console.error("Error rendering chart:", error);
+            this.showChartUnavailable("Unable to render chart");
         }
     }
 
     // Add this new method to show chart unavailable message
-    showChartUnavailable(message = 'Chart temporarily unavailable') {
-        const chartContainer = document.getElementById('chart-container');
-        const chartLoading = document.getElementById('chart-loading');
-        const chartError = document.getElementById('chart-error');
+    showChartUnavailable(message = "Chart temporarily unavailable") {
+        const chartContainer = document.getElementById("chart-container");
+        const chartLoading = document.getElementById("chart-loading");
+        const chartError = document.getElementById("chart-error");
         
-        if (chartLoading) chartLoading.classList.add('hidden');
-        if (chartContainer) chartContainer.classList.add('hidden');
+        if (chartLoading) chartLoading.classList.add("hidden");
+        if (chartContainer) chartContainer.classList.add("hidden");
         
         if (chartError) {
             chartError.innerHTML = `
@@ -895,7 +895,7 @@ export default class ResearchView {
                     </div>
                 </div>
             `;
-            chartError.classList.remove('hidden');
+            chartError.classList.remove("hidden");
         }
     }
 
@@ -907,18 +907,18 @@ export default class ResearchView {
 
         const profile = this.currentStockData.companyProfile;
 
-        this.updateElement('market-cap', profile.marketCapitalization ? this.formatMillionsBillions(profile.marketCapitalization) : '--');
-        this.updateElement('shares-outstanding', profile.shareOutstanding ? profile.shareOutstanding.toLocaleString() : '--');
-        this.updateElement('ipo-date', profile.ipo ? new Date(profile.ipo).toLocaleDateString() : '--');
-        this.updateElement('company-country', profile.country || '--');
+        this.updateElement("market-cap", profile.marketCapitalization ? this.formatMillionsBillions(profile.marketCapitalization) : "--");
+        this.updateElement("shares-outstanding", profile.shareOutstanding ? profile.shareOutstanding.toLocaleString() : "--");
+        this.updateElement("ipo-date", profile.ipo ? new Date(profile.ipo).toLocaleDateString() : "--");
+        this.updateElement("company-country", profile.country || "--");
 
-        const companyWebsiteDiv = document.getElementById('company-website');
-        const websiteLink = document.getElementById('website-link');
+        const companyWebsiteDiv = document.getElementById("company-website");
+        const websiteLink = document.getElementById("website-link");
         if (profile.weburl && websiteLink && companyWebsiteDiv) {
             websiteLink.href = profile.weburl;
-            companyWebsiteDiv.classList.remove('hidden');
+            companyWebsiteDiv.classList.remove("hidden");
         } else if (companyWebsiteDiv) {
-            companyWebsiteDiv.classList.add('hidden');
+            companyWebsiteDiv.classList.add("hidden");
         }
 
         this.showProfileData();
@@ -926,10 +926,10 @@ export default class ResearchView {
 
     formatMillionsBillions(num) {
         if (num >= 1000000000) {
-            return (num / 1000000000).toFixed(2) + 'B';
+            return (num / 1000000000).toFixed(2) + "B";
         }
         if (num >= 1000000) {
-            return (num / 1000000).toFixed(2) + 'M';
+            return (num / 1000000).toFixed(2) + "M";
         }
         return num.toLocaleString();
     }
@@ -939,25 +939,25 @@ export default class ResearchView {
         const resolution = targetButton.dataset.resolution;
 
         // Update active button style
-        document.querySelectorAll('.chart-period-btn').forEach(btn => {
-            btn.classList.remove('bg-cyan-600', 'text-white');
-            btn.classList.add('text-gray-300', 'hover:text-white');
+        document.querySelectorAll(".chart-period-btn").forEach(btn => {
+            btn.classList.remove("bg-cyan-600", "text-white");
+            btn.classList.add("text-gray-300", "hover:text-white");
         });
-        targetButton.classList.add('bg-cyan-600', 'text-white');
-        targetButton.classList.remove('text-gray-300', 'hover:text-white');
+        targetButton.classList.add("bg-cyan-600", "text-white");
+        targetButton.classList.remove("text-gray-300", "hover:text-white");
 
         this.loadPriceChart(period, resolution);
     }
 
     refreshChart() {
-        const activeBtn = document.querySelector('.chart-period-btn.bg-cyan-600');
+        const activeBtn = document.querySelector(".chart-period-btn.bg-cyan-600");
         if (activeBtn) {
             const period = parseInt(activeBtn.dataset.period);
             const resolution = activeBtn.dataset.resolution;
             this.loadPriceChart(period, resolution);
         } else {
             // Default to 7D if no active button found
-            this.loadPriceChart(7, 'D');
+            this.loadPriceChart(7, "D");
         }
     }
 
@@ -992,7 +992,7 @@ export default class ResearchView {
      */
     async loadStockNews() {
         if (!this.currentStockData) {
-            console.warn('No current stock data for news loading');
+            console.warn("No current stock data for news loading");
             return;
         }
 
@@ -1011,7 +1011,7 @@ export default class ResearchView {
             this.displayNews();
             
         } catch (error) {
-            console.error('Error loading stock news:', error);
+            console.error("Error loading stock news:", error);
             this.showNewsError();
         }
     }
@@ -1023,11 +1023,11 @@ export default class ResearchView {
         let filtered = [...this.currentNewsData];
         
         // Apply date filter
-        if (this.currentNewsFilter === 'today') {
+        if (this.currentNewsFilter === "today") {
             const today = new Date();
             today.setHours(0, 0, 0, 0);
             filtered = this.stockService.filterNewsByDate(filtered, 1);
-        } else if (this.currentNewsFilter === 'week') {
+        } else if (this.currentNewsFilter === "week") {
             filtered = this.stockService.filterNewsByDate(filtered, 7);
         }
         
@@ -1049,8 +1049,8 @@ export default class ResearchView {
      * Display news articles
      */
     displayNews() {
-        const newsArticlesContainer = document.getElementById('news-articles');
-        const newsEmptyContainer = document.getElementById('news-empty');
+        const newsArticlesContainer = document.getElementById("news-articles");
+        const newsEmptyContainer = document.getElementById("news-empty");
         
         if (!newsArticlesContainer) return;
         
@@ -1060,7 +1060,7 @@ export default class ResearchView {
         }
         
         // Clear existing content
-        newsArticlesContainer.innerHTML = '';
+        newsArticlesContainer.innerHTML = "";
         
         // Create article cards
         this.filteredNewsData.forEach(article => {
@@ -1076,11 +1076,11 @@ export default class ResearchView {
      * Create a news article card element
      */
     createNewsArticleCard(article) {
-        const card = document.createElement('div');
-        card.className = 'bg-gray-700 rounded-lg p-4 hover:bg-gray-600 transition-colors duration-200 cursor-pointer border border-gray-600';
+        const card = document.createElement("div");
+        card.className = "bg-gray-700 rounded-lg p-4 hover:bg-gray-600 transition-colors duration-200 cursor-pointer border border-gray-600";
         
         const formattedDate = formatNewsDate(article.datetime);
-        const hasImage = article.image && article.image !== 'https://via.placeholder.com/400x200/1f2937/ffffff?text=News';
+        const hasImage = article.image && article.image !== "https://via.placeholder.com/400x200/1f2937/ffffff?text=News";
         
         card.innerHTML = `
             <div class="flex gap-4">
@@ -1093,7 +1093,7 @@ export default class ResearchView {
                             onerror="this.style.display='none'"
                         >
                     </div>
-                ` : ''}
+                ` : ""}
                 
                 <div class="flex-1 min-w-0">
                     <div class="flex items-start justify-between gap-4 mb-2">
@@ -1119,7 +1119,7 @@ export default class ResearchView {
         `;
         
         // Add click handler to open article
-        card.addEventListener('click', () => {
+        card.addEventListener("click", () => {
             this.openNewsArticle(article);
         });
         
@@ -1130,8 +1130,8 @@ export default class ResearchView {
      * Open news article in new tab
      */
     openNewsArticle(article) {
-        if (article.url && article.url !== '#') {
-            window.open(article.url, '_blank', 'noopener,noreferrer');
+        if (article.url && article.url !== "#") {
+            window.open(article.url, "_blank", "noopener,noreferrer");
         } else {
             // Show modal or alert for articles without URLs
             alert(`Article: ${article.headline}\n\nSummary: ${article.summary}\n\nSource: ${article.source}`);
@@ -1146,12 +1146,12 @@ export default class ResearchView {
         this.currentNewsFilter = filter;
         
         // Update button styles
-        document.querySelectorAll('.news-filter-btn').forEach(btn => {
-            btn.classList.remove('bg-cyan-600', 'text-white');
-            btn.classList.add('text-gray-300', 'hover:text-white');
+        document.querySelectorAll(".news-filter-btn").forEach(btn => {
+            btn.classList.remove("bg-cyan-600", "text-white");
+            btn.classList.add("text-gray-300", "hover:text-white");
         });
-        targetButton.classList.add('bg-cyan-600', 'text-white');
-        targetButton.classList.remove('text-gray-300', 'hover:text-white');
+        targetButton.classList.add("bg-cyan-600", "text-white");
+        targetButton.classList.remove("text-gray-300", "hover:text-white");
         
         // Apply filters and redisplay
         this.applyNewsFilters();
@@ -1173,7 +1173,7 @@ export default class ResearchView {
     async refreshNews() {
         if (!this.currentStockData) return;
         
-        const refreshBtn = document.getElementById('refresh-news-btn');
+        const refreshBtn = document.getElementById("refresh-news-btn");
         if (refreshBtn) {
             refreshBtn.disabled = true;
             refreshBtn.innerHTML = `
@@ -1189,7 +1189,7 @@ export default class ResearchView {
             await this.loadStockNews();
             
         } catch (error) {
-            console.error('Error refreshing news:', error);
+            console.error("Error refreshing news:", error);
             this.showNewsError();
         } finally {
             // Reset refresh button
@@ -1206,109 +1206,109 @@ export default class ResearchView {
 
     // News UI State Management
     showNewsLoading() {
-        document.getElementById('news-loading')?.classList.remove('hidden');
-        document.getElementById('news-articles')?.classList.add('hidden');
-        document.getElementById('news-empty')?.classList.add('hidden');
-        document.getElementById('news-error')?.classList.add('hidden');
+        document.getElementById("news-loading")?.classList.remove("hidden");
+        document.getElementById("news-articles")?.classList.add("hidden");
+        document.getElementById("news-empty")?.classList.add("hidden");
+        document.getElementById("news-error")?.classList.add("hidden");
     }
 
     showNewsArticles() {
-        document.getElementById('news-loading')?.classList.add('hidden');
-        document.getElementById('news-articles')?.classList.remove('hidden');
-        document.getElementById('news-empty')?.classList.add('hidden');
-        document.getElementById('news-error')?.classList.add('hidden');
+        document.getElementById("news-loading")?.classList.add("hidden");
+        document.getElementById("news-articles")?.classList.remove("hidden");
+        document.getElementById("news-empty")?.classList.add("hidden");
+        document.getElementById("news-error")?.classList.add("hidden");
     }
 
     showNewsEmpty() {
-        document.getElementById('news-loading')?.classList.add('hidden');
-        document.getElementById('news-articles')?.classList.add('hidden');
-        document.getElementById('news-empty')?.classList.remove('hidden');
-        document.getElementById('news-error')?.classList.add('hidden');
+        document.getElementById("news-loading")?.classList.add("hidden");
+        document.getElementById("news-articles")?.classList.add("hidden");
+        document.getElementById("news-empty")?.classList.remove("hidden");
+        document.getElementById("news-error")?.classList.add("hidden");
     }
 
     showNewsError() {
-        document.getElementById('news-loading')?.classList.add('hidden');
-        document.getElementById('news-articles')?.classList.add('hidden');
-        document.getElementById('news-empty')?.classList.add('hidden');
-        document.getElementById('news-error')?.classList.remove('hidden');
+        document.getElementById("news-loading")?.classList.add("hidden");
+        document.getElementById("news-articles")?.classList.add("hidden");
+        document.getElementById("news-empty")?.classList.add("hidden");
+        document.getElementById("news-error")?.classList.remove("hidden");
     }
 
     // UI State Management
     showLoading() {
-        document.getElementById('research-placeholder')?.classList.add('hidden');
-        document.getElementById('research-results')?.classList.add('hidden');
-        document.getElementById('research-loading')?.classList.remove('hidden');
+        document.getElementById("research-placeholder")?.classList.add("hidden");
+        document.getElementById("research-results")?.classList.add("hidden");
+        document.getElementById("research-loading")?.classList.remove("hidden");
         this.hideError();
     }
 
     hideLoading() {
-        document.getElementById('research-loading')?.classList.add('hidden');
+        document.getElementById("research-loading")?.classList.add("hidden");
     }
 
     showDefaultState() {
-        document.getElementById('research-placeholder')?.classList.remove('hidden');
-        document.getElementById('research-results')?.classList.add('hidden');
-        document.getElementById('research-loading')?.classList.add('hidden');
+        document.getElementById("research-placeholder")?.classList.remove("hidden");
+        document.getElementById("research-results")?.classList.add("hidden");
+        document.getElementById("research-loading")?.classList.add("hidden");
         this.hideError();
     }
 
     showResults() {
-        document.getElementById('research-placeholder')?.classList.add('hidden');
-        document.getElementById('research-loading')?.classList.add('hidden');
-        document.getElementById('research-results')?.classList.remove('hidden');
+        document.getElementById("research-placeholder")?.classList.add("hidden");
+        document.getElementById("research-loading")?.classList.add("hidden");
+        document.getElementById("research-results")?.classList.remove("hidden");
         this.hideError();
     }
 
     showError(message) {
-        const errorDiv = document.getElementById('research-error');
-        const errorText = document.getElementById('research-error-text');
+        const errorDiv = document.getElementById("research-error");
+        const errorText = document.getElementById("research-error-text");
         if (errorDiv && errorText) {
             errorText.textContent = message;
-            errorDiv.classList.remove('hidden');
+            errorDiv.classList.remove("hidden");
         }
-        document.getElementById('research-placeholder')?.classList.add('hidden');
-        document.getElementById('research-results')?.classList.add('hidden');
-        document.getElementById('research-loading')?.classList.add('hidden');
+        document.getElementById("research-placeholder")?.classList.add("hidden");
+        document.getElementById("research-results")?.classList.add("hidden");
+        document.getElementById("research-loading")?.classList.add("hidden");
     }
 
     hideError() {
-        document.getElementById('research-error')?.classList.add('hidden');
+        document.getElementById("research-error")?.classList.add("hidden");
     }
 
     showChartLoading() {
-        document.getElementById('chart-loading')?.classList.remove('hidden');
-        document.getElementById('chart-container')?.classList.add('hidden');
-        document.getElementById('chart-error')?.classList.add('hidden');
+        document.getElementById("chart-loading")?.classList.remove("hidden");
+        document.getElementById("chart-container")?.classList.add("hidden");
+        document.getElementById("chart-error")?.classList.add("hidden");
     }
 
     showChart() {
-        document.getElementById('chart-loading')?.classList.add('hidden');
-        document.getElementById('chart-container')?.classList.remove('hidden');
-        document.getElementById('chart-error')?.classList.add('hidden');
+        document.getElementById("chart-loading")?.classList.add("hidden");
+        document.getElementById("chart-container")?.classList.remove("hidden");
+        document.getElementById("chart-error")?.classList.add("hidden");
     }
 
     showChartError() {
-        document.getElementById('chart-loading')?.classList.add('hidden');
-        document.getElementById('chart-container')?.classList.add('hidden');
-        document.getElementById('chart-error')?.classList.remove('hidden');
+        document.getElementById("chart-loading")?.classList.add("hidden");
+        document.getElementById("chart-container")?.classList.add("hidden");
+        document.getElementById("chart-error")?.classList.remove("hidden");
     }
 
     showProfileLoading() {
-        document.getElementById('profile-loading')?.classList.remove('hidden');
-        document.getElementById('profile-data')?.classList.add('hidden');
-        document.getElementById('profile-error')?.classList.add('hidden');
+        document.getElementById("profile-loading")?.classList.remove("hidden");
+        document.getElementById("profile-data")?.classList.add("hidden");
+        document.getElementById("profile-error")?.classList.add("hidden");
     }
 
     showProfileData() {
-        document.getElementById('profile-loading')?.classList.add('hidden');
-        document.getElementById('profile-data')?.classList.remove('hidden');
-        document.getElementById('profile-error')?.classList.add('hidden');
+        document.getElementById("profile-loading")?.classList.add("hidden");
+        document.getElementById("profile-data")?.classList.remove("hidden");
+        document.getElementById("profile-error")?.classList.add("hidden");
     }
 
     showProfileError() {
-        document.getElementById('profile-loading')?.classList.add('hidden');
-        document.getElementById('profile-data')?.classList.add('hidden');
-        document.getElementById('profile-error')?.classList.remove('hidden');
+        document.getElementById("profile-loading")?.classList.add("hidden");
+        document.getElementById("profile-data")?.classList.add("hidden");
+        document.getElementById("profile-error")?.classList.remove("hidden");
     }
 
     updateElement(id, text) {

@@ -15,7 +15,7 @@
  * @returns {boolean} True if value is present
  */
 export const isPresent = (value) => {
-    return value !== null && value !== undefined && value !== '';
+    return value !== null && value !== undefined && value !== "";
 };
 
 /**
@@ -24,7 +24,7 @@ export const isPresent = (value) => {
  * @returns {boolean} True if string has content
  */
 export const isNotEmpty = (str) => {
-    return typeof str === 'string' && str.trim().length > 0;
+    return typeof str === "string" && str.trim().length > 0;
 };
 
 /**
@@ -33,7 +33,7 @@ export const isNotEmpty = (str) => {
  * @returns {boolean} True if email format is valid
  */
 export const isValidEmail = (email) => {
-    if (!email || typeof email !== 'string') return false;
+    if (!email || typeof email !== "string") return false;
     
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email.trim());
@@ -46,15 +46,15 @@ export const isValidEmail = (email) => {
  * @returns {object} Validation result with valid flag and message
  */
 export const validatePassword = (password, minLength = 6) => {
-    if (!password || typeof password !== 'string') {
-        return { valid: false, message: 'Password is required' };
+    if (!password || typeof password !== "string") {
+        return { valid: false, message: "Password is required" };
     }
     
     if (password.length < minLength) {
         return { valid: false, message: `Password must be at least ${minLength} characters` };
     }
     
-    return { valid: true, message: 'Password is valid' };
+    return { valid: true, message: "Password is valid" };
 };
 
 /**
@@ -75,7 +75,7 @@ export const validateRequiredFields = (data, requiredFields) => {
     return {
         valid: missing.length === 0,
         missing,
-        message: missing.length > 0 ? `Missing required fields: ${missing.join(', ')}` : 'All required fields present'
+        message: missing.length > 0 ? `Missing required fields: ${missing.join(", ")}` : "All required fields present"
     };
 };
 
@@ -89,22 +89,22 @@ export const validateRequiredFields = (data, requiredFields) => {
  * @returns {object} Validation result
  */
 export const validateTicker = (ticker) => {
-    if (!ticker || typeof ticker !== 'string') {
-        return { valid: false, message: 'Ticker symbol is required' };
+    if (!ticker || typeof ticker !== "string") {
+        return { valid: false, message: "Ticker symbol is required" };
     }
     
     const cleaned = ticker.trim().toUpperCase();
     
     if (cleaned.length < 1 || cleaned.length > 10) {
-        return { valid: false, message: 'Ticker symbol must be 1-10 characters' };
+        return { valid: false, message: "Ticker symbol must be 1-10 characters" };
     }
     
     // Check for valid characters (letters and numbers only)
     if (!/^[A-Z0-9]+$/.test(cleaned)) {
-        return { valid: false, message: 'Ticker symbol can only contain letters and numbers' };
+        return { valid: false, message: "Ticker symbol can only contain letters and numbers" };
     }
     
-    return { valid: true, ticker: cleaned, message: 'Valid ticker symbol' };
+    return { valid: true, ticker: cleaned, message: "Valid ticker symbol" };
 };
 
 /**
@@ -115,21 +115,21 @@ export const validateTicker = (ticker) => {
  */
 export const validateQuantity = (quantity, maxQuantity = null) => {
     // Convert to number if it's a string
-    const num = typeof quantity === 'string' ? parseInt(quantity, 10) : quantity;
+    const num = typeof quantity === "string" ? parseInt(quantity, 10) : quantity;
     
     if (isNaN(num) || !Number.isInteger(num)) {
-        return { valid: false, message: 'Quantity must be a whole number' };
+        return { valid: false, message: "Quantity must be a whole number" };
     }
     
     if (num <= 0) {
-        return { valid: false, message: 'Quantity must be greater than 0' };
+        return { valid: false, message: "Quantity must be greater than 0" };
     }
     
     if (maxQuantity !== null && num > maxQuantity) {
         return { valid: false, message: `Quantity cannot exceed ${maxQuantity}` };
     }
     
-    return { valid: true, quantity: num, message: 'Valid quantity' };
+    return { valid: true, quantity: num, message: "Valid quantity" };
 };
 
 /**
@@ -141,10 +141,10 @@ export const validateQuantity = (quantity, maxQuantity = null) => {
  */
 export const validatePrice = (price, minPrice = 0.01, maxPrice = null) => {
     // Convert to number if it's a string
-    const num = typeof price === 'string' ? parseFloat(price) : price;
+    const num = typeof price === "string" ? parseFloat(price) : price;
     
-    if (isNaN(num) || typeof num !== 'number') {
-        return { valid: false, message: 'Price must be a valid number' };
+    if (isNaN(num) || typeof num !== "number") {
+        return { valid: false, message: "Price must be a valid number" };
     }
     
     if (num < minPrice) {
@@ -155,7 +155,7 @@ export const validatePrice = (price, minPrice = 0.01, maxPrice = null) => {
         return { valid: false, message: `Price cannot exceed $${maxPrice}` };
     }
     
-    return { valid: true, price: num, message: 'Valid price' };
+    return { valid: true, price: num, message: "Valid price" };
 };
 
 /**
@@ -164,18 +164,18 @@ export const validatePrice = (price, minPrice = 0.01, maxPrice = null) => {
  * @param {Array<string>} allowedTypes - Allowed trade types (default: ['buy', 'sell'])
  * @returns {object} Validation result
  */
-export const validateTradeType = (type, allowedTypes = ['buy', 'sell']) => {
-    if (!type || typeof type !== 'string') {
-        return { valid: false, message: 'Trade type is required' };
+export const validateTradeType = (type, allowedTypes = ["buy", "sell"]) => {
+    if (!type || typeof type !== "string") {
+        return { valid: false, message: "Trade type is required" };
     }
     
     const normalized = type.toLowerCase().trim();
     
     if (!allowedTypes.includes(normalized)) {
-        return { valid: false, message: `Trade type must be one of: ${allowedTypes.join(', ')}` };
+        return { valid: false, message: `Trade type must be one of: ${allowedTypes.join(", ")}` };
     }
     
-    return { valid: true, type: normalized, message: 'Valid trade type' };
+    return { valid: true, type: normalized, message: "Valid trade type" };
 };
 
 /**
@@ -224,7 +224,7 @@ export const validateTradeDetails = (tradeDetails) => {
         valid: allValid,
         results,
         errors,
-        message: allValid ? 'All trade details are valid' : errors.join('; ')
+        message: allValid ? "All trade details are valid" : errors.join("; ")
     };
 };
 
@@ -240,8 +240,8 @@ export const validateTradeDetails = (tradeDetails) => {
  * @returns {object} Validation result
  */
 export const validateSimulationName = (name, minLength = 3, maxLength = 50) => {
-    if (!name || typeof name !== 'string') {
-        return { valid: false, message: 'Simulation name is required' };
+    if (!name || typeof name !== "string") {
+        return { valid: false, message: "Simulation name is required" };
     }
     
     const trimmed = name.trim();
@@ -254,7 +254,7 @@ export const validateSimulationName = (name, minLength = 3, maxLength = 50) => {
         return { valid: false, message: `Simulation name cannot exceed ${maxLength} characters` };
     }
     
-    return { valid: true, name: trimmed, message: 'Valid simulation name' };
+    return { valid: true, name: trimmed, message: "Valid simulation name" };
 };
 
 /**
@@ -269,22 +269,22 @@ export const validateDateRange = (startDate, endDate) => {
     const now = new Date();
     
     if (isNaN(start.getTime())) {
-        return { valid: false, message: 'Start date is not valid' };
+        return { valid: false, message: "Start date is not valid" };
     }
     
     if (isNaN(end.getTime())) {
-        return { valid: false, message: 'End date is not valid' };
+        return { valid: false, message: "End date is not valid" };
     }
     
     if (start >= end) {
-        return { valid: false, message: 'End date must be after start date' };
+        return { valid: false, message: "End date must be after start date" };
     }
     
     if (end <= now) {
-        return { valid: false, message: 'End date must be in the future' };
+        return { valid: false, message: "End date must be in the future" };
     }
     
-    return { valid: true, startDate: start, endDate: end, message: 'Valid date range' };
+    return { valid: true, startDate: start, endDate: end, message: "Valid date range" };
 };
 
 /**
@@ -295,10 +295,10 @@ export const validateDateRange = (startDate, endDate) => {
  * @returns {object} Validation result
  */
 export const validateStartingBalance = (balance, minBalance = 1000, maxBalance = 1000000) => {
-    const num = typeof balance === 'string' ? parseFloat(balance) : balance;
+    const num = typeof balance === "string" ? parseFloat(balance) : balance;
     
-    if (isNaN(num) || typeof num !== 'number') {
-        return { valid: false, message: 'Starting balance must be a valid number' };
+    if (isNaN(num) || typeof num !== "number") {
+        return { valid: false, message: "Starting balance must be a valid number" };
     }
     
     if (num < minBalance) {
@@ -309,7 +309,7 @@ export const validateStartingBalance = (balance, minBalance = 1000, maxBalance =
         return { valid: false, message: `Starting balance cannot exceed $${maxBalance.toLocaleString()}` };
     }
     
-    return { valid: true, balance: num, message: 'Valid starting balance' };
+    return { valid: true, balance: num, message: "Valid starting balance" };
 };
 
 /**
@@ -319,8 +319,8 @@ export const validateStartingBalance = (balance, minBalance = 1000, maxBalance =
  * @returns {object} Validation result
  */
 export const validateInviteCode = (code, expectedLength = 6) => {
-    if (!code || typeof code !== 'string') {
-        return { valid: false, message: 'Invite code is required' };
+    if (!code || typeof code !== "string") {
+        return { valid: false, message: "Invite code is required" };
     }
     
     const cleaned = code.trim().toUpperCase();
@@ -330,10 +330,10 @@ export const validateInviteCode = (code, expectedLength = 6) => {
     }
     
     if (!/^[A-Z0-9]+$/.test(cleaned)) {
-        return { valid: false, message: 'Invite code can only contain letters and numbers' };
+        return { valid: false, message: "Invite code can only contain letters and numbers" };
     }
     
-    return { valid: true, code: cleaned, message: 'Valid invite code' };
+    return { valid: true, code: cleaned, message: "Valid invite code" };
 };
 
 /**
@@ -347,17 +347,17 @@ export const validateInviteCode = (code, expectedLength = 6) => {
  * @returns {string} Sanitized string
  */
 export const sanitizeString = (input, allowSpecialChars = true) => {
-    if (!input || typeof input !== 'string') return '';
+    if (!input || typeof input !== "string") return "";
     
     let sanitized = input.trim();
     
     if (!allowSpecialChars) {
         // Remove special characters except spaces, letters, and numbers
-        sanitized = sanitized.replace(/[^a-zA-Z0-9\s]/g, '');
+        sanitized = sanitized.replace(/[^a-zA-Z0-9\s]/g, "");
     }
     
     // Remove multiple consecutive spaces
-    sanitized = sanitized.replace(/\s+/g, ' ');
+    sanitized = sanitized.replace(/\s+/g, " ");
     
     return sanitized;
 };
@@ -368,12 +368,12 @@ export const sanitizeString = (input, allowSpecialChars = true) => {
  * @returns {string} Sanitized ticker in uppercase
  */
 export const sanitizeTicker = (ticker) => {
-    if (!ticker || typeof ticker !== 'string') return '';
+    if (!ticker || typeof ticker !== "string") return "";
     
     return ticker
         .trim()
         .toUpperCase()
-        .replace(/[^A-Z0-9]/g, '')
+        .replace(/[^A-Z0-9]/g, "")
         .slice(0, 10); // Limit to 10 characters
 };
 
@@ -385,17 +385,17 @@ export const sanitizeTicker = (ticker) => {
  * @returns {number|null} Sanitized number or null if invalid
  */
 export const sanitizeNumber = (input, allowDecimals = true, maxDecimals = 2) => {
-    if (input === null || input === undefined || input === '') return null;
+    if (input === null || input === undefined || input === "") return null;
     
     let str = String(input).trim();
     
     // Remove any non-numeric characters except decimal point and minus sign
-    str = str.replace(/[^0-9.-]/g, '');
+    str = str.replace(/[^0-9.-]/g, "");
     
     // Handle multiple decimal points (keep only the first one)
-    const parts = str.split('.');
+    const parts = str.split(".");
     if (parts.length > 2) {
-        str = parts[0] + '.' + parts.slice(1).join('');
+        str = parts[0] + "." + parts.slice(1).join("");
     }
     
     // Convert to number
@@ -432,7 +432,7 @@ export const validateFormData = (data, schema) => {
         const rules = schema[field];
         const value = data[field];
         let fieldValid = true;
-        let fieldMessage = '';
+        let fieldMessage = "";
         
         // Check if required
         if (rules.required && !isPresent(value)) {
@@ -442,14 +442,14 @@ export const validateFormData = (data, schema) => {
         
         // Check specific validation rules if value is present
         if (fieldValid && isPresent(value)) {
-            if (rules.type === 'email' && !isValidEmail(value)) {
+            if (rules.type === "email" && !isValidEmail(value)) {
                 fieldValid = false;
-                fieldMessage = 'Please enter a valid email address';
-            } else if (rules.type === 'ticker') {
+                fieldMessage = "Please enter a valid email address";
+            } else if (rules.type === "ticker") {
                 const tickerResult = validateTicker(value);
                 fieldValid = tickerResult.valid;
                 fieldMessage = tickerResult.message;
-            } else if (rules.type === 'number') {
+            } else if (rules.type === "number") {
                 const numResult = validatePrice(value, rules.min, rules.max);
                 fieldValid = numResult.valid;
                 fieldMessage = numResult.message;
@@ -464,7 +464,7 @@ export const validateFormData = (data, schema) => {
         
         results[field] = {
             valid: fieldValid,
-            message: fieldMessage || 'Valid'
+            message: fieldMessage || "Valid"
         };
         
         if (!fieldValid) {
@@ -477,7 +477,7 @@ export const validateFormData = (data, schema) => {
         valid: allValid,
         results,
         errors,
-        message: allValid ? 'All fields are valid' : errors.join('; ')
+        message: allValid ? "All fields are valid" : errors.join("; ")
     };
 };
 
@@ -488,17 +488,17 @@ export const validateFormData = (data, schema) => {
  */
 export const getAuthErrorMessage = (errorCode) => {
     const errorMessages = {
-        'auth/user-not-found': 'No account found with this email address.',
-        'auth/wrong-password': 'Incorrect password.',
-        'auth/email-already-in-use': 'An account with this email already exists.',
-        'auth/weak-password': 'Password should be at least 6 characters.',
-        'auth/invalid-email': 'Please enter a valid email address.',
-        'auth/popup-closed-by-user': 'Sign-in popup was closed.',
-        'auth/network-request-failed': 'Network error. Please check your connection.',
-        'auth/too-many-requests': 'Too many failed attempts. Please try again later.',
-        'auth/user-disabled': 'This account has been disabled.',
-        'auth/invalid-credential': 'Invalid login credentials.'
+        "auth/user-not-found": "No account found with this email address.",
+        "auth/wrong-password": "Incorrect password.",
+        "auth/email-already-in-use": "An account with this email already exists.",
+        "auth/weak-password": "Password should be at least 6 characters.",
+        "auth/invalid-email": "Please enter a valid email address.",
+        "auth/popup-closed-by-user": "Sign-in popup was closed.",
+        "auth/network-request-failed": "Network error. Please check your connection.",
+        "auth/too-many-requests": "Too many failed attempts. Please try again later.",
+        "auth/user-disabled": "This account has been disabled.",
+        "auth/invalid-credential": "Invalid login credentials."
     };
     
-    return errorMessages[errorCode] || 'An authentication error occurred. Please try again.';
+    return errorMessages[errorCode] || "An authentication error occurred. Please try again.";
 };

@@ -1,22 +1,20 @@
 // src/services/leaderboard.js
-import { getFirestoreDb } from './firebase.js';
-import { getPortfolio } from './trading.js';
-import { StockService } from './stocks.js';
+import { getFirestoreDb } from "./firebase.js";
+import { getPortfolio } from "./trading.js";
+import { StockService } from "./stocks.js";
 import { 
     collection, 
     doc, 
     getDocs, 
     getDoc, 
     setDoc, 
-    updateDoc, 
     query, 
-    where, 
-    orderBy,
+    where,
     serverTimestamp 
-} from 'firebase/firestore';
+} from "firebase/firestore";
 
-const LEADERBOARDS_COLLECTION = 'simulationLeaderboards';
-const SIMULATION_MEMBERS_COLLECTION = 'simulationMembers';
+const LEADERBOARDS_COLLECTION = "simulationLeaderboards";
+const SIMULATION_MEMBERS_COLLECTION = "simulationMembers";
 
 export class LeaderboardService {
     constructor() {
@@ -27,7 +25,7 @@ export class LeaderboardService {
 
     initialize() {
         this.db = getFirestoreDb();
-        console.log('LeaderboardService initialized');
+        console.log("LeaderboardService initialized");
     }
 
     /**
@@ -99,8 +97,8 @@ export class LeaderboardService {
             // Get simulation members
             const membersQuery = query(
                 collection(this.db, SIMULATION_MEMBERS_COLLECTION),
-                where('simulationId', '==', simulationId),
-                where('status', '==', 'active')
+                where("simulationId", "==", simulationId),
+                where("status", "==", "active")
             );
             const memberDocs = await getDocs(membersQuery);
 
@@ -128,7 +126,7 @@ export class LeaderboardService {
             return membersWithPortfolios;
 
         } catch (error) {
-            console.error('Error getting simulation members with portfolios:', error);
+            console.error("Error getting simulation members with portfolios:", error);
             throw error;
         }
     }
@@ -181,8 +179,8 @@ export class LeaderboardService {
         
         // Calculate trading stats
         const trades = portfolio.trades || [];
-        const buyTrades = trades.filter(t => t.type === 'buy');
-        const sellTrades = trades.filter(t => t.type === 'sell');
+        const buyTrades = trades.filter(t => t.type === "buy");
+        const sellTrades = trades.filter(t => t.type === "sell");
         
         // Calculate total volume traded
         const totalVolume = trades.reduce((sum, trade) => sum + trade.tradeCost, 0);
@@ -232,12 +230,12 @@ export class LeaderboardService {
 
             // Get simulation info if not provided
             if (!simulationInfo) {
-                const simRef = doc(this.db, 'simulations', simulationId);
+                const simRef = doc(this.db, "simulations", simulationId);
                 const simSnap = await getDoc(simRef);
                 if (simSnap.exists()) {
                     simulationInfo = simSnap.data();
                 } else {
-                    throw new Error('Simulation not found');
+                    throw new Error("Simulation not found");
                 }
             }
 
@@ -387,7 +385,7 @@ export class LeaderboardService {
             console.log(`Leaderboard saved for simulation ${leaderboardData.simulationId}`);
 
         } catch (error) {
-            console.error('Error saving leaderboard:', error);
+            console.error("Error saving leaderboard:", error);
             throw error;
         }
     }
@@ -410,7 +408,7 @@ export class LeaderboardService {
             return null;
 
         } catch (error) {
-            console.error('Error getting cached leaderboard:', error);
+            console.error("Error getting cached leaderboard:", error);
             return null;
         }
     }
@@ -443,7 +441,7 @@ export class LeaderboardService {
             return await this.generateSimulationLeaderboard(simulationId, simulationInfo);
 
         } catch (error) {
-            console.error('Error getting leaderboard:', error);
+            console.error("Error getting leaderboard:", error);
             throw error;
         }
     }
@@ -476,7 +474,7 @@ export class LeaderboardService {
             };
 
         } catch (error) {
-            console.error('Error getting user rank:', error);
+            console.error("Error getting user rank:", error);
             return null;
         }
     }

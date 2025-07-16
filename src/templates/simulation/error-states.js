@@ -100,11 +100,11 @@ export const getPortfolioErrorTemplate = () => {
  * @param {string} type - Message type ('success', 'error', 'info')
  * @returns {string} HTML template string
  */
-export const getTemporaryMessageTemplate = (message, type = 'info') => {
+export const getTemporaryMessageTemplate = (message, type = "info") => {
     const colorClasses = {
-        success: 'bg-green-900/20 border-green-500 text-green-400',
-        error: 'bg-red-900/20 border-red-500 text-red-400',
-        info: 'bg-blue-900/20 border-blue-500 text-blue-400'
+        success: "bg-green-900/20 border-green-500 text-green-400",
+        error: "bg-red-900/20 border-red-500 text-red-400",
+        info: "bg-blue-900/20 border-blue-500 text-blue-400"
     };
 
     return `
@@ -132,10 +132,10 @@ export const getTemporaryMessageTemplate = (message, type = 'info') => {
  * @returns {string} HTML template string
  */
 export const getGenericErrorTemplate = (
-    title = 'Error', 
-    message = 'Something went wrong', 
-    buttonText = 'Retry',
-    buttonAction = 'location.reload()'
+    title = "Error", 
+    message = "Something went wrong", 
+    buttonText = "Retry",
+    buttonAction = "location.reload()"
 ) => {
     return `
         <div class="text-center py-8">
@@ -160,10 +160,10 @@ export const getGenericErrorTemplate = (
  */
 export const getNetworkErrorTemplate = () => {
     return getGenericErrorTemplate(
-        'Connection Error',
-        'Please check your internet connection and try again.',
-        'Retry',
-        'location.reload()'
+        "Connection Error",
+        "Please check your internet connection and try again.",
+        "Retry",
+        "location.reload()"
     );
 };
 
@@ -173,10 +173,10 @@ export const getNetworkErrorTemplate = () => {
  */
 export const getPermissionDeniedTemplate = () => {
     return getGenericErrorTemplate(
-        'Access Denied',
-        'You do not have permission to view this content.',
-        'Return to Dashboard',
-        'window.location.href = "/dashboard"'
+        "Access Denied",
+        "You do not have permission to view this content.",
+        "Return to Dashboard",
+        "window.location.href = \"/dashboard\""
     );
 };
 
@@ -186,10 +186,10 @@ export const getPermissionDeniedTemplate = () => {
  */
 export const getTimeoutErrorTemplate = () => {
     return getGenericErrorTemplate(
-        'Request Timeout',
-        'The request took too long to complete. Please try again.',
-        'Try Again',
-        'location.reload()'
+        "Request Timeout",
+        "The request took too long to complete. Please try again.",
+        "Try Again",
+        "location.reload()"
     );
 };
 
@@ -198,7 +198,7 @@ export const getTimeoutErrorTemplate = () => {
  * @param {string} sectionName - Name of the section that failed to load
  * @returns {string} HTML template string
  */
-export const getSectionLoadingErrorTemplate = (sectionName = 'content') => {
+export const getSectionLoadingErrorTemplate = (sectionName = "content") => {
     return `
         <div class="text-center py-6">
             <svg class="w-8 h-8 mx-auto mb-3 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">

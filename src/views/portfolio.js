@@ -1,7 +1,7 @@
 // Enhanced Portfolio view with UI polish - Session 5
-import { getPortfolio, getRecentTrades } from '../services/trading.js';
-import { AuthService } from '../services/auth.js';
-import { StockService } from '../services/stocks.js';
+import { getPortfolio, getRecentTrades } from "../services/trading.js";
+import { AuthService } from "../services/auth.js";
+import { StockService } from "../services/stocks.js";
 import { 
     formatCurrencyWithCommas,
     formatCashPercentage,
@@ -13,17 +13,17 @@ import {
     calculateMarketValue,
     calculateCostBasis,
     getTradeTypeColorClass
-} from '../utils/currency-utils.js';
+} from "../utils/currency-utils.js";
 
 export default class PortfolioView {
     constructor() {
-        this.name = 'portfolio';
+        this.name = "portfolio";
         this.authService = new AuthService();
         this.stockService = new StockService();
         this.viewContainer = null;
         this.currentPortfolio = null;
         this.allTrades = [];
-        this.sortOrder = { field: 'date', direction: 'desc' };
+        this.sortOrder = { field: "date", direction: "desc" };
     }
 
     async render(container) {
@@ -269,44 +269,44 @@ export default class PortfolioView {
 
     attachEventListeners(container) {
         // Navigation buttons
-        const makeTradeButtons = container.querySelectorAll('[data-navigate="/trade"]');
+        const makeTradeButtons = container.querySelectorAll("[data-navigate=\"/trade\"]");
         makeTradeButtons.forEach(button => {
-            button.addEventListener('click', (e) => {
+            button.addEventListener("click", (e) => {
                 e.preventDefault();
-                console.log('Navigating to trade page...');
+                console.log("Navigating to trade page...");
             });
         });
 
         // Refresh prices button
-        const refreshBtn = container.querySelector('#refresh-prices-btn');
+        const refreshBtn = container.querySelector("#refresh-prices-btn");
         if (refreshBtn) {
-            refreshBtn.addEventListener('click', () => {
+            refreshBtn.addEventListener("click", () => {
                 this.refreshPrices();
             });
         }
 
         // Trade filter buttons
-        const filterButtons = container.querySelectorAll('.filter-btn');
+        const filterButtons = container.querySelectorAll(".filter-btn");
         filterButtons.forEach(button => {
-            button.addEventListener('click', (e) => {
+            button.addEventListener("click", (e) => {
                 this.handleFilterChange(e.target.dataset.filter);
             });
         });
 
         // Sort dropdown
-        const sortSelect = container.querySelector('#sort-trades');
+        const sortSelect = container.querySelector("#sort-trades");
         if (sortSelect) {
-            sortSelect.addEventListener('change', (e) => {
+            sortSelect.addEventListener("change", (e) => {
                 this.handleSortChange(e.target.value);
             });
         }
     }
 
     async loadData() {
-        console.log('Loading portfolio data...');
+        console.log("Loading portfolio data...");
         const user = this.authService.getCurrentUser();
         if (!user) {
-            console.log('No user signed in for portfolio.');
+            console.log("No user signed in for portfolio.");
             return;
         }
 
@@ -329,49 +329,49 @@ export default class PortfolioView {
                 this.showDefaultState();
             }
         } catch (error) {
-            console.error('Error loading portfolio data:', error);
+            console.error("Error loading portfolio data:", error);
             this.showErrorState();
         }
     }
 
     updateBasicStats() {
-        const availableCashEl = this.viewContainer.querySelector('#available-cash');
+        const availableCashEl = this.viewContainer.querySelector("#available-cash");
         if (availableCashEl) availableCashEl.textContent = formatCurrencyWithCommas(this.currentPortfolio.cash);
 
-        const totalTradesEl = this.viewContainer.querySelector('#total-trades');
+        const totalTradesEl = this.viewContainer.querySelector("#total-trades");
         if (totalTradesEl) totalTradesEl.textContent = this.allTrades.length;
 
         // Calculate total trade volume
         const totalVolume = this.allTrades.reduce((sum, trade) => sum + trade.tradeCost, 0);
-        const tradeVolumeEl = this.viewContainer.querySelector('#trade-volume');
+        const tradeVolumeEl = this.viewContainer.querySelector("#trade-volume");
         if (tradeVolumeEl) tradeVolumeEl.textContent = `$${totalVolume.toFixed(0)} volume`;
     }
 
     async loadHoldingsWithLivePrices() {
         const holdings = this.currentPortfolio.holdings || {};
-        const holdingsTbody = this.viewContainer.querySelector('#holdings-tbody');
-        const noHoldingsMessage = this.viewContainer.querySelector('#no-holdings-message');
-        const holdingsTableContainer = this.viewContainer.querySelector('#holdings-table-container');
+        const holdingsTbody = this.viewContainer.querySelector("#holdings-tbody");
+        const noHoldingsMessage = this.viewContainer.querySelector("#no-holdings-message");
+        const holdingsTableContainer = this.viewContainer.querySelector("#holdings-table-container");
 
-        if (holdingsTbody) holdingsTbody.innerHTML = '';
+        if (holdingsTbody) holdingsTbody.innerHTML = "";
 
         if (Object.keys(holdings).length === 0) {
-            if (noHoldingsMessage) noHoldingsMessage.classList.remove('hidden');
-            if (holdingsTableContainer) holdingsTableContainer.classList.add('hidden');
+            if (noHoldingsMessage) noHoldingsMessage.classList.remove("hidden");
+            if (holdingsTableContainer) holdingsTableContainer.classList.add("hidden");
             this.updatePortfolioSummary(0);
             return;
         }
 
         // Show table, hide no holdings message
-        if (noHoldingsMessage) noHoldingsMessage.classList.add('hidden');
-        if (holdingsTableContainer) holdingsTableContainer.classList.remove('hidden');
+        if (noHoldingsMessage) noHoldingsMessage.classList.add("hidden");
+        if (holdingsTableContainer) holdingsTableContainer.classList.remove("hidden");
 
         let totalHoldingsValue = 0;
         const holdingsCount = Object.keys(holdings).length;
 
         // Update holdings count
-        const holdingsCountEl = this.viewContainer.querySelector('#holdings-count');
-        if (holdingsCountEl) holdingsCountEl.textContent = `${holdingsCount} position${holdingsCount !== 1 ? 's' : ''}`;
+        const holdingsCountEl = this.viewContainer.querySelector("#holdings-count");
+        if (holdingsCountEl) holdingsCountEl.textContent = `${holdingsCount} position${holdingsCount !== 1 ? "s" : ""}`;
 
         // Process each holding with live price lookup
         for (const ticker in holdings) {
@@ -428,7 +428,7 @@ export default class PortfolioView {
                             <td class="px-6 py-4 whitespace-nowrap text-right text-gray-300">${formatPrice(holding.avgPrice)}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-right">
                                 <span class="text-white">${formatPrice(finalPrice)}</span>
-                                ${currentPrice === null ? '<span class="text-xs text-gray-500 block">estimate</span>' : ''}
+                                ${currentPrice === null ? "<span class=\"text-xs text-gray-500 block\">estimate</span>" : ""}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right text-white font-semibold">${formatCurrencyWithCommas(marketValue)}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-right">
@@ -489,10 +489,10 @@ export default class PortfolioView {
     }
 
     updatePortfolioSummary(totalHoldingsValue) {
-        const stockHoldingsValueEl = this.viewContainer.querySelector('#stock-holdings-value');
+        const stockHoldingsValueEl = this.viewContainer.querySelector("#stock-holdings-value");
         if (stockHoldingsValueEl) stockHoldingsValueEl.textContent = formatCurrencyWithCommas(totalHoldingsValue);
 
-        const portfolioValueEl = this.viewContainer.querySelector('#portfolio-value');
+        const portfolioValueEl = this.viewContainer.querySelector("#portfolio-value");
         const totalValue = this.currentPortfolio.cash + totalHoldingsValue;
         if (portfolioValueEl) {
             portfolioValueEl.textContent = formatCurrencyWithCommas(totalValue);
@@ -503,7 +503,7 @@ export default class PortfolioView {
         const gainLossData = calculateGainLoss(totalValue, startingBalance);
         const changeFormatted = formatPortfolioChange(gainLossData.amount, gainLossData.percentage);
         
-        const portfolioChangeEl = this.viewContainer.querySelector('#portfolio-change');
+        const portfolioChangeEl = this.viewContainer.querySelector("#portfolio-change");
         if (portfolioChangeEl) {
             portfolioChangeEl.className = `text-sm font-medium ${changeFormatted.colorClass}`;
             portfolioChangeEl.textContent = changeFormatted.display;
@@ -511,22 +511,22 @@ export default class PortfolioView {
 
         // Calculate cash percentage
         const cashPercentage = (this.currentPortfolio.cash / totalValue * 100);
-        const cashPercentageEl = this.viewContainer.querySelector('#cash-percentage');
+        const cashPercentageEl = this.viewContainer.querySelector("#cash-percentage");
         if (cashPercentageEl) {
             cashPercentageEl.textContent = `${formatCashPercentage(this.currentPortfolio.cash, totalValue)} of portfolio`;
         }
     }
 
     displayTrades() {
-        const tradesTbody = this.viewContainer.querySelector('#trades-tbody');
-        const noTradesMessage = this.viewContainer.querySelector('#no-trades-message');
-        const recentTradesTableContainer = this.viewContainer.querySelector('#recent-trades-table-container');
+        const tradesTbody = this.viewContainer.querySelector("#trades-tbody");
+        const noTradesMessage = this.viewContainer.querySelector("#no-trades-message");
+        const recentTradesTableContainer = this.viewContainer.querySelector("#recent-trades-table-container");
 
-        if (tradesTbody) tradesTbody.innerHTML = '';
+        if (tradesTbody) tradesTbody.innerHTML = "";
 
         if (this.allTrades.length > 0) {
-            if (noTradesMessage) noTradesMessage.classList.add('hidden');
-            if (recentTradesTableContainer) recentTradesTableContainer.classList.remove('hidden');
+            if (noTradesMessage) noTradesMessage.classList.add("hidden");
+            if (recentTradesTableContainer) recentTradesTableContainer.classList.remove("hidden");
             
             // Sort and filter trades
             const filteredTrades = this.getFilteredAndSortedTrades();
@@ -534,9 +534,9 @@ export default class PortfolioView {
             filteredTrades.forEach(trade => {
                 const tradeDate = new Date(trade.timestamp);
                 const tradeDateStr = tradeDate.toLocaleDateString();
-                const tradeTimeStr = tradeDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                const tradeTimeStr = tradeDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
                 const tradeTypeClass = getTradeTypeColorClass(trade.type);
-                const tradeIcon = trade.type === 'buy' ? '↗' : '↘';
+                const tradeIcon = trade.type === "buy" ? "↗" : "↘";
                 
                 const row = `
                     <tr class="hover:bg-gray-700/50 transition-colors">
@@ -565,8 +565,8 @@ export default class PortfolioView {
                 if (tradesTbody) tradesTbody.innerHTML += row;
             });
         } else {
-            if (noTradesMessage) noTradesMessage.classList.remove('hidden');
-            if (recentTradesTableContainer) recentTradesTableContainer.classList.add('hidden');
+            if (noTradesMessage) noTradesMessage.classList.remove("hidden");
+            if (recentTradesTableContainer) recentTradesTableContainer.classList.add("hidden");
         }
     }
 
@@ -574,32 +574,32 @@ export default class PortfolioView {
         let trades = [...this.allTrades];
         
         // Apply filter
-        const activeFilter = this.viewContainer.querySelector('.filter-btn.bg-cyan-600');
+        const activeFilter = this.viewContainer.querySelector(".filter-btn.bg-cyan-600");
         if (activeFilter) {
             const filter = activeFilter.dataset.filter;
-            if (filter !== 'all') {
+            if (filter !== "all") {
                 trades = trades.filter(trade => trade.type === filter);
             }
         }
         
         // Apply sort
-        const sortSelect = this.viewContainer.querySelector('#sort-trades');
+        const sortSelect = this.viewContainer.querySelector("#sort-trades");
         if (sortSelect) {
-            const [field, direction] = sortSelect.value.split('-');
+            const [field, direction] = sortSelect.value.split("-");
             
             trades.sort((a, b) => {
                 let aVal, bVal;
                 
                 switch (field) {
-                    case 'date':
+                    case "date":
                         aVal = new Date(a.timestamp);
                         bVal = new Date(b.timestamp);
                         break;
-                    case 'ticker':
+                    case "ticker":
                         aVal = a.ticker.toLowerCase();
                         bVal = b.ticker.toLowerCase();
                         break;
-                    case 'amount':
+                    case "amount":
                         aVal = a.tradeCost;
                         bVal = b.tradeCost;
                         break;
@@ -607,7 +607,7 @@ export default class PortfolioView {
                         return 0;
                 }
                 
-                if (direction === 'asc') {
+                if (direction === "asc") {
                     return aVal > bVal ? 1 : -1;
                 } else {
                     return aVal < bVal ? 1 : -1;
@@ -620,15 +620,15 @@ export default class PortfolioView {
 
     handleFilterChange(filter) {
         // Update active filter button
-        this.viewContainer.querySelectorAll('.filter-btn').forEach(btn => {
-            btn.classList.remove('bg-cyan-600', 'text-white');
-            btn.classList.add('text-gray-300', 'hover:text-white');
+        this.viewContainer.querySelectorAll(".filter-btn").forEach(btn => {
+            btn.classList.remove("bg-cyan-600", "text-white");
+            btn.classList.add("text-gray-300", "hover:text-white");
         });
         
         const activeBtn = this.viewContainer.querySelector(`[data-filter="${filter}"]`);
         if (activeBtn) {
-            activeBtn.classList.add('bg-cyan-600', 'text-white');
-            activeBtn.classList.remove('text-gray-300', 'hover:text-white');
+            activeBtn.classList.add("bg-cyan-600", "text-white");
+            activeBtn.classList.remove("text-gray-300", "hover:text-white");
         }
         
         // Refresh trade display
@@ -641,12 +641,12 @@ export default class PortfolioView {
     }
 
     async refreshPrices() {
-        const refreshBtn = this.viewContainer.querySelector('#refresh-prices-btn');
-        const refreshText = this.viewContainer.querySelector('#refresh-text');
-        const refreshLoading = this.viewContainer.querySelector('#refresh-loading');
+        const refreshBtn = this.viewContainer.querySelector("#refresh-prices-btn");
+        const refreshText = this.viewContainer.querySelector("#refresh-text");
+        const refreshLoading = this.viewContainer.querySelector("#refresh-loading");
 
-        if (refreshText) refreshText.classList.add('hidden');
-        if (refreshLoading) refreshLoading.classList.remove('hidden');
+        if (refreshText) refreshText.classList.add("hidden");
+        if (refreshLoading) refreshLoading.classList.remove("hidden");
         if (refreshBtn) refreshBtn.disabled = true;
 
         try {
@@ -656,68 +656,68 @@ export default class PortfolioView {
             // Reload holdings with fresh prices
             await this.loadHoldingsWithLivePrices();
             
-            console.log('Prices refreshed successfully');
+            console.log("Prices refreshed successfully");
         } catch (error) {
-            console.error('Error refreshing prices:', error);
+            console.error("Error refreshing prices:", error);
         } finally {
-            if (refreshText) refreshText.classList.remove('hidden');
-            if (refreshLoading) refreshLoading.classList.add('hidden');
+            if (refreshText) refreshText.classList.remove("hidden");
+            if (refreshLoading) refreshLoading.classList.add("hidden");
             if (refreshBtn) refreshBtn.disabled = false;
         }
     }
 
     showDefaultState() {
-        const portfolioValueEl = this.viewContainer.querySelector('#portfolio-value');
+        const portfolioValueEl = this.viewContainer.querySelector("#portfolio-value");
         if (portfolioValueEl) portfolioValueEl.textContent = `$10,000`;
         
-        const availableCashEl = this.viewContainer.querySelector('#available-cash');
+        const availableCashEl = this.viewContainer.querySelector("#available-cash");
         if (availableCashEl) availableCashEl.textContent = `$10,000`;
         
-        const stockHoldingsValueEl = this.viewContainer.querySelector('#stock-holdings-value');
+        const stockHoldingsValueEl = this.viewContainer.querySelector("#stock-holdings-value");
         if (stockHoldingsValueEl) stockHoldingsValueEl.textContent = `$0`;
         
-        const totalTradesEl = this.viewContainer.querySelector('#total-trades');
+        const totalTradesEl = this.viewContainer.querySelector("#total-trades");
         if (totalTradesEl) totalTradesEl.textContent = `0`;
         
-        const portfolioChangeEl = this.viewContainer.querySelector('#portfolio-change');
+        const portfolioChangeEl = this.viewContainer.querySelector("#portfolio-change");
         if (portfolioChangeEl) {
-            portfolioChangeEl.className = 'text-sm font-medium text-gray-400';
-            portfolioChangeEl.textContent = '$0.00 (0.00%)';
+            portfolioChangeEl.className = "text-sm font-medium text-gray-400";
+            portfolioChangeEl.textContent = "$0.00 (0.00%)";
         }
         
-        const cashPercentageEl = this.viewContainer.querySelector('#cash-percentage');
-        if (cashPercentageEl) cashPercentageEl.textContent = '100% of portfolio';
+        const cashPercentageEl = this.viewContainer.querySelector("#cash-percentage");
+        if (cashPercentageEl) cashPercentageEl.textContent = "100% of portfolio";
         
-        const holdingsCountEl = this.viewContainer.querySelector('#holdings-count');
-        if (holdingsCountEl) holdingsCountEl.textContent = '0 positions';
+        const holdingsCountEl = this.viewContainer.querySelector("#holdings-count");
+        if (holdingsCountEl) holdingsCountEl.textContent = "0 positions";
         
-        const tradeVolumeEl = this.viewContainer.querySelector('#trade-volume');
-        if (tradeVolumeEl) tradeVolumeEl.textContent = '$0 volume';
+        const tradeVolumeEl = this.viewContainer.querySelector("#trade-volume");
+        if (tradeVolumeEl) tradeVolumeEl.textContent = "$0 volume";
         
-        const noHoldingsMessage = this.viewContainer.querySelector('#no-holdings-message');
-        if (noHoldingsMessage) noHoldingsMessage.classList.remove('hidden');
+        const noHoldingsMessage = this.viewContainer.querySelector("#no-holdings-message");
+        if (noHoldingsMessage) noHoldingsMessage.classList.remove("hidden");
         
-        const holdingsTableContainer = this.viewContainer.querySelector('#holdings-table-container');
-        if (holdingsTableContainer) holdingsTableContainer.classList.add('hidden');
+        const holdingsTableContainer = this.viewContainer.querySelector("#holdings-table-container");
+        if (holdingsTableContainer) holdingsTableContainer.classList.add("hidden");
         
-        const noTradesMessage = this.viewContainer.querySelector('#no-trades-message');
-        if (noTradesMessage) noTradesMessage.classList.remove('hidden');
+        const noTradesMessage = this.viewContainer.querySelector("#no-trades-message");
+        if (noTradesMessage) noTradesMessage.classList.remove("hidden");
         
-        const recentTradesTableContainer = this.viewContainer.querySelector('#recent-trades-table-container');
-        if (recentTradesTableContainer) recentTradesTableContainer.classList.add('hidden');
+        const recentTradesTableContainer = this.viewContainer.querySelector("#recent-trades-table-container");
+        if (recentTradesTableContainer) recentTradesTableContainer.classList.add("hidden");
     }
 
     showErrorState() {
-        const portfolioValueEl = this.viewContainer.querySelector('#portfolio-value');
+        const portfolioValueEl = this.viewContainer.querySelector("#portfolio-value");
         if (portfolioValueEl) portfolioValueEl.textContent = `Error`;
         
-        const stockHoldingsValueEl = this.viewContainer.querySelector('#stock-holdings-value');
+        const stockHoldingsValueEl = this.viewContainer.querySelector("#stock-holdings-value");
         if (stockHoldingsValueEl) stockHoldingsValueEl.textContent = `Error`;
         
-        const availableCashEl = this.viewContainer.querySelector('#available-cash');
+        const availableCashEl = this.viewContainer.querySelector("#available-cash");
         if (availableCashEl) availableCashEl.textContent = `Error`;
         
-        const totalTradesEl = this.viewContainer.querySelector('#total-trades');
+        const totalTradesEl = this.viewContainer.querySelector("#total-trades");
         if (totalTradesEl) totalTradesEl.textContent = `Error`;
     }
 }

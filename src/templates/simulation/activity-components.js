@@ -94,7 +94,7 @@ export const getActivityFeedContainerTemplate = (activities, activityService) =>
                 ${getActivityElementTemplate(formattedActivity)}
             </div>
         `;
-    }).join('');
+    }).join("");
 
     return `
         <div class="space-y-3">
@@ -140,17 +140,17 @@ export const getActivityRefreshButtonTemplate = () => {
  * @param {Array} availableTypes - Array of activity types to filter by
  * @returns {string} HTML template string
  */
-export const getActivityFilterTemplate = (availableTypes = ['all', 'trades', 'joins', 'achievements']) => {
+export const getActivityFilterTemplate = (availableTypes = ["all", "trades", "joins", "achievements"]) => {
     const filterOptions = availableTypes.map(type => {
-        const displayName = type === 'all' ? 'All Activities' : 
-                           type === 'trades' ? 'Trades' :
-                           type === 'joins' ? 'New Members' :
-                           type === 'achievements' ? 'Achievements' : type;
+        const displayName = type === "all" ? "All Activities" : 
+                           type === "trades" ? "Trades" :
+                           type === "joins" ? "New Members" :
+                           type === "achievements" ? "Achievements" : type;
         
         return `
             <option value="${type}">${displayName}</option>
         `;
-    }).join('');
+    }).join("");
 
     return `
         <div class="flex items-center gap-2 mb-4">

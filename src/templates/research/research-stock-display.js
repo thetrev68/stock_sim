@@ -316,7 +316,7 @@ export const getAlternativeCompanyProfileSectionTemplate = () => {
  * @param {string} message - Error message to display
  * @returns {string} HTML template string
  */
-export const getChartUnavailableTemplate = (message = 'Chart temporarily unavailable') => {
+export const getChartUnavailableTemplate = (message = "Chart temporarily unavailable") => {
     return `
         <div class="text-center py-12">
             <div class="text-gray-400">

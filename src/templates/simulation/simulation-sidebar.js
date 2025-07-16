@@ -4,16 +4,9 @@
 
 import { 
     formatCurrencyWithCommas,
-    formatCashPercentage,
     formatPortfolioChange,
-    calculateGainLoss,
-    formatPrice,
-    formatNumberWithCommas,
-    formatGainLoss,
-    calculateMarketValue,
-    calculateCostBasis,
-    getTradeTypeColorClass
-} from '../utils/currency-utils.js';
+    formatPrice
+} from "../../utils/currency-utils.js";
 
 /**
  * Generate the user rank card template
@@ -46,9 +39,9 @@ export const getUserRankCardTemplate = (rank = 1, totalParticipants = 0) => {
  * @returns {string} HTML template string
  */
 export const getPortfolioValueCardTemplate = (portfolioValue = 10000, change = 0, changePercent = 0) => {
-    const changeClass = change >= 0 ? 'text-green-400' : 'text-red-400';
-    const changeSign = change >= 0 ? '+' : '';
-    const percentSign = changePercent >= 0 ? '+' : '';
+    const changeClass = change >= 0 ? "text-green-400" : "text-red-400";
+    const changeSign = change >= 0 ? "+" : "";
+    const percentSign = changePercent >= 0 ? "+" : "";
     const changeFormatted = formatPortfolioChange(change, changePercent);
 
     return `
@@ -74,8 +67,8 @@ export const getPortfolioValueCardTemplate = (portfolioValue = 10000, change = 0
  */
 export const getSimulationRulesCardTemplate = (simulation) => {
     const startingBalance = simulation.startingBalance || 10000;
-    const allowShortSelling = simulation.rules?.allowShortSelling ? 'Allowed' : 'Not Allowed';
-    const tradingHours = simulation.rules?.tradingHours === '24/7' ? '24/7' : 'Market Hours';
+    const allowShortSelling = simulation.rules?.allowShortSelling ? "Allowed" : "Not Allowed";
+    const tradingHours = simulation.rules?.tradingHours === "24/7" ? "24/7" : "Market Hours";
     const commission = simulation.rules?.commissionPerTrade || 0;
     
     return `
@@ -189,7 +182,7 @@ export const getSidebarLoadingTemplate = () => {
                         <div class="h-4 bg-gray-700 rounded w-20"></div>
                     </div>
                 </div>
-            `).join('')}
+            `).join("")}
         </div>
     `;
 };
@@ -200,19 +193,19 @@ export const getSidebarLoadingTemplate = () => {
  * @returns {string} HTML template string
  */
 export const getTradeActionButtonTemplate = (simulation) => {
-    const isActive = simulation.status === 'active';
-    const isPending = simulation.status === 'pending';
-    const isEnded = simulation.status === 'ended';
+    const isActive = simulation.status === "active";
+    const isPending = simulation.status === "pending";
+    const isEnded = simulation.status === "ended";
     
-    let buttonText = 'View Portfolio';
-    let buttonClass = 'bg-gray-600 hover:bg-gray-500';
+    let buttonText = "View Portfolio";
+    let buttonClass = "bg-gray-600 hover:bg-gray-500";
     
     if (isPending) {
-        buttonText = 'Practice Trade';
-        buttonClass = 'bg-yellow-600 hover:bg-yellow-500';
+        buttonText = "Practice Trade";
+        buttonClass = "bg-yellow-600 hover:bg-yellow-500";
     } else if (isActive) {
-        buttonText = 'Trade Now';
-        buttonClass = 'bg-cyan-600 hover:bg-cyan-500';
+        buttonText = "Trade Now";
+        buttonClass = "bg-cyan-600 hover:bg-cyan-500";
     }
     
     return `

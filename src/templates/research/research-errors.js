@@ -56,7 +56,7 @@ export const getResearchPlaceholderTemplate = () => {
  * @param {string} ticker - Stock ticker that was not found
  * @returns {string} HTML template string
  */
-export const getStockNotFoundErrorTemplate = (ticker = '') => {
+export const getStockNotFoundErrorTemplate = (ticker = "") => {
     return `
         <div class="text-center py-16">
             <div class="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -66,7 +66,7 @@ export const getStockNotFoundErrorTemplate = (ticker = '') => {
             </div>
             <h3 class="text-xl font-semibold text-white mb-2">Stock Not Found</h3>
             <p class="text-gray-400 max-w-md mx-auto">
-                ${ticker ? `No stock data found for "${ticker}".` : 'Stock data not found.'} 
+                ${ticker ? `No stock data found for "${ticker}".` : "Stock data not found."} 
                 Please check the ticker symbol and try again.
             </p>
         </div>
@@ -124,7 +124,7 @@ export const getSearchLoadingIndicatorTemplate = () => {
  * @param {string} sectionName - Name of the section that failed
  * @returns {string} HTML template string
  */
-export const getSectionErrorTemplate = (sectionName = 'data') => {
+export const getSectionErrorTemplate = (sectionName = "data") => {
     return `
         <div class="text-center py-8">
             <div class="w-12 h-12 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -142,7 +142,7 @@ export const getSectionErrorTemplate = (sectionName = 'data') => {
  * @param {string} message - Loading message
  * @returns {string} HTML template string
  */
-export const getGenericLoadingTemplate = (message = 'Loading...') => {
+export const getGenericLoadingTemplate = (message = "Loading...") => {
     return `
         <div class="text-center py-8">
             <div class="w-8 h-8 border-4 border-cyan-400 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
@@ -175,7 +175,7 @@ export const getTimeoutErrorTemplate = () => {
  * @param {string} onClick - JavaScript code to execute on click
  * @returns {string} HTML template string
  */
-export const getRetryButtonTemplate = (buttonText = 'Try Again', onClick = 'location.reload()') => {
+export const getRetryButtonTemplate = (buttonText = "Try Again", onClick = "location.reload()") => {
     return `
         <button 
             onclick="${onClick}" 
@@ -195,10 +195,10 @@ export const getRetryButtonTemplate = (buttonText = 'Try Again', onClick = 'loca
  * @returns {string} HTML template string
  */
 export const getCompleteErrorStateTemplate = (
-    title = 'Error',
-    message = 'Something went wrong. Please try again.',
-    buttonText = 'Try Again',
-    onClick = 'location.reload()'
+    title = "Error",
+    message = "Something went wrong. Please try again.",
+    buttonText = "Try Again",
+    onClick = "location.reload()"
 ) => {
     return `
         <div class="text-center py-16">
@@ -222,9 +222,9 @@ export const getCompleteErrorStateTemplate = (
  * @returns {string} HTML template string
  */
 export const getEmptyStateTemplate = (
-    title = 'No Data Available',
-    message = 'There is currently no data to display.',
-    iconPath = 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z'
+    title = "No Data Available",
+    message = "There is currently no data to display.",
+    iconPath = "M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
 ) => {
     return `
         <div class="text-center py-12">

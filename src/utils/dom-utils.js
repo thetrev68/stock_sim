@@ -118,7 +118,7 @@ export const hasClass = (id, className) => {
  * @returns {boolean} True if element was found and shown
  */
 export const showElement = (id) => {
-    return removeClass(id, 'hidden');
+    return removeClass(id, "hidden");
 };
 
 /**
@@ -127,7 +127,7 @@ export const showElement = (id) => {
  * @returns {boolean} True if element was found and hidden
  */
 export const hideElement = (id) => {
-    return addClass(id, 'hidden');
+    return addClass(id, "hidden");
 };
 
 /**
@@ -136,7 +136,7 @@ export const hideElement = (id) => {
  * @returns {boolean} True if element was found and toggled
  */
 export const toggleElement = (id) => {
-    return toggleClass(id, 'hidden');
+    return toggleClass(id, "hidden");
 };
 
 /**
@@ -145,7 +145,7 @@ export const toggleElement = (id) => {
  * @returns {boolean} True if element is visible
  */
 export const isElementVisible = (id) => {
-    return !hasClass(id, 'hidden');
+    return !hasClass(id, "hidden");
 };
 
 /**
@@ -206,7 +206,7 @@ export const createElement = (tagName, className = null, content = null, useInne
  * @returns {Element} Created div element
  */
 export const createDiv = (className = null, content = null, useInnerHTML = false) => {
-    return createElement('div', className, content, useInnerHTML);
+    return createElement("div", className, content, useInnerHTML);
 };
 
 /**
@@ -232,7 +232,7 @@ export const appendChild = (parentId, childElement) => {
 export const clearElement = (id) => {
     const element = getElement(id);
     if (element) {
-        element.innerHTML = '';
+        element.innerHTML = "";
         return true;
     }
     return false;
@@ -261,7 +261,7 @@ export const removeElement = (id) => {
  * @param {string} html - HTML string to insert
  */
 export const insertAtBodyEnd = (html) => {
-    document.body.insertAdjacentHTML('beforeend', html);
+    document.body.insertAdjacentHTML("beforeend", html);
 };
 
 /**
@@ -271,12 +271,12 @@ export const insertAtBodyEnd = (html) => {
  * @param {number} duration - Duration in milliseconds (default: 5000)
  * @param {string} containerId - Optional container ID (default: adds to body)
  */
-export const showTemporaryMessage = (message, type = 'info', duration = 5000, containerId = null) => {
+export const showTemporaryMessage = (message, type = "info", duration = 5000, containerId = null) => {
     const colorClasses = {
-        success: 'bg-green-900/20 border-green-500 text-green-400',
-        warning: 'bg-yellow-900/20 border-yellow-500 text-yellow-400',
-        error: 'bg-red-900/20 border-red-500 text-red-400',
-        info: 'bg-blue-900/20 border-blue-500 text-blue-400'
+        success: "bg-green-900/20 border-green-500 text-green-400",
+        warning: "bg-yellow-900/20 border-yellow-500 text-yellow-400",
+        error: "bg-red-900/20 border-red-500 text-red-400",
+        info: "bg-blue-900/20 border-blue-500 text-blue-400"
     };
 
     const messageHTML = `
@@ -295,20 +295,20 @@ export const showTemporaryMessage = (message, type = 'info', duration = 5000, co
     `;
 
     // Remove existing message
-    removeElement('temp-message');
+    removeElement("temp-message");
 
     // Insert new message
     if (containerId) {
         const container = getElement(containerId);
         if (container) {
-            container.insertAdjacentHTML('beforeend', messageHTML);
+            container.insertAdjacentHTML("beforeend", messageHTML);
         }
     } else {
         insertAtBodyEnd(messageHTML);
     }
 
     // Auto-remove after duration
-    setTimeout(() => removeElement('temp-message'), duration);
+    setTimeout(() => removeElement("temp-message"), duration);
 };
 
 /**

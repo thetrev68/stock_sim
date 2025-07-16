@@ -113,7 +113,7 @@ export const getExportSuccessTemplate = (fileName) => {
  * @param {string} errorMessage - Error message to display
  * @returns {string} HTML template string
  */
-export const getExportErrorTemplate = (errorMessage = 'Failed to export data') => {
+export const getExportErrorTemplate = (errorMessage = "Failed to export data") => {
     return `
         <div id="export-error" class="fixed top-4 right-4 bg-red-900/20 border border-red-500 rounded-lg p-4 max-w-sm z-50">
             <div class="flex items-center gap-3">
@@ -169,19 +169,19 @@ export const getArchiveStatsTemplate = (stats = {}) => {
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div class="bg-gray-700 p-3 rounded-lg">
                 <p class="text-sm text-gray-400">Duration</p>
-                <p id="archive-duration" class="text-lg font-semibold text-white">${stats.duration || '0 days'}</p>
+                <p id="archive-duration" class="text-lg font-semibold text-white">${stats.duration || "0 days"}</p>
             </div>
             <div class="bg-gray-700 p-3 rounded-lg">
                 <p class="text-sm text-gray-400">Participants</p>
-                <p id="archive-participants" class="text-lg font-semibold text-white">${stats.participants || '0'}</p>
+                <p id="archive-participants" class="text-lg font-semibold text-white">${stats.participants || "0"}</p>
             </div>
             <div class="bg-gray-700 p-3 rounded-lg">
                 <p class="text-sm text-gray-400">Total Trades</p>
-                <p id="archive-trades" class="text-lg font-semibold text-white">${stats.totalTrades || '0'}</p>
+                <p id="archive-trades" class="text-lg font-semibold text-white">${stats.totalTrades || "0"}</p>
             </div>
             <div class="bg-gray-700 p-3 rounded-lg">
                 <p class="text-sm text-gray-400">Total Volume</p>
-                <p id="archive-volume" class="text-lg font-semibold text-white">${stats.totalVolume || '$0'}</p>
+                <p id="archive-volume" class="text-lg font-semibold text-white">${stats.totalVolume || "$0"}</p>
             </div>
         </div>
     `;

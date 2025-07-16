@@ -11,7 +11,7 @@ export class Router {
 
     navigate(path) {
         // Update browser history
-        window.history.pushState({}, '', path);
+        window.history.pushState({}, "", path);
         
         // Handle the route
         this.handleRoute(path);
@@ -19,7 +19,7 @@ export class Router {
 
     handleRoute(path) {
         // Extract the base path without query parameters
-        const basePath = path.split('?')[0];
+        const basePath = path.split("?")[0];
         const handler = this.routes.get(basePath);
         
         if (handler) {
@@ -28,7 +28,7 @@ export class Router {
         } else {
             // Default to dashboard for unknown routes
             console.warn(`No handler found for route: ${path} (base path: ${basePath})`);
-            this.navigate('/');
+            this.navigate("/");
         }
     }
 
@@ -38,17 +38,17 @@ export class Router {
         this.handleRoute(currentPath);
 
         // Handle browser back/forward buttons
-        window.addEventListener('popstate', () => {
+        window.addEventListener("popstate", () => {
             const currentPath = window.location.pathname + window.location.search;
             this.handleRoute(currentPath);
         });
 
         // Handle navigation clicks
-        document.addEventListener('click', (e) => {
+        document.addEventListener("click", (e) => {
             // Check if clicked element is a navigation link
-            if (e.target.matches('[data-navigate]')) {
+            if (e.target.matches("[data-navigate]")) {
                 e.preventDefault();
-                const path = e.target.getAttribute('data-navigate');
+                const path = e.target.getAttribute("data-navigate");
                 this.navigate(path);
             }
         });

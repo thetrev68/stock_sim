@@ -11,7 +11,7 @@
  * @returns {string} String with first letter capitalized
  */
 export const capitalize = (str) => {
-    if (!str || typeof str !== 'string') return '';
+    if (!str || typeof str !== "string") return "";
     return str.charAt(0).toUpperCase() + str.slice(1);
 };
 
@@ -21,7 +21,7 @@ export const capitalize = (str) => {
  * @returns {string} Uppercase string
  */
 export const toUpperCase = (str) => {
-    if (!str || typeof str !== 'string') return '';
+    if (!str || typeof str !== "string") return "";
     return str.toUpperCase();
 };
 
@@ -31,7 +31,7 @@ export const toUpperCase = (str) => {
  * @returns {string} Lowercase string
  */
 export const toLowerCase = (str) => {
-    if (!str || typeof str !== 'string') return '';
+    if (!str || typeof str !== "string") return "";
     return str.toLowerCase();
 };
 
@@ -41,7 +41,7 @@ export const toLowerCase = (str) => {
  * @returns {string} First character in uppercase
  */
 export const getInitial = (str) => {
-    if (!str || typeof str !== 'string') return '';
+    if (!str || typeof str !== "string") return "";
     return str.charAt(0).toUpperCase();
 };
 
@@ -52,13 +52,13 @@ export const getInitial = (str) => {
  * @returns {string} Initials string
  */
 export const getInitials = (name, maxInitials = 2) => {
-    if (!name || typeof name !== 'string') return '';
+    if (!name || typeof name !== "string") return "";
     
     return name
-        .split(' ')
+        .split(" ")
         .slice(0, maxInitials)
         .map(word => word.charAt(0).toUpperCase())
-        .join('');
+        .join("");
 };
 
 /**
@@ -68,8 +68,8 @@ export const getInitials = (name, maxInitials = 2) => {
  * @param {string} suffix - Suffix to append (default: '...')
  * @returns {string} Truncated text
  */
-export const truncateText = (text, maxLength, suffix = '...') => {
-    if (!text || typeof text !== 'string') return '';
+export const truncateText = (text, maxLength, suffix = "...") => {
+    if (!text || typeof text !== "string") return "";
     if (text.length <= maxLength) return text;
     
     return text.substring(0, maxLength - suffix.length) + suffix;
@@ -93,10 +93,10 @@ export const truncateEmail = (email, maxLength = 20) => {
  * @returns {string} Generated summary
  */
 export const generateSummaryFromHeadline = (headline, maxLength = 100) => {
-    if (!headline || typeof headline !== 'string') return '';
+    if (!headline || typeof headline !== "string") return "";
     
     if (headline.length > maxLength) {
-        return headline.substring(0, maxLength - 3) + '...';
+        return headline.substring(0, maxLength - 3) + "...";
     }
     return `${headline} - Read the full article for more details.`;
 };
@@ -108,8 +108,8 @@ export const generateSummaryFromHeadline = (headline, maxLength = 100) => {
  * @returns {string} Cleaned invite code
  */
 export const formatInviteCode = (input, maxLength = 6) => {
-    if (!input || typeof input !== 'string') return '';
-    return input.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, maxLength);
+    if (!input || typeof input !== "string") return "";
+    return input.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, maxLength);
 };
 
 /**
@@ -118,8 +118,8 @@ export const formatInviteCode = (input, maxLength = 6) => {
  * @param {string} chars - Characters to use (default: uppercase + numbers)
  * @returns {string} Random string
  */
-export const generateRandomString = (length, chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789') => {
-    let result = '';
+export const generateRandomString = (length, chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789") => {
+    let result = "";
     for (let i = 0; i < length; i++) {
         result += chars.charAt(Math.floor(Math.random() * chars.length));
     }
@@ -140,7 +140,7 @@ export const generateInviteCode = () => {
  * @param {number} length - Length of random part (default: 9)
  * @returns {string} Unique ID
  */
-export const generateUniqueId = (prefix = 'id', length = 9) => {
+export const generateUniqueId = (prefix = "id", length = 9) => {
     const randomPart = Math.random().toString(36).substr(2, length);
     return `${prefix}_${Date.now()}_${randomPart}`;
 };
@@ -182,14 +182,14 @@ export const filterBySearch = (items, searchTerm, fields) => {
  * @returns {string} URL-friendly slug
  */
 export const createSlug = (text) => {
-    if (!text || typeof text !== 'string') return '';
+    if (!text || typeof text !== "string") return "";
     
     return text
         .toLowerCase()
         .trim()
-        .replace(/[^\w\s-]/g, '') // Remove special characters
-        .replace(/[\s_-]+/g, '-') // Replace spaces and underscores with hyphens
-        .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
+        .replace(/[^\w\s-]/g, "") // Remove special characters
+        .replace(/[\s_-]+/g, "-") // Replace spaces and underscores with hyphens
+        .replace(/^-+|-+$/g, ""); // Remove leading/trailing hyphens
 };
 
 /**
@@ -200,12 +200,12 @@ export const createSlug = (text) => {
  * @returns {string} Cleaned text
  */
 export const cleanTextInput = (input, maxLength = 1000, allowSpecialChars = true) => {
-    if (!input || typeof input !== 'string') return '';
+    if (!input || typeof input !== "string") return "";
     
     let cleaned = input.trim();
     
     if (!allowSpecialChars) {
-        cleaned = cleaned.replace(/[^a-zA-Z0-9\s]/g, '');
+        cleaned = cleaned.replace(/[^a-zA-Z0-9\s]/g, "");
     }
     
     return cleaned.substring(0, maxLength);
@@ -217,7 +217,7 @@ export const cleanTextInput = (input, maxLength = 1000, allowSpecialChars = true
  * @returns {string} Extracted ticker (uppercase)
  */
 export const extractTicker = (text) => {
-    if (!text || typeof text !== 'string') return '';
+    if (!text || typeof text !== "string") return "";
     
     // Look for patterns like (AAPL) or [AAPL] or just AAPL
     const tickerMatch = text.match(/\(([A-Z]{1,5})\)|\[([A-Z]{1,5})\]|([A-Z]{2,5})/);
@@ -236,13 +236,13 @@ export const extractTicker = (text) => {
  * @returns {string} Formatted display name
  */
 export const formatDisplayName = (name, maxLength = 20) => {
-    if (!name || typeof name !== 'string') return 'Unknown User';
+    if (!name || typeof name !== "string") return "Unknown User";
     
     const trimmed = name.trim();
     if (trimmed.length <= maxLength) return trimmed;
     
     // Try to keep first name and last initial
-    const parts = trimmed.split(' ');
+    const parts = trimmed.split(" ");
     if (parts.length > 1) {
         const firstName = parts[0];
         const lastInitial = parts[parts.length - 1].charAt(0);
@@ -262,14 +262,14 @@ export const formatDisplayName = (name, maxLength = 20) => {
  * @returns {string} HTML-escaped text
  */
 export const escapeHtml = (text) => {
-    if (!text || typeof text !== 'string') return '';
+    if (!text || typeof text !== "string") return "";
     
     const map = {
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        '"': '&quot;',
-        "'": '&#39;'
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        "\"": "&quot;",
+        "'": "&#39;"
     };
     
     return text.replace(/[&<>"']/g, (char) => map[char]);
@@ -281,12 +281,12 @@ export const escapeHtml = (text) => {
  * @returns {string} Normalized text
  */
 export const normalizeWhitespace = (text) => {
-    if (!text || typeof text !== 'string') return '';
+    if (!text || typeof text !== "string") return "";
     
     return text
         .trim()
-        .replace(/\s+/g, ' ') // Replace multiple spaces with single space
-        .replace(/\n\s*\n/g, '\n\n'); // Normalize line breaks
+        .replace(/\s+/g, " ") // Replace multiple spaces with single space
+        .replace(/\n\s*\n/g, "\n\n"); // Normalize line breaks
 };
 
 /**
@@ -295,7 +295,7 @@ export const normalizeWhitespace = (text) => {
  * @returns {boolean} True if empty or whitespace only
  */
 export const isEmpty = (text) => {
-    return !text || typeof text !== 'string' || text.trim().length === 0;
+    return !text || typeof text !== "string" || text.trim().length === 0;
 };
 
 /**
@@ -304,7 +304,7 @@ export const isEmpty = (text) => {
  * @param {string} fallback - Fallback text (default: '')
  * @returns {string} Safe text content
  */
-export const getSafeText = (value, fallback = '') => {
+export const getSafeText = (value, fallback = "") => {
     if (value === null || value === undefined) return fallback;
     return String(value);
 };

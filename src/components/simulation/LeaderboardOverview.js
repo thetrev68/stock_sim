@@ -2,9 +2,8 @@
 
 import { 
     formatCurrencyWithCommas,
-    formatPrice,
-    formatPortfolioChange
-} from '../../utils/currency-utils.js';
+    formatPrice
+} from "../../utils/currency-utils.js";
 
 export class LeaderboardOverview {
     constructor() {
@@ -60,7 +59,7 @@ export class LeaderboardOverview {
                 </div>
 
                 <!-- Your Rank Card -->
-                ${userRanking ? this.getUserRankCard(userRanking) : ''}
+                ${userRanking ? this.getUserRankCard(userRanking) : ""}
 
                 <!-- Overview Stats -->
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -86,8 +85,8 @@ export class LeaderboardOverview {
                                 </svg>
                             </div>
                         </div>
-                        <p class="text-3xl font-bold ${stats.averageReturn >= 0 ? 'text-green-400' : 'text-red-400'} mb-1">
-                            ${stats.averageReturn >= 0 ? '+' : ''}${stats.averageReturn.toFixed(2)}%
+                        <p class="text-3xl font-bold ${stats.averageReturn >= 0 ? "text-green-400" : "text-red-400"} mb-1">
+                            ${stats.averageReturn >= 0 ? "+" : ""}${stats.averageReturn.toFixed(2)}%
                         </p>
                         <p class="text-sm text-gray-400">All participants</p>
                     </div>
@@ -104,7 +103,7 @@ export class LeaderboardOverview {
                         <p class="text-3xl font-bold text-white mb-1">
                             ${formatCurrencyWithCommas(stats.highestPortfolio)}
                         </p>
-                        <p class="text-sm text-gray-400">${this.leaderboardData.topPerformer?.displayName || 'N/A'}</p>
+                        <p class="text-sm text-gray-400">${this.leaderboardData.topPerformer?.displayName || "N/A"}</p>
                     </div>
 
                     <div class="bg-gray-800 p-6 rounded-lg shadow-lg border border-gray-700">
@@ -127,7 +126,7 @@ export class LeaderboardOverview {
                 <div class="bg-gray-800 p-6 rounded-lg shadow-lg border border-gray-700">
                     <h3 class="text-xl font-semibold text-white mb-4">Top Performers</h3>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        ${topPerformers.map((performer, index) => this.getTopPerformerCard(performer, index + 1)).join('')}
+                        ${topPerformers.map((performer, index) => this.getTopPerformerCard(performer, index + 1)).join("")}
                     </div>
                 </div>
             </div>
@@ -141,18 +140,18 @@ export class LeaderboardOverview {
     }
 
     getUserRankCard(userRanking) {
-        const rankColor = userRanking.rank === 1 ? 'border-yellow-500 bg-yellow-500/10' :
-                         userRanking.rank === 2 ? 'border-gray-400 bg-gray-400/10' :
-                         userRanking.rank === 3 ? 'border-orange-500 bg-orange-500/10' :
-                         'border-cyan-500 bg-cyan-500/10';
+        const rankColor = userRanking.rank === 1 ? "border-yellow-500 bg-yellow-500/10" :
+                         userRanking.rank === 2 ? "border-gray-400 bg-gray-400/10" :
+                         userRanking.rank === 3 ? "border-orange-500 bg-orange-500/10" :
+                         "border-cyan-500 bg-cyan-500/10";
 
         // Access performance metrics from nested performance object
         const totalReturn = userRanking.performance?.totalReturn || 0;
         const totalReturnPercent = userRanking.performance?.totalReturnPercent || 0;
         const totalTrades = userRanking.performance?.totalTrades || 0;
 
-        const returnClass = totalReturn >= 0 ? 'text-green-400' : 'text-red-400';
-        const returnIcon = totalReturn >= 0 ? '↗' : '↘';
+        const returnClass = totalReturn >= 0 ? "text-green-400" : "text-red-400";
+        const returnIcon = totalReturn >= 0 ? "↗" : "↘";
 
         return `
             <div class="bg-gray-800 p-6 rounded-lg shadow-lg border-2 ${rankColor}">
@@ -185,7 +184,7 @@ export class LeaderboardOverview {
                         </div>
                         <div>
                             <p class="text-2xl font-bold ${returnClass}">
-                                ${totalReturnPercent >= 0 ? '+' : ''}${totalReturnPercent.toFixed(2)}%
+                                ${totalReturnPercent >= 0 ? "+" : ""}${totalReturnPercent.toFixed(2)}%
                             </p>
                             <p class="text-gray-400 text-sm">Return %</p>
                         </div>
@@ -206,17 +205,17 @@ export class LeaderboardOverview {
     }
 
     getTopPerformerCard(performer, position) {
-        const medalEmoji = position === 1 ? '🏆' : position === 2 ? '🥈' : '🥉';
-        const medalColor = position === 1 ? 'text-yellow-400' : position === 2 ? 'text-gray-400' : 'text-orange-400';
-        const bgColor = position === 1 ? 'bg-yellow-500/10' : position === 2 ? 'bg-gray-400/10' : 'bg-orange-500/10';
+        const medalEmoji = position === 1 ? "🏆" : position === 2 ? "🥈" : "🥉";
+        const medalColor = position === 1 ? "text-yellow-400" : position === 2 ? "text-gray-400" : "text-orange-400";
+        const bgColor = position === 1 ? "bg-yellow-500/10" : position === 2 ? "bg-gray-400/10" : "bg-orange-500/10";
         
         // Access performance metrics from nested performance object
         const totalReturn = performer.performance?.totalReturn || 0;
         const totalReturnPercent = performer.performance?.totalReturnPercent || 0;
         const totalTrades = performer.performance?.totalTrades || 0;
 
-        const returnClass = totalReturn >= 0 ? 'text-green-400' : 'text-red-400';
-        const returnIcon = totalReturn >= 0 ? '↗' : '↘';
+        const returnClass = totalReturn >= 0 ? "text-green-400" : "text-red-400";
+        const returnIcon = totalReturn >= 0 ? "↗" : "↘";
 
         return `
             <div class="bg-gray-700 p-4 rounded-lg ${bgColor} border border-gray-600">
@@ -235,7 +234,7 @@ export class LeaderboardOverview {
                     <div class="flex justify-between">
                         <span class="text-gray-400">Return:</span>
                         <span class="${returnClass} font-semibold">
-                            ${returnIcon} ${totalReturnPercent >= 0 ? '+' : ''}${totalReturnPercent.toFixed(2)}%
+                            ${returnIcon} ${totalReturnPercent >= 0 ? "+" : ""}${totalReturnPercent.toFixed(2)}%
                         </span>
                     </div>
                     <div class="flex justify-between">
@@ -278,7 +277,7 @@ export class LeaderboardOverview {
 
     getLastUpdatedText() {
         if (!this.leaderboardData || !this.leaderboardData.lastUpdated) {
-            return 'Never';
+            return "Never";
         }
 
         const lastUpdated = this.leaderboardData.lastUpdated.toDate ? 
@@ -288,7 +287,7 @@ export class LeaderboardOverview {
         const now = new Date();
         const diffMinutes = Math.floor((now - lastUpdated) / (1000 * 60));
         
-        if (diffMinutes < 1) return 'Just now';
+        if (diffMinutes < 1) return "Just now";
         if (diffMinutes < 60) return `${diffMinutes}m ago`;
         
         const diffHours = Math.floor(diffMinutes / 60);
@@ -312,9 +311,9 @@ export class LeaderboardOverview {
     attachEventListeners() {
         if (!this.container) return;
 
-        const refreshBtn = this.container.querySelector('#refresh-leaderboard-btn');
+        const refreshBtn = this.container.querySelector("#refresh-leaderboard-btn");
         if (refreshBtn && this.onRefresh) {
-            refreshBtn.addEventListener('click', async () => {
+            refreshBtn.addEventListener("click", async () => {
                 await this.handleRefresh();
             });
         }
@@ -323,23 +322,23 @@ export class LeaderboardOverview {
     async handleRefresh() {
         if (!this.onRefresh) return;
 
-        const refreshText = this.container.querySelector('#refresh-text');
-        const refreshLoading = this.container.querySelector('#refresh-loading');
-        const refreshBtn = this.container.querySelector('#refresh-leaderboard-btn');
+        const refreshText = this.container.querySelector("#refresh-text");
+        const refreshLoading = this.container.querySelector("#refresh-loading");
+        const refreshBtn = this.container.querySelector("#refresh-leaderboard-btn");
 
         // Show loading state
-        if (refreshText) refreshText.classList.add('hidden');
-        if (refreshLoading) refreshLoading.classList.remove('hidden');
+        if (refreshText) refreshText.classList.add("hidden");
+        if (refreshLoading) refreshLoading.classList.remove("hidden");
         if (refreshBtn) refreshBtn.disabled = true;
 
         try {
             await this.onRefresh();
         } catch (error) {
-            console.error('Error refreshing leaderboard:', error);
+            console.error("Error refreshing leaderboard:", error);
         } finally {
             // Reset button state
-            if (refreshText) refreshText.classList.remove('hidden');
-            if (refreshLoading) refreshLoading.classList.add('hidden');
+            if (refreshText) refreshText.classList.remove("hidden");
+            if (refreshLoading) refreshLoading.classList.add("hidden");
             if (refreshBtn) refreshBtn.disabled = false;
         }
     }

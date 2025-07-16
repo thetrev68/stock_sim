@@ -2,10 +2,10 @@
 export class NavigationComponent {
     constructor() {
         this.routes = [
-            { path: '/', label: 'Dashboard', route: 'dashboard' },
-            { path: '/portfolio', label: 'Portfolio', route: 'portfolio' },
-            { path: '/trade', label: 'Trade', route: 'trade' },
-            { path: '/research', label: 'Research', route: 'research' }
+            { path: "/", label: "Dashboard", route: "dashboard" },
+            { path: "/portfolio", label: "Portfolio", route: "portfolio" },
+            { path: "/trade", label: "Trade", route: "trade" },
+            { path: "/research", label: "Research", route: "research" }
         ];
     }
 
@@ -23,7 +23,7 @@ export class NavigationComponent {
             >
                 ${route.label}
             </button>
-        `).join('');
+        `).join("");
 
         return `
             <nav class="flex border-b border-gray-700 mb-8 overflow-x-auto">
@@ -39,14 +39,14 @@ export class NavigationComponent {
 
     setActiveRoute(routeName) {
         // Remove active class from all nav links
-        document.querySelectorAll('.nav-link').forEach(link => {
-            link.classList.remove('nav-link-active');
+        document.querySelectorAll(".nav-link").forEach(link => {
+            link.classList.remove("nav-link-active");
         });
 
         // Add active class to current route
         const activeLink = document.querySelector(`[data-route="${routeName}"]`);
         if (activeLink) {
-            activeLink.classList.add('nav-link-active');
+            activeLink.classList.add("nav-link-active");
         }
     }
 }

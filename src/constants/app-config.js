@@ -74,7 +74,7 @@ export const DATA_LIMITS = {
 // Chart configurations
 export const CHART_CONFIG = {
     DEFAULT_PERIOD: 7,          // Default chart period (days)
-    DEFAULT_RESOLUTION: 'D',    // Default chart resolution
+    DEFAULT_RESOLUTION: "D",    // Default chart resolution
     ANIMATION_DURATION: 750,    // Chart animation duration
     POINT_RADIUS: 0,            // Default point radius
     POINT_HOVER_RADIUS: 4,      // Point radius on hover

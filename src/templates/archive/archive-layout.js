@@ -121,7 +121,7 @@ export const getArchivePageLayoutTemplate = () => {
  * @param {string} message - Loading message
  * @returns {string} HTML template string
  */
-export const getArchiveLoadingTemplate = (message = 'Loading archived simulation...') => {
+export const getArchiveLoadingTemplate = (message = "Loading archived simulation...") => {
     return `
         <div class="flex items-center justify-center py-12">
             <div class="text-center">

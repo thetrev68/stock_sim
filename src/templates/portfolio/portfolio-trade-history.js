@@ -8,10 +8,10 @@
  * @returns {string} HTML template string
  */
 export const getTradeHistoryItemTemplate = (trade) => {
-    const tradeTypeClass = trade.type === 'buy' ? 'text-green-400' : 'text-red-400';
-    const tradeTypeIcon = trade.type === 'buy' ? '↗' : '↘';
+    const tradeTypeClass = trade.type === "buy" ? "text-green-400" : "text-red-400";
+    const tradeTypeIcon = trade.type === "buy" ? "↗" : "↘";
     const formattedDate = new Date(trade.timestamp.toDate()).toLocaleDateString();
-    const formattedTime = new Date(trade.timestamp.toDate()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const formattedTime = new Date(trade.timestamp.toDate()).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
     
     return `
         <div class="trade-item bg-gray-700 rounded-lg p-4 mb-3 hover:bg-gray-600 transition-colors duration-200">

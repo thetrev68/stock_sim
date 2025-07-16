@@ -54,7 +54,7 @@ export const getPortfolioSelectorLoadingTemplate = () => {
 export const getPortfolioSelectorWithOptionsTemplate = (portfolios = []) => {
     const portfolioOptions = portfolios.map(portfolio => 
         `<option value="${portfolio.value}">${portfolio.label}</option>`
-    ).join('');
+    ).join("");
 
     return `
         <div class="mb-6">
@@ -119,7 +119,7 @@ export const getSimulationContextTemplate = (simulation = {}) => {
             <div class="flex items-center gap-3">
                 <div id="context-indicator" class="w-3 h-3 bg-purple-400 rounded-full"></div>
                 <div>
-                    <p id="context-title" class="text-white font-medium">${simulation.name || 'Trading Simulation'}</p>
+                    <p id="context-title" class="text-white font-medium">${simulation.name || "Trading Simulation"}</p>
                     <p id="context-description" class="text-gray-400 text-sm">Competing with ${simulation.memberCount || 0} other traders</p>
                 </div>
             </div>

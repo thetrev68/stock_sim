@@ -4,16 +4,8 @@
 
 import { 
     formatCurrencyWithCommas,
-    formatCashPercentage,
-    formatPortfolioChange,
-    calculateGainLoss,
-    formatPrice,
-    formatNumberWithCommas,
-    formatGainLoss,
-    calculateMarketValue,
-    calculateCostBasis,
-    getTradeTypeColorClass
-} from '../utils/currency-utils.js';
+    formatPercentage
+} from "../../utils/currency-utils.js";
 
 /**
  * Generate the member card template (individual member display)
@@ -26,8 +18,8 @@ export const getMemberCardTemplate = (member, currentUser, isCurrentUserCreator)
     const joinedDate = member.joinedAt.toDate ? member.joinedAt.toDate() : new Date(member.joinedAt);
     const timeAgo = getTimeAgo(joinedDate);
 
-    const roleColor = member.role === 'creator' ? 'text-cyan-400 bg-cyan-400/10' : 'text-gray-400 bg-gray-400/10';
-    const statusColor = member.status === 'active' ? 'text-green-400' : 'text-red-400';
+    const roleColor = member.role === "creator" ? "text-cyan-400 bg-cyan-400/10" : "text-gray-400 bg-gray-400/10";
+    const statusColor = member.status === "active" ? "text-green-400" : "text-red-400";
 
     return `
         <div class="flex items-center gap-4">
@@ -46,7 +38,7 @@ export const getMemberCardTemplate = (member, currentUser, isCurrentUserCreator)
         <div class="text-right">
             ${member.userId === currentUser.uid ? `
                 <span class="text-cyan-400 text-sm font-medium">You</span>
-            ` : member.role === 'creator' ? `
+            ` : member.role === "creator" ? `
                 <span class="text-yellow-400 text-sm font-medium">Creator</span>
             ` : `
                 <div class="flex items-center gap-2">
@@ -59,7 +51,7 @@ export const getMemberCardTemplate = (member, currentUser, isCurrentUserCreator)
                 <button class="kick-member-btn mt-2 bg-red-600 hover:bg-red-500 text-white text-xs font-medium py-1 px-2 rounded transition-colors duration-200" data-user-id="${member.userId}" data-display-name="${member.displayName}">
                     Remove
                 </button>
-            ` : ''}
+            ` : ""}
         </div>
     `;
 };
@@ -102,13 +94,13 @@ export const getModalMemberListTemplate = (member, currentUser) => {
                 </div>
                 <div>
                     <span class="text-gray-400">P&L:</span>
-                    <p class="${(member.totalGainLoss || 0) >= 0 ? 'text-green-400' : 'text-red-400'} font-medium">
+                    <p class="${(member.totalGainLoss || 0) >= 0 ? "text-green-400" : "text-red-400"} font-medium">
                         ${formatPercentage((member.totalGainLoss || 0) * 100)}
                     </p>
                 </div>
                 <div>
                     <span class="text-gray-400">Rank:</span>
-                    <p class="text-white font-medium">#${member.rank || '-'}</p>
+                    <p class="text-white font-medium">#${member.rank || "-"}</p>
                 </div>
             </div>
         </div>
@@ -179,12 +171,12 @@ const getTimeAgo = (date) => {
     const diffMinutes = Math.floor(diffMs / (1000 * 60));
 
     if (diffDays > 0) {
-        return `${diffDays} day${diffDays !== 1 ? 's' : ''} ago`;
+        return `${diffDays} day${diffDays !== 1 ? "s" : ""} ago`;
     } else if (diffHours > 0) {
-        return `${diffHours} hour${diffHours !== 1 ? 's' : ''} ago`;
+        return `${diffHours} hour${diffHours !== 1 ? "s" : ""} ago`;
     } else if (diffMinutes > 0) {
-        return `${diffMinutes} minute${diffMinutes !== 1 ? 's' : ''} ago`;
+        return `${diffMinutes} minute${diffMinutes !== 1 ? "s" : ""} ago`;
     } else {
-        return 'Just now';
+        return "Just now";
     }
 };

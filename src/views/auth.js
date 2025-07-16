@@ -1,10 +1,10 @@
 // file: src/views/auth.js
 // Authentication view
-import { AuthService } from '../services/auth.js';
+import { AuthService } from "../services/auth.js";
 
 export default class AuthView {
     constructor() {
-        this.name = 'auth';
+        this.name = "auth";
         this.authService = new AuthService();
         this.isSignUp = false;
     }
@@ -104,20 +104,20 @@ export default class AuthView {
     }
 
     attachEventListeners(container) {
-        const form = container.querySelector('#auth-form');
-        const googleBtn = container.querySelector('#google-signin-btn');
-        const toggleBtn = container.querySelector('#toggle-auth-mode');
+        const form = container.querySelector("#auth-form");
+        const googleBtn = container.querySelector("#google-signin-btn");
+        const toggleBtn = container.querySelector("#toggle-auth-mode");
 
-        form.addEventListener('submit', this.handleEmailAuth.bind(this));
-        googleBtn.addEventListener('click', this.handleGoogleAuth.bind(this));
-        toggleBtn.addEventListener('click', this.toggleAuthMode.bind(this));
+        form.addEventListener("submit", this.handleEmailAuth.bind(this));
+        googleBtn.addEventListener("click", this.handleGoogleAuth.bind(this));
+        toggleBtn.addEventListener("click", this.toggleAuthMode.bind(this));
     }
 
     async handleEmailAuth(e) {
         e.preventDefault();
         
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
+        const email = document.getElementById("email").value;
+        const password = document.getElementById("password").value;
         
         this.setLoading(true);
         this.hideError();
@@ -137,7 +137,7 @@ export default class AuthView {
     }
 
     async handleGoogleAuth() {
-        this.setLoading(true, 'google');
+        this.setLoading(true, "google");
         this.hideError();
 
         try {
@@ -146,44 +146,44 @@ export default class AuthView {
         } catch (error) {
             this.showError(error.message);
         } finally {
-            this.setLoading(false, 'google');
+            this.setLoading(false, "google");
         }
     }
 
     toggleAuthMode() {
         this.isSignUp = !this.isSignUp;
         
-        const submitText = document.getElementById('auth-submit-text');
-        const toggleText = document.getElementById('toggle-text');
+        const submitText = document.getElementById("auth-submit-text");
+        const toggleText = document.getElementById("toggle-text");
         
         if (this.isSignUp) {
-            submitText.textContent = 'Create Account';
-            toggleText.textContent = 'Already have an account? Sign in';
+            submitText.textContent = "Create Account";
+            toggleText.textContent = "Already have an account? Sign in";
         } else {
-            submitText.textContent = 'Sign In';
+            submitText.textContent = "Sign In";
             toggleText.textContent = "Don't have an account? Sign up";
         }
         
         this.hideError();
     }
 
-    setLoading(loading, button = 'email') {
-        if (button === 'email') {
-            const submitBtn = document.getElementById('auth-submit-btn');
-            const submitText = document.getElementById('auth-submit-text');
-            const loadingSpinner = document.getElementById('auth-loading');
+    setLoading(loading, button = "email") {
+        if (button === "email") {
+            const submitBtn = document.getElementById("auth-submit-btn");
+            const submitText = document.getElementById("auth-submit-text");
+            const loadingSpinner = document.getElementById("auth-loading");
             
             if (loading) {
                 submitBtn.disabled = true;
-                submitText.classList.add('hidden');
-                loadingSpinner.classList.remove('hidden');
+                submitText.classList.add("hidden");
+                loadingSpinner.classList.remove("hidden");
             } else {
                 submitBtn.disabled = false;
-                submitText.classList.remove('hidden');
-                loadingSpinner.classList.add('hidden');
+                submitText.classList.remove("hidden");
+                loadingSpinner.classList.add("hidden");
             }
-        } else if (button === 'google') {
-            const googleBtn = document.getElementById('google-signin-btn');
+        } else if (button === "google") {
+            const googleBtn = document.getElementById("google-signin-btn");
             googleBtn.disabled = loading;
             
             if (loading) {
@@ -207,15 +207,15 @@ export default class AuthView {
     }
 
     showError(message) {
-        const errorDiv = document.getElementById('auth-error');
-        const errorText = errorDiv.querySelector('p');
+        const errorDiv = document.getElementById("auth-error");
+        const errorText = errorDiv.querySelector("p");
         
         errorText.textContent = message;
-        errorDiv.classList.remove('hidden');
+        errorDiv.classList.remove("hidden");
     }
 
     hideError() {
-        const errorDiv = document.getElementById('auth-error');
-        errorDiv.classList.add('hidden');
+        const errorDiv = document.getElementById("auth-error");
+        errorDiv.classList.add("hidden");
     }
 }

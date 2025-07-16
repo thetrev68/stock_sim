@@ -7,9 +7,9 @@ import {
     GoogleAuthProvider,
     signOut,
     onAuthStateChanged 
-} from 'firebase/auth';
-import { getFirebaseAuth } from './firebase.js';
-import { ERROR_MESSAGES } from '../constants/ui-messages.js';
+} from "firebase/auth";
+import { getFirebaseAuth } from "./firebase.js";
+import { ERROR_MESSAGES } from "../constants/ui-messages.js";
 
 export class AuthService {
     constructor() {
@@ -20,7 +20,7 @@ export class AuthService {
     // Initialize auth service
     async initialize() {
         this.auth = getFirebaseAuth();
-        console.log('AuthService initialized');
+        console.log("AuthService initialized");
     }
 
     // Sign in with email and password
@@ -30,7 +30,7 @@ export class AuthService {
             const userCredential = await signInWithEmailAndPassword(this.auth, email, password);
             return userCredential.user;
         } catch (error) {
-            console.error('Email sign in error:', error);
+            console.error("Email sign in error:", error);
             throw this.formatAuthError(error);
         }
     }
@@ -42,7 +42,7 @@ export class AuthService {
             const userCredential = await createUserWithEmailAndPassword(this.auth, email, password);
             return userCredential.user;
         } catch (error) {
-            console.error('Account creation error:', error);
+            console.error("Account creation error:", error);
             throw this.formatAuthError(error);
         }
     }
@@ -54,7 +54,7 @@ export class AuthService {
             const result = await signInWithPopup(this.auth, this.googleProvider);
             return result.user;
         } catch (error) {
-            console.error('Google sign in error:', error);
+            console.error("Google sign in error:", error);
             throw this.formatAuthError(error);
         }
     }
@@ -65,7 +65,7 @@ export class AuthService {
             this.auth = this.auth || getFirebaseAuth();
             await signOut(this.auth);
         } catch (error) {
-            console.error('Sign out error:', error);
+            console.error("Sign out error:", error);
             throw error;
         }
     }
@@ -85,13 +85,13 @@ export class AuthService {
     // Format Firebase auth errors for user display
     formatAuthError(error) {
         const errorMessages = {
-            'auth/user-not-found': ERROR_MESSAGES.AUTH_USER_NOT_FOUND,
-            'auth/wrong-password': ERROR_MESSAGES.AUTH_WRONG_PASSWORD,
-            'auth/email-already-in-use': ERROR_MESSAGES.AUTH_EMAIL_IN_USE,
-            'auth/weak-password': ERROR_MESSAGES.AUTH_WEAK_PASSWORD,
-            'auth/invalid-email': ERROR_MESSAGES.AUTH_INVALID_EMAIL,
-            'auth/popup-closed-by-user': ERROR_MESSAGES.AUTH_POPUP_CLOSED,
-            'auth/network-request-failed': ERROR_MESSAGES.AUTH_NETWORK_ERROR,
+            "auth/user-not-found": ERROR_MESSAGES.AUTH_USER_NOT_FOUND,
+            "auth/wrong-password": ERROR_MESSAGES.AUTH_WRONG_PASSWORD,
+            "auth/email-already-in-use": ERROR_MESSAGES.AUTH_EMAIL_IN_USE,
+            "auth/weak-password": ERROR_MESSAGES.AUTH_WEAK_PASSWORD,
+            "auth/invalid-email": ERROR_MESSAGES.AUTH_INVALID_EMAIL,
+            "auth/popup-closed-by-user": ERROR_MESSAGES.AUTH_POPUP_CLOSED,
+            "auth/network-request-failed": ERROR_MESSAGES.AUTH_NETWORK_ERROR,
         };
 
         return new Error(errorMessages[error.code] || ERROR_MESSAGES.AUTH_GENERAL);

@@ -85,8 +85,8 @@ export const getArchiveLeaderboardTemplate = () => {
  */
 export const getLeaderboardRowTemplate = (participant, rank) => {
     const rankDisplay = getRankDisplay(rank);
-    const returnClass = participant.totalReturn >= 0 ? 'text-green-400' : 'text-red-400';
-    const returnIcon = participant.totalReturn >= 0 ? '↗' : '↘';
+    const returnClass = participant.totalReturn >= 0 ? "text-green-400" : "text-red-400";
+    const returnIcon = participant.totalReturn >= 0 ? "↗" : "↘";
     
     return `
         <tr class="hover:bg-gray-750 transition-colors duration-200">
@@ -117,14 +117,14 @@ export const getLeaderboardRowTemplate = (participant, rank) => {
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-right">
                 <div class="text-sm font-medium ${returnClass}">
-                    ${participant.returnPercentage > 0 ? '+' : ''}${participant.returnPercentage.toFixed(2)}%
+                    ${participant.returnPercentage > 0 ? "+" : ""}${participant.returnPercentage.toFixed(2)}%
                 </div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-right">
                 <div class="text-sm text-white">${participant.totalTrades}</div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-right">
-                <div class="text-sm text-white">${participant.bestStock || '-'}</div>
+                <div class="text-sm text-white">${participant.bestStock || "-"}</div>
             </td>
         </tr>
     `;

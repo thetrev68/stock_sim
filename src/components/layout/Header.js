@@ -39,41 +39,41 @@ export class HeaderComponent {
     }
 
     attachEventListeners(container) {
-        const signOutBtn = container.querySelector('#sign-out-btn');
+        const signOutBtn = container.querySelector("#sign-out-btn");
         if (signOutBtn) {
-            signOutBtn.addEventListener('click', this.handleSignOut.bind(this));
+            signOutBtn.addEventListener("click", this.handleSignOut.bind(this));
         }
     }
 
     async handleSignOut() {
         try {
             // Import auth service dynamically to avoid circular dependencies
-            const { AuthService } = await import('../../services/auth.js');
+            const { AuthService } = await import("../../services/auth.js");
             const authService = new AuthService();
             await authService.signOut();
         } catch (error) {
-            console.error('Sign out error:', error);
+            console.error("Sign out error:", error);
         }
     }
 
     updateAuthState(user) {
         this.currentUser = user;
-        const userMenu = document.getElementById('user-menu');
-        const userEmail = document.getElementById('user-email');
+        const userMenu = document.getElementById("user-menu");
+        const userEmail = document.getElementById("user-email");
 
         if (user && userMenu && userEmail) {
             userEmail.textContent = user.email;
-            userMenu.classList.remove('hidden');
+            userMenu.classList.remove("hidden");
         } else if (userMenu) {
-            userMenu.classList.add('hidden');
+            userMenu.classList.add("hidden");
         }
     }
 
-    updateStatus(text, colorClass = 'bg-green-500') {
-        const statusIndicator = document.getElementById('status-indicator');
+    updateStatus(text, colorClass = "bg-green-500") {
+        const statusIndicator = document.getElementById("status-indicator");
         if (statusIndicator) {
-            const dot = statusIndicator.querySelector('div');
-            const span = statusIndicator.querySelector('span');
+            const dot = statusIndicator.querySelector("div");
+            const span = statusIndicator.querySelector("span");
             
             if (dot) dot.className = `w-3 h-3 rounded-full ${colorClass}`;
             if (span) span.textContent = text;
