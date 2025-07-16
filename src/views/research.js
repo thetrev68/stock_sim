@@ -44,7 +44,7 @@ export default class ResearchView {
             // Set the input value
             const tickerInput = document.getElementById("research-ticker-input");
             if (tickerInput) {
-                tickerInput.value = prefilledTicker.toUpperCase();
+                tickerInput.value = toUpperCase(prefilledTicker);
             }
             // Automatically research the stock
             setTimeout(() => {

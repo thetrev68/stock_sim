@@ -6,6 +6,7 @@ import {
     formatCurrencyWithCommas,
     formatPercentage
 } from "../../utils/currency-utils.js";
+import { getInitial } from "../../utils/string-utils.js";
 
 /**
  * Generate the member card template (individual member display)
@@ -24,7 +25,7 @@ export const getMemberCardTemplate = (member, currentUser, isCurrentUserCreator)
     return `
         <div class="flex items-center gap-4">
             <div class="w-12 h-12 bg-gradient-to-br from-cyan-500 to-purple-500 rounded-full flex items-center justify-center">
-                <span class="text-white font-bold text-lg">${member.displayName.charAt(0).toUpperCase()}</span>
+                <span class="text-white font-bold text-lg">${getInitial(member.displayName)}</span>
             </div>
             <div>
                 <h4 class="text-white font-semibold">${member.displayName}</h4>

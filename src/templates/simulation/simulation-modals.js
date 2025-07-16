@@ -6,6 +6,7 @@ import {
     formatCurrencyWithCommas,
     formatGainLoss
 } from "../../utils/currency-utils.js";
+import { getInitial } from "../../utils/string-utils.js";
 
 /**
  * Generate the member management modal template
@@ -41,7 +42,7 @@ export const getMemberManagementModalTemplate = (memberStats, activeMemberCount,
                                         <div class="flex justify-between items-start">
                                             <div class="flex items-center gap-3">
                                                 <div class="w-10 h-10 bg-gradient-to-br from-cyan-500 to-purple-500 rounded-full flex items-center justify-center">
-                                                    <span class="text-white font-bold text-sm">${member.displayName.charAt(0).toUpperCase()}</span>
+                                                    <span class="text-white font-bold text-sm">${getInitial(member.displayName)}</span>
                                                 </div>
                                                 <div>
                                                     <h4 class="text-white font-medium">${member.displayName}</h4>

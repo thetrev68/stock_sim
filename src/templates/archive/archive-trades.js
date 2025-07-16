@@ -1,5 +1,7 @@
 // templates/archive/archive-trades.js - Trade history templates for simulation archive view
 
+import { getInitial, toUpperCase } from "../../utils/string-utils.js";
+
 /**
  * Generate the complete trade history section template
  * @returns {string} HTML template string
@@ -147,7 +149,7 @@ export const getTradeRowTemplate = (trade) => {
             <td class="px-6 py-4 whitespace-nowrap">
                 <div class="flex items-center">
                     <div class="w-8 h-8 bg-gradient-to-br from-cyan-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                        ${trade.userDisplayName.charAt(0).toUpperCase()}
+                        ${getInitial(trade.userDisplayName)}
                     </div>
                     <div class="ml-3">
                         <div class="text-sm font-medium text-white">${trade.userDisplayName}</div>
@@ -160,7 +162,7 @@ export const getTradeRowTemplate = (trade) => {
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${typeClass}">
-                    ${typeIcon} ${trade.type.toUpperCase()}
+                    ${typeIcon} ${toUpperCase(trade.type)}
                 </span>
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-right">

@@ -285,7 +285,7 @@ export default class TradeView {
             }, 500);
             
             // Show helpful message
-            this.showFeedback(`Ready to trade ${ticker.toUpperCase()}! Enter quantity to continue.`, "text-cyan-400");
+            this.showFeedback(`Ready to trade ${toUpperCase(ticker)}! Enter quantity to continue.`, "text-cyan-400");
         }
     }
 
@@ -614,7 +614,7 @@ export default class TradeView {
             
             if (result.success) {
                 const contextMsg = this.activePortfolioContext.type === "solo" ? "in solo mode" : `in ${this.activePortfolioContext.simulation.name}`;
-                this.showFeedback(`Trade successful! ${type.toUpperCase()} ${quantity} shares of ${ticker.toUpperCase()} ${contextMsg}.`, "text-green-400");
+                this.showFeedback(`Trade successful! ${toUpperCase(type)} ${quantity} shares of ${toUpperCase(ticker)} ${contextMsg}.`, "text-green-400");
                 
                 // Clear form
                 tickerInput.value = "";

@@ -1,6 +1,7 @@
 // src/components/simulation/JoinSimulationModal.js
 import { SimulationService } from "../../services/simulation.js";
 import { AuthService } from "../../services/auth.js";
+import { formatInviteCode, capitalize } from "../../utils/string-utils.js";
 
 export class JoinSimulationModal {
     constructor() {
@@ -165,8 +166,7 @@ export class JoinSimulationModal {
 
         // Auto-format invite code input
         inviteCodeInput?.addEventListener("input", (e) => {
-            let value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "");
-            if (value.length > 6) value = value.slice(0, 6);
+            let value = formatInviteCode(e.target.value);
             e.target.value = value;
             
             // Preview simulation when code is 6 characters
@@ -182,7 +182,7 @@ export class JoinSimulationModal {
         inviteCodeInput?.addEventListener("paste", (e) => {
             e.preventDefault();
             const paste = (e.clipboardData || window.clipboardData).getData("text");
-            const cleaned = paste.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6);
+            const cleaned = formatInviteCode(paste);
             e.target.value = cleaned;
             
             if (cleaned.length === 6) {
@@ -236,7 +236,7 @@ export class JoinSimulationModal {
 
         // Status with color
         if (statusEl) {
-            statusEl.textContent = simulation.status.charAt(0).toUpperCase() + simulation.status.slice(1);
+            statusEl.textContent = capitalize(simulation.status)
             statusEl.className = simulation.status === "active" ? "text-green-400" : 
                                simulation.status === "pending" ? "text-yellow-400" : "text-gray-400";
         }
