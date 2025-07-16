@@ -1,4 +1,5 @@
 // src/views/research.js - Enhanced Research View - Session 10
+/* global Chart */
 import { StockService } from "../services/stocks.js";
 import { TIMEOUTS } from "../constants/app-config.js";
 import { ERROR_MESSAGES } from "../constants/ui-messages.js";
@@ -9,6 +10,7 @@ import {
     getGainLossColorClass
 } from "../utils/currency-utils.js";
 import { formatNewsDate } from "../utils/date-utils.js";
+import { getInitial, toUpperCase } from "../utils/string-utils.js";
 
 export default class ResearchView {
     constructor() {
@@ -61,7 +63,7 @@ export default class ResearchView {
             return;
         }
 
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve, _reject) => {
             const script = document.createElement("script");
             script.src = "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js";
             script.onload = () => {
@@ -619,7 +621,7 @@ export default class ResearchView {
     }
 
     async researchStock(ticker) {
-        const upperTicker = ticker.toUpperCase();
+        const upperTicker = toUpperCase(ticker);
         
         // Update input field
         const tickerInput = document.getElementById("research-ticker-input");
@@ -680,9 +682,9 @@ export default class ResearchView {
         }
 
         // Update quick stats
-        this.updateElement("open-price", formatPrice(data.openPrice, false));
-        this.updateElement("day-high", formatPrice(data.dayHigh, false));
-        this.updateElement("day-low", formatPrice(data.dayLow, false));
+        this.updateElement("open-price", formatPrice(data.openPrice));
+        this.updateElement("day-high", formatPrice(data.dayHigh));
+        this.updateElement("day-low", formatPrice(data.dayLow));
         this.updateElement("volume", data.volume ? formatNumberWithCommas(data.volume) : "--");
 
         // Update last updated
@@ -708,7 +710,7 @@ export default class ResearchView {
         }
 
         if (companyInitial) {
-            companyInitial.textContent = data.ticker.charAt(0);
+            companyInitial.textContent = getInitial(data.ticker);
         }
 
         // Show results
@@ -1050,7 +1052,7 @@ export default class ResearchView {
      */
     displayNews() {
         const newsArticlesContainer = document.getElementById("news-articles");
-        const newsEmptyContainer = document.getElementById("news-empty");
+        const _newsEmptyContainer = document.getElementById("news-empty");
         
         if (!newsArticlesContainer) return;
         

@@ -341,7 +341,7 @@ export default class SimulationArchiveView {
             const totalReturn = ranking.totalReturn || 0;
             const totalReturnPercent = ranking.totalReturnPercent || 0;
             const returnClass = totalReturn >= 0 ? "text-green-400" : "text-red-400";
-            const returnIcon = totalReturn >= 0 ? "↗" : "↘";
+            const _returnIcon = totalReturn >= 0 ? "↗" : "↘";
 
             const row = `
                 <tr class="hover:bg-gray-700/50 transition-colors ${isWinner ? "bg-yellow-900/20" : ""}">

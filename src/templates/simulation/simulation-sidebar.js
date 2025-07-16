@@ -39,9 +39,9 @@ export const getUserRankCardTemplate = (rank = 1, totalParticipants = 0) => {
  * @returns {string} HTML template string
  */
 export const getPortfolioValueCardTemplate = (portfolioValue = 10000, change = 0, changePercent = 0) => {
-    const changeClass = change >= 0 ? "text-green-400" : "text-red-400";
-    const changeSign = change >= 0 ? "+" : "";
-    const percentSign = changePercent >= 0 ? "+" : "";
+    const _changeClass = change >= 0 ? "text-green-400" : "text-red-400";
+    const _changeSign = change >= 0 ? "+" : "";
+    const _percentSign = changePercent >= 0 ? "+" : "";
     const changeFormatted = formatPortfolioChange(change, changePercent);
 
     return `
@@ -195,7 +195,7 @@ export const getSidebarLoadingTemplate = () => {
 export const getTradeActionButtonTemplate = (simulation) => {
     const isActive = simulation.status === "active";
     const isPending = simulation.status === "pending";
-    const isEnded = simulation.status === "ended";
+    const _isEnded = simulation.status === "ended";
     
     let buttonText = "View Portfolio";
     let buttonClass = "bg-gray-600 hover:bg-gray-500";

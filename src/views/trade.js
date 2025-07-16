@@ -10,6 +10,7 @@ import {
     formatCurrencyWithCommas,
     getTradeTypeColorClass
 } from "../utils/currency-utils.js";
+import { toUpperCase } from "../utils/string-utils.js";
 
 export default class TradeView {
     constructor() {
@@ -266,7 +267,7 @@ export default class TradeView {
         const researchBtn = this.viewContainer.querySelector("#research-stock-btn");
         
         if (tickerInput) {
-            tickerInput.value = ticker.toUpperCase();
+            tickerInput.value = toUpperCase(ticker);
             
             // Enable research button
             if (researchBtn) {
@@ -484,7 +485,7 @@ export default class TradeView {
         let totalHoldingsValue = 0;
         const holdings = this.currentPortfolio.holdings || {}; 
         for (const ticker in holdings) {
-            if (holdings.hasOwnProperty(ticker)) {
+            if (Object.prototype.hasOwnProperty.call(holdings, ticker)) {
                 const holding = holdings[ticker];
                 const currentPrice = this.stockService.mockPrices[ticker.toUpperCase()] || holding.avgPrice; 
                 totalHoldingsValue += holding.quantity * currentPrice;
@@ -524,7 +525,7 @@ export default class TradeView {
 
             tradeItem.innerHTML = `
                 <div>
-                    <span class="font-semibold ${tradeTypeClass}">${trade.type.toUpperCase()}</span> 
+                    <span class="font-semibold ${tradeTypeClass}">${toUpperCase(trade.type)}</span> 
                     <span class="text-white">${trade.quantity}</span> shares of 
                     <span class="font-bold uppercase text-cyan-300">${trade.ticker}</span> 
                     at <span class="text-white">${formatPrice(trade.price)}</span>
@@ -549,8 +550,8 @@ export default class TradeView {
                 if (price !== null) {
                     this.currentStockPrice = price;
                     const totalCost = price * quantity;
-                    currentPriceSpan.textContent = formatPrice(price, false);
-                    totalCostSpan.textContent = formatPrice(totalCost, false);
+                    currentPriceSpan.textContent = formatPrice(price);
+                    totalCostSpan.textContent = formatPrice(totalCost);
                     pricePreview.classList.remove("hidden");
                     this.showFeedback("");
                 } else {

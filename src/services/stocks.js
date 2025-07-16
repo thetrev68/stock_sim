@@ -1,10 +1,8 @@
 // src/services/stocks.js - Enhanced with News Integration for Session 11
 
 import { API_LIMITS, CACHE_CONFIG, API_ERROR_CONFIG } from "../constants/app-config.js";
-import { 
-    filterByDateRange, 
-    sortByDateDesc 
-} from "../utils/date-utils.js";
+import { filterByDateRange, sortByDateDesc } from "../utils/date-utils.js";
+import { generateSummaryFromHeadline, generateUniqueId, filterBySearch } from "../utils/string-utils.js";
 
 /**
  * StockService with live Finnhub API integration
@@ -241,11 +239,7 @@ export class StockService {
         const allNews = await this.getStockNews(ticker, 50); // Get more articles to search through
         const searchTerm = query.toLowerCase().trim();
         
-        const filteredNews = allNews.filter(article => {
-            return article.headline.toLowerCase().includes(searchTerm) ||
-                   article.summary.toLowerCase().includes(searchTerm) ||
-                   article.source.toLowerCase().includes(searchTerm);
-        });
+        const filteredNews = filterBySearch(allNews, searchTerm, ["headline", "summary", "source"]);
 
         return filteredNews.slice(0, limit);
     }
@@ -263,7 +257,7 @@ export class StockService {
             }
 
             return {
-                id: rawArticle.id || `news_${rawArticle.datetime}_${Math.random().toString(36).substr(2, 9)}`,
+                id: rawArticle.id || generateUniqueId("news"),
                 headline: rawArticle.headline,
                 summary: rawArticle.summary || this.generateSummaryFromHeadline(rawArticle.headline),
                 source: rawArticle.source || "Unknown Source",
@@ -285,11 +279,7 @@ export class StockService {
      * @returns {string} Generated summary
      */
     generateSummaryFromHeadline(headline) {
-        // Simple summary generation - could be enhanced
-        if (headline.length > 100) {
-            return headline.substring(0, 97) + "...";
-        }
-        return `${headline} - Read the full article for more details.`;
+        return generateSummaryFromHeadline(headline);
     }
 
     /**
@@ -740,7 +730,7 @@ export class StockService {
         );
     }
 
-    async getHistoricalData(ticker, resolution = "D", days = 30) {
+    async getHistoricalData(ticker, _resolution = "D", days = 30) {
         const upperTicker = ticker.toUpperCase();
         
         try {

@@ -195,7 +195,7 @@ export async function validateSimulationTrade(tradeDetails, simulation, portfoli
         
         // Check simulation dates
         const now = new Date();
-        const startDate = simulation.startDate.toDate ? simulation.startDate.toDate() : new Date(simulation.startDate);
+        const _startDate = simulation.startDate.toDate ? simulation.startDate.toDate() : new Date(simulation.startDate);
         const endDate = simulation.endDate.toDate ? simulation.endDate.toDate() : new Date(simulation.endDate);
         
         if (now > endDate) {

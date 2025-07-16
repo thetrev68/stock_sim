@@ -19,10 +19,8 @@ import {
     getTimeAgo,
     getTomorrowISO
 } from "../utils/date-utils.js";
-import { 
-    formatCurrencyWithCommas,
-    formatPrice
-} from "../utils/currency-utils.js";
+import { formatCurrencyWithCommas, formatPrice} from "../utils/currency-utils.js";
+import { getInitial, capitalize } from "../utils/string-utils.js";
 
 export default class SimulationView {
     constructor() {
@@ -716,7 +714,7 @@ export default class SimulationView {
         memberDiv.innerHTML = `
             <div class="flex items-center gap-4">
                 <div class="w-12 h-12 bg-gradient-to-br from-cyan-500 to-purple-500 rounded-full flex items-center justify-center">
-                    <span class="text-white font-bold text-lg">${member.displayName.charAt(0).toUpperCase()}</span>
+                    <span class="text-white font-bold text-lg">${getInitial(member.displayName)}</span>
                 </div>
                 <div>
                     <h4 class="text-white font-semibold">${member.displayName}</h4>
@@ -862,7 +860,7 @@ export default class SimulationView {
                                             <div class="flex justify-between items-start">
                                                 <div class="flex items-center gap-3">
                                                     <div class="w-10 h-10 bg-gradient-to-br from-cyan-500 to-purple-500 rounded-full flex items-center justify-center">
-                                                        <span class="text-white font-bold text-sm">${member.displayName.charAt(0).toUpperCase()}</span>
+                                                        <span class="text-white font-bold text-sm">${getInitial(member.displayName)}</span>
                                                     </div>
                                                     <div>
                                                         <h4 class="text-white font-medium">${member.displayName}</h4>
@@ -903,7 +901,7 @@ export default class SimulationView {
                                             <div class="bg-gray-700/50 p-4 rounded-lg border border-gray-600">
                                                 <div class="flex items-center gap-3">
                                                     <div class="w-10 h-10 bg-gray-600 rounded-full flex items-center justify-center">
-                                                        <span class="text-gray-400 font-bold text-sm">${member.displayName.charAt(0).toUpperCase()}</span>
+                                                        <span class="text-gray-400 font-bold text-sm">${getInitial(member.displayName)}</span>
                                                     </div>
                                                     <div>
                                                         <h4 class="text-gray-300 font-medium">${member.displayName}</h4>
@@ -1077,7 +1075,7 @@ export default class SimulationView {
         element.innerHTML = `
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 bg-cyan-500/20 rounded-lg flex items-center justify-center">
-                    <span class="text-sm font-bold text-cyan-400">${ticker.charAt(0)}</span>
+                    <span class="text-sm font-bold text-cyan-400">${getInitial(ticker)}</span>
                 </div>
                 <div>
                     <h4 class="font-semibold text-white">${ticker.toUpperCase()}</h4>
@@ -1137,7 +1135,7 @@ export default class SimulationView {
         element.innerHTML = `
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 bg-cyan-500/20 rounded-lg flex items-center justify-center">
-                    <span class="text-sm font-bold text-cyan-400">${trade.ticker.charAt(0)}</span>
+                    <span class="text-sm font-bold text-cyan-400">${getInitial(trade.ticker)}</span>
                 </div>
                 <div>
                     <h4 class="font-semibold text-white">
@@ -1183,7 +1181,7 @@ export default class SimulationView {
 
         // Status
         if (statusEl) {
-            statusEl.textContent = this.currentSimulation.status.charAt(0).toUpperCase() + this.currentSimulation.status.slice(1);
+            statusEl.textContent = capitalize(this.currentSimulation.status)
             const statusClass = this.currentSimulation.status === SIMULATION_STATUS.ACTIVE ? "bg-green-600 text-white" :
                                this.currentSimulation.status === SIMULATION_STATUS.PENDING ? "bg-yellow-600 text-white" :
                                "bg-gray-600 text-gray-300";
@@ -1239,7 +1237,7 @@ export default class SimulationView {
             
             const holdings = this.simulationPortfolio.holdings || {};
             for (const ticker in holdings) {
-                if (holdings.hasOwnProperty(ticker)) {
+                if (Object.prototype.hasOwnProperty.call(holdings, ticker)) {
                     holdingsValue += holdings[ticker].quantity * holdings[ticker].avgPrice;
                 }
             }
@@ -1415,7 +1413,7 @@ export default class SimulationView {
 
         const simulation = stats.simulation;
         const canModifyRules = simulation.status === SIMULATION_STATUS.PENDING;
-        const isActive = simulation.status === SIMULATION_STATUS.ACTIVE;
+        const _isActive = simulation.status === SIMULATION_STATUS.ACTIVE;
         const isEnded = simulation.status === SIMULATION_STATUS.ENDED;
 
         const modalHTML = `
@@ -1726,7 +1724,7 @@ export default class SimulationView {
         });
         }
 
-        async handleSaveBasicSettings(originalSimulation) {
+        async handleSaveBasicSettings(_originalSimulation) {
         const nameInput = document.getElementById("sim-name-input");
         const maxMembersInput = document.getElementById("max-members-input");
         const descriptionInput = document.getElementById("sim-description-input");

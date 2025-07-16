@@ -70,7 +70,7 @@ export const calculateTotalHoldingsValue = (holdings) => {
     
     let total = 0;
     for (const ticker in holdings) {
-        if (holdings.hasOwnProperty(ticker)) {
+        if (Object.prototype.hasOwnProperty.call(holdings, ticker)) {
             const holding = holdings[ticker];
             total += (holding.quantity || 0) * (holding.avgPrice || 0);
         }

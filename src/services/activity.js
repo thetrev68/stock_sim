@@ -233,7 +233,7 @@ export class ActivityService {
         const timeAgo = getTimeAgoCompact(timestamp);
 
         switch (activity.action) {
-            case "joined_simulation":
+            case "joined_simulation": {
                 return {
                     icon: "👋",
                     iconColor: "text-green-400",
@@ -243,8 +243,9 @@ export class ActivityService {
                     timeAgo,
                     priority: "low"
                 };
+            }
 
-            case "executed_trade":
+            case "executed_trade": {
                 const { ticker, tradeType, quantity, amount } = activity.data;
                 const tradeIcon = tradeType === "buy" ? "📈" : "📉";
                 const tradeColor = tradeType === "buy" ? "text-green-400" : "text-red-400";
@@ -259,8 +260,9 @@ export class ActivityService {
                     timeAgo,
                     priority: "medium"
                 };
+            }
 
-            case "reached_milestone":
+            case "reached_milestone": {
                 const { milestone, value, rank } = activity.data;
                 let milestoneText = "";
                 let milestoneIcon = "🏆";
@@ -285,7 +287,7 @@ export class ActivityService {
                     default:
                         milestoneText = "achieved a milestone";
                 }
-                
+            
                 return {
                     icon: milestoneIcon,
                     iconColor: "text-yellow-400",
@@ -295,20 +297,10 @@ export class ActivityService {
                     timeAgo,
                     priority: "high"
                 };
+            }
 
-            default:
-                return {
-                    icon: "📱",
-                    iconColor: "text-gray-400",
-                    iconBg: "bg-gray-400/10",
-                    title: `${activity.userDisplayName} did something`,
-                    description: "Activity recorded",
-                    timeAgo,
-                    priority: "low"
-                };
-            // Add this case in the formatActivity method switch statement:
             case "admin_action":
-            case "simulation_ended_early":
+            case "simulation_ended_early": {
                 let adminText = "";
                 let adminIcon = "⚙️";
                 
@@ -337,6 +329,19 @@ export class ActivityService {
                         priority: "high"
                     };
                 }
+            }
+
+            default: {
+                return {
+                    icon: "📱",
+                    iconColor: "text-gray-400",
+                    iconBg: "bg-gray-400/10",
+                    title: `${activity.userDisplayName} did something`,
+                    description: "Activity recorded",
+                    timeAgo,
+                    priority: "low"
+                };
+            }
         }
     }
 
@@ -456,7 +461,7 @@ export class ActivityService {
         
         let total = 0;
         for (const ticker in holdings) {
-            if (holdings.hasOwnProperty(ticker)) {
+            if (Object.prototype.hasOwnProperty.call(holdings, ticker)) {
                 total += holdings[ticker].quantity * holdings[ticker].avgPrice;
             }
         }

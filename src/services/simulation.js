@@ -19,6 +19,7 @@ import {
     calculateDaysElapsed,
     calculateTotalDuration
 } from "../utils/date-utils.js";
+import { generateInviteCode } from "../utils/string-utils.js";
 
 const SIMULATIONS_COLLECTION = "simulations";
 const SIMULATION_MEMBERS_COLLECTION = "simulationMembers";
@@ -339,9 +340,9 @@ export class SimulationService {
             }
 
             // Calculate time statistics
-            const now = new Date();
+            const _now = new Date();
             const startDate = convertFirebaseDate(simulation.startDate);
-            const endDate = convertFirebaseDate(simulation.endDate);
+            const _endDate = convertFirebaseDate(simulation.endDate);
             const originalEndDate = simulation.originalEndDate ? convertFirebaseDate(simulation.originalEndDate) : null;
 
             const totalDuration = calculateTotalDuration(simulation.startDate, simulation.endDate);
@@ -687,12 +688,7 @@ export class SimulationService {
      * Generate a unique 6-character invite code
      */
     generateInviteCode() {
-        const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-        let result = "";
-        for (let i = 0; i < 6; i++) {
-            result += chars.charAt(Math.floor(Math.random() * chars.length));
-        }
-        return result;
+        return generateInviteCode();
     }
 
     /**
@@ -1181,7 +1177,7 @@ export class SimulationService {
         
         let total = 0;
         for (const ticker in holdings) {
-            if (holdings.hasOwnProperty(ticker)) {
+            if (Object.prototype.hasOwnProperty.call(holdings, ticker)) {
                 total += holdings[ticker].quantity * holdings[ticker].avgPrice;
             }
         }

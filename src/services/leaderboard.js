@@ -46,7 +46,7 @@ export class LeaderboardService {
 
         // Calculate holdings value
         for (const ticker in holdings) {
-            if (holdings.hasOwnProperty(ticker)) {
+            if (Object.prototype.hasOwnProperty.call(holdings, ticker)) {
                 const holding = holdings[ticker];
                 let currentPrice = cachedPrices[ticker];
 

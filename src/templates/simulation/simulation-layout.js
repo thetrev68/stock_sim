@@ -9,7 +9,7 @@
  * @param {boolean} isCreator - Whether current user is the simulation creator
  * @returns {string} HTML template string
  */
-export const getMainSimulationLayoutTemplate = (simulation, currentUser, isCreator) => {
+export const getMainSimulationLayoutTemplate = (simulation, _currentUser, _isCreator) => {
     const isActive = new Date() < new Date(simulation.endDate);
     
     return `

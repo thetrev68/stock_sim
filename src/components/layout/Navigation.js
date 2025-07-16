@@ -32,7 +32,7 @@ export class NavigationComponent {
         `;
     }
 
-    attachEventListeners(container) {
+    attachEventListeners(_container) {
         // Event delegation is handled by the router in main.js
         // No additional listeners needed here
     }

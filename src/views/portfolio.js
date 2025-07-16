@@ -14,6 +14,7 @@ import {
     calculateCostBasis,
     getTradeTypeColorClass
 } from "../utils/currency-utils.js";
+import { getInitial, toUpperCase } from "../utils/string-utils.js";
 
 export default class PortfolioView {
     constructor() {
@@ -375,7 +376,7 @@ export default class PortfolioView {
 
         // Process each holding with live price lookup
         for (const ticker in holdings) {
-            if (holdings.hasOwnProperty(ticker)) {
+            if (Object.prototype.hasOwnProperty.call(holdings, ticker)) {
                 const holding = holdings[ticker];
                 
                 // Show loading row first
@@ -384,9 +385,9 @@ export default class PortfolioView {
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="flex items-center">
                                 <div class="w-8 h-8 bg-cyan-500/20 rounded-lg flex items-center justify-center mr-3">
-                                    <span class="text-xs font-bold text-cyan-400">${ticker.charAt(0)}</span>
+                                    <span class="text-xs font-bold text-cyan-400">${getInitial(ticker)}</span>
                                 </div>
-                                <span class="font-semibold text-white">${ticker.toUpperCase()}</span>
+                                <span class="font-semibold text-white">${toUpperCase(ticker)}</span>
                             </div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-white">${formatNumberWithCommas(holding.quantity)}</td>
@@ -419,9 +420,9 @@ export default class PortfolioView {
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="flex items-center">
                                     <div class="w-8 h-8 bg-cyan-500/20 rounded-lg flex items-center justify-center mr-3">
-                                        <span class="text-xs font-bold text-cyan-400">${ticker.charAt(0)}</span>
+                                        <span class="text-xs font-bold text-cyan-400">${getInitial(ticker)}</span>
                                     </div>
-                                    <span class="font-semibold text-white">${ticker.toUpperCase()}</span>
+                                    <span class="font-semibold text-white">${toUpperCase(ticker)}</span>
                                 </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right text-white">${formatNumberWithCommas(holding.quantity)}</td>
@@ -458,9 +459,9 @@ export default class PortfolioView {
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="flex items-center">
                                     <div class="w-8 h-8 bg-cyan-500/20 rounded-lg flex items-center justify-center mr-3">
-                                        <span class="text-xs font-bold text-cyan-400">${ticker.charAt(0)}</span>
+                                        <span class="text-xs font-bold text-cyan-400">${getInitial(ticker)}</span>
                                     </div>
-                                    <span class="font-semibold text-white">${ticker.toUpperCase()}</span>
+                                    <span class="font-semibold text-white">${toUpperCase(ticker)}</span>
                                 </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right text-white">${formatNumberWithCommas(holding.quantity)}</td>
@@ -510,7 +511,7 @@ export default class PortfolioView {
         }
 
         // Calculate cash percentage
-        const cashPercentage = (this.currentPortfolio.cash / totalValue * 100);
+        const _cashPercentage = (this.currentPortfolio.cash / totalValue * 100);
         const cashPercentageEl = this.viewContainer.querySelector("#cash-percentage");
         if (cashPercentageEl) {
             cashPercentageEl.textContent = `${formatCashPercentage(this.currentPortfolio.cash, totalValue)} of portfolio`;
@@ -546,15 +547,15 @@ export default class PortfolioView {
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-center">
                             <span class="${tradeTypeClass} px-3 py-1 rounded-full text-sm font-semibold">
-                                ${tradeIcon} ${trade.type.toUpperCase()}
+                                ${tradeIcon} ${toUpperCase(trade.type)}
                             </span>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="flex items-center">
                                 <div class="w-8 h-8 bg-cyan-500/20 rounded-lg flex items-center justify-center mr-3">
-                                    <span class="text-xs font-bold text-cyan-400">${trade.ticker.charAt(0)}</span>
+                                    <span class="text-xs font-bold text-cyan-400">${getInitial(trade.ticker)}</span>
                                 </div>
-                                <span class="font-semibold text-white">${trade.ticker.toUpperCase()}</span>
+                                <span class="font-semibold text-white">${toUpperCase(trade.ticker)}</span>
                             </div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-white">${trade.quantity.toLocaleString()}</td>
@@ -635,7 +636,7 @@ export default class PortfolioView {
         this.displayTrades();
     }
 
-    handleSortChange(sortValue) {
+    handleSortChange(_sortValue) {
         // Refresh trade display with new sort
         this.displayTrades();
     }
