@@ -6,10 +6,11 @@ import {
     formatCurrencyWithCommas,
     formatPercentage
 } from "../../utils/currency-utils.js";
+import { getTimeAgo } from "../../utils/date-utils.js";
 import { getInitial } from "../../utils/string-utils.js";
 
-/**
- * Generate the member card template (individual member display)
+/** TFC Moved
+ * Generate the member card template (individual member display) - EXTRACTED FROM simulation.js
  * @param {Object} member - Member data object
  * @param {Object} currentUser - Current user object with uid property
  * @param {boolean} isCurrentUserCreator - Whether current user is simulation creator
@@ -23,36 +24,38 @@ export const getMemberCardTemplate = (member, currentUser, isCurrentUserCreator)
     const statusColor = member.status === "active" ? "text-green-400" : "text-red-400";
 
     return `
-        <div class="flex items-center gap-4">
-            <div class="w-12 h-12 bg-gradient-to-br from-cyan-500 to-purple-500 rounded-full flex items-center justify-center">
-                <span class="text-white font-bold text-lg">${getInitial(member.displayName)}</span>
-            </div>
-            <div>
-                <h4 class="text-white font-semibold">${member.displayName}</h4>
-                <div class="flex items-center gap-2 mt-1">
-                    <span class="${roleColor} text-xs font-medium px-2 py-1 rounded-full">${member.role}</span>
-                    <span class="${statusColor} text-xs font-medium">${member.status}</span>
+        <div class="bg-gray-700 p-4 rounded-lg flex justify-between items-center">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 bg-gradient-to-br from-cyan-500 to-purple-500 rounded-full flex items-center justify-center">
+                    <span class="text-white font-bold text-lg">${getInitial(member.displayName)}</span>
                 </div>
-                <p class="text-gray-400 text-sm">Joined ${timeAgo}</p>
-            </div>
-        </div>
-        <div class="text-right">
-            ${member.userId === currentUser.uid ? `
-                <span class="text-cyan-400 text-sm font-medium">You</span>
-            ` : member.role === "creator" ? `
-                <span class="text-yellow-400 text-sm font-medium">Creator</span>
-            ` : `
-                <div class="flex items-center gap-2">
-                    <span class="text-gray-400 text-sm">Portfolio Value</span>
-                    <span class="text-white font-medium">$10,000</span>
+                <div>
+                    <h4 class="text-white font-semibold">${member.displayName}</h4>
+                    <div class="flex items-center gap-2 mt-1">
+                        <span class="${roleColor} text-xs font-medium px-2 py-1 rounded-full">${member.role}</span>
+                        <span class="${statusColor} text-xs font-medium">${member.status}</span>
+                    </div>
+                    <p class="text-gray-400 text-sm">Joined ${timeAgo}</p>
                 </div>
-                <div class="text-xs text-gray-500 mt-1">Last active: Recently</div>
-            `}
-            ${isCurrentUserCreator && member.userId !== currentUser.uid ? `
-                <button class="kick-member-btn mt-2 bg-red-600 hover:bg-red-500 text-white text-xs font-medium py-1 px-2 rounded transition-colors duration-200" data-user-id="${member.userId}" data-display-name="${member.displayName}">
-                    Remove
-                </button>
-            ` : ""}
+            </div>
+            <div class="text-right">
+                ${member.userId === currentUser.uid ? `
+                    <span class="text-cyan-400 text-sm font-medium">You</span>
+                ` : member.role === "creator" ? `
+                    <span class="text-yellow-400 text-sm font-medium">Creator</span>
+                ` : `
+                    <div class="flex items-center gap-2">
+                        <span class="text-gray-400 text-sm">Portfolio Value</span>
+                        <span class="text-white font-medium">$10,000</span>
+                    </div>
+                    <div class="text-xs text-gray-500 mt-1">Last active: Recently</div>
+                `}
+                ${isCurrentUserCreator && member.userId !== currentUser.uid ? `
+                    <button class="kick-member-btn mt-2 text-red-400 hover:text-red-300 text-xs font-medium" data-user-id="${member.userId}" data-user-name="${member.displayName}">
+                        Remove
+                    </button>
+                ` : ""}
+            </div>
         </div>
     `;
 };

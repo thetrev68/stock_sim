@@ -2,8 +2,8 @@
 // Activity feed templates for simulation view
 // Focused module: Only activity-related display templates
 
-/**
- * Generate the activity element template (individual activity item)
+/** TFC Moved
+ * Generate the activity element template (individual activity item) - EXTRACTED FROM simulation.js
  * @param {Object} formattedActivity - Pre-formatted activity data from activityService
  * @returns {string} HTML template string
  */
@@ -20,7 +20,7 @@ export const getActivityElementTemplate = (formattedActivity) => {
     `;
 };
 
-/**
+/** TFC Moved
  * Generate the empty activity feed template
  * @returns {string} HTML template string
  */

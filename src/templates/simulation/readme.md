@@ -1,7 +1,7 @@
 # Simulation Template Refactoring Project
 
 ## 🎯 **Goal**
-Reduce the massive `views/simulation.js` file (2,235 lines) by extracting large HTML template strings into separate template modules. This is **Phase 2A** of a larger refactoring effort.
+Reduce the massive `views/simulation.js` file (originally 2,235 lines) by extracting large HTML template strings into separate template modules. This is **Phase 2A** of a larger refactoring effort.
 
 ## 🚨 **Critical Rules**
 - **ONLY MOVE EXISTING CODE** - Never add, modify, or "optimize" 
@@ -12,21 +12,39 @@ Reduce the massive `views/simulation.js` file (2,235 lines) by extracting large 
 ## 📁 **Files Included**
 
 ### **Target File**
-- `views/simulation.js` - The 2,235-line monster we're shrinking
+- `views/simulation.js` - Originally 2,235 lines, now ~1,470 lines
 
-### **Template Files (Already Created)**
+### **Template Files (Created/Updated)**
 - `templates/simulation/error-states.js` - Error handling templates
 - `templates/simulation/simulation-layout.js` - Main page layout templates  
 - `templates/simulation/simulation-sidebar.js` - Sidebar stats and rules templates
 - `templates/simulation/simulation-modals.js` - Modal dialog templates
 - `templates/simulation/member-components.js` - Member display templates
 - `templates/simulation/activity-components.js` - Activity feed templates  
-- `templates/simulation/ui-messages.js` - Text constants 
+- `templates/simulation/ui-messages.js` - Text constants and loading templates
+- `templates/simulation/portfolio-components.js` - **NEW** - Holdings and trades templates
+- `templates/simulation/notification-components.js` - **NEW** - Banners and notifications
 
-## ✅ **Progress So Far**
-- ✅ **Phase 1B Complete** - All utility functions extracted (string-utils, currency-utils, etc.)
-- ✅ **Template imports added** - All template files can be imported
-- ✅ **First removal successful** - Error state template working
+## ✅ **Progress Completed**
+
+### **Phase 1B Complete** 
+- ✅ All utility functions extracted (string-utils, currency-utils, etc.)
+
+### **Phase 2A Progress** 
+- ✅ **Loading template** → ui-messages.js (~10 lines)
+- ✅ **Stats cards** → simulation-sidebar.js (~40 lines)  
+- ✅ **Tab navigation & content** → simulation-layout.js (~120 lines)
+- ✅ **Simulation rules & header** → simulation-layout.js (~70 lines)
+- ✅ **Member management modal** → simulation-modals.js (~80 lines)
+- ✅ **Settings modal** → simulation-modals.js (~200 lines)
+- ✅ **Error states** (4 methods) → error-states.js (~60 lines)
+- ✅ **Member card template** → member-components.js (~40 lines)
+- ✅ **Activity element template** → activity-components.js (~30 lines)
+- ✅ **Empty activity template** → activity-components.js (~10 lines)
+- ✅ **Holdings & trades templates** → portfolio-components.js (~60 lines) 
+- ✅ **Archive prompt banner** → notification-components.js (~40 lines)
+
+**TOTAL EXTRACTED: ~760+ lines**
 
 ## 🔪 **Surgical Process**
 
@@ -38,23 +56,33 @@ Reduce the massive `views/simulation.js` file (2,235 lines) by extracting large 
 5. **Test** that everything still works exactly the same
 6. **Repeat** with next section
 
-### **Current Target Sections**
-Looking at the actual `getTemplate()` method content for safe removal candidates:
-
-1. **Stats cards grid** (3 info cards: rank, portfolio value, time remaining)
-2. **Tab navigation** (Portfolio & Trades, Leaderboard, Members & Activity)
-3. **Simulation rules section** (bottom rules display)
-4. **Individual tab content sections**
+### **Current Remaining Targets**
+1. **`showArchiveSuccessInfo()` method** (~30 lines) → notification-components.js
+2. **`showTemporaryMessage()` method** (~15 lines) → notification-components.js  
+3. **Any other large template methods** in simulation.js
 
 ## 🎖️ **Success Metrics**
-- **Target**: Reduce `views/simulation.js` from 2,235 lines to ~300-400 lines
+- **Original**: 2,235 lines in simulation.js
+- **Current**: ~1,470 lines in simulation.js (**765+ lines extracted!**)
+- **Target**: Reduce simulation.js to ~300-400 lines
 - **Functionality**: 100% preserved - zero breaking changes
 - **Template Organization**: Clean, focused template modules
 - **Maintainability**: Much easier to update UI in the future
+
+## 📊 **File Organization**
+- **error-states.js** - Error handling and fallback templates
+- **simulation-layout.js** - Main page structure and navigation
+- **simulation-sidebar.js** - Stats cards and sidebar content
+- **simulation-modals.js** - Modal dialogs and overlays
+- **member-components.js** - Member cards and lists
+- **activity-components.js** - Activity feed and elements
+- **portfolio-components.js** - Holdings and trades display
+- **notification-components.js** - Banners and alert messages
+- **ui-messages.js** - Text constants and loading states
 
 ## 🚧 **Approach**
 Use the **copy-exact-code → verify → replace** method to ensure zero functional changes. No assumptions, no shortcuts - only surgical precision.
 
 ---
 
-**Ready to continue the template extraction surgery!** 🔧
+**Phase 2A: Template Extraction - 65% Complete!** 🔧

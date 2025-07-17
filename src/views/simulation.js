@@ -29,6 +29,7 @@ import { getSimulationNotFoundTemplate,
     getMembersErrorTemplate,
     getActivitiesErrorTemplate 
 } from "../templates/simulation/error-states.js";
+import { getMemberCardTemplate } from "../templates/simulation/member-components.js";
 import { 
     getMainSimulationLayoutTemplate,
     getNavigationTabsTemplate,
@@ -53,6 +54,15 @@ import {
     getTradeActionButtonTemplate,
     getMainStatsCardsTemplate 
 } from "../templates/simulation/simulation-sidebar.js";
+import { 
+    getActivityElementTemplate, 
+    getEmptyActivityFeedTemplate 
+} from "../templates/simulation/activity-components.js";
+import { 
+    getHoldingElementTemplate, 
+    getTradeElementTemplate 
+} from "../templates/simulation/portfolio-components.js";
+import { getArchivePromptBannerTemplate } from "../templates/simulation/notification-components.js";
 
 
 export default class SimulationView {
@@ -497,48 +507,11 @@ export default class SimulationView {
     createMemberCard(member) {
         const memberDiv = document.createElement("div");
         memberDiv.className = "bg-gray-700 p-4 rounded-lg flex justify-between items-center";
+        
+        const isCreator = this.isCurrentUserCreator();
+        memberDiv.innerHTML = getMemberCardTemplate(member, this.currentUser, isCreator);
 
-        const joinedDate = member.joinedAt.toDate ? member.joinedAt.toDate() : new Date(member.joinedAt);
-        const timeAgo = getTimeAgo(joinedDate);
-
-        const roleColor = member.role === "creator" ? "text-cyan-400 bg-cyan-400/10" : "text-gray-400 bg-gray-400/10";
-        const statusColor = member.status === MEMBER_STATUS.ACTIVE ? "text-green-400" : "text-red-400";
-
-        memberDiv.innerHTML = `
-            <div class="flex items-center gap-4">
-                <div class="w-12 h-12 bg-gradient-to-br from-cyan-500 to-purple-500 rounded-full flex items-center justify-center">
-                    <span class="text-white font-bold text-lg">${getInitial(member.displayName)}</span>
-                </div>
-                <div>
-                    <h4 class="text-white font-semibold">${member.displayName}</h4>
-                    <div class="flex items-center gap-2 mt-1">
-                        <span class="${roleColor} text-xs font-medium px-2 py-1 rounded-full">${member.role}</span>
-                        <span class="${statusColor} text-xs font-medium">${member.status}</span>
-                    </div>
-                    <p class="text-gray-400 text-sm">Joined ${timeAgo}</p>
-                </div>
-            </div>
-            <div class="text-right">
-                ${member.userId === this.currentUser.uid ? `
-                    <span class="text-cyan-400 text-sm font-medium">You</span>
-                ` : member.role === "creator" ? `
-                    <span class="text-yellow-400 text-sm font-medium">Creator</span>
-                ` : `
-                    <div class="flex items-center gap-2">
-                        <span class="text-gray-400 text-sm">Portfolio Value</span>
-                        <span class="text-white font-medium">$10,000</span>
-                    </div>
-                    <div class="text-xs text-gray-500 mt-1">Last active: Recently</div>
-                `}
-                ${this.isCurrentUserCreator() && member.userId !== this.currentUser.uid ? `
-                    <button class="kick-member-btn mt-2 text-red-400 hover:text-red-300 text-xs font-medium" data-user-id="${member.userId}" data-user-name="${member.displayName}">
-                        Remove
-                    </button>
-                ` : ""}
-            </div>
-        `;
-
-        // Attach kick member event listener
+        // Attach kick member event listener (existing code stays the same)
         const kickBtn = memberDiv.querySelector(".kick-member-btn");
         if (kickBtn) {
             kickBtn.addEventListener("click", (e) => {
@@ -654,14 +627,7 @@ export default class SimulationView {
         if (!activityFeed) return;
 
         if (this.simulationActivities.length === 0) {
-            activityFeed.innerHTML = `
-                <div class="text-center py-6 text-gray-400">
-                    <svg class="w-12 h-12 mx-auto mb-3 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                    </svg>
-                    <p>No recent activity</p>
-                </div>
-            `;
+            activityFeed.innerHTML = getEmptyActivityFeedTemplate();
         } else {
             activityFeed.innerHTML = "";
             this.simulationActivities.forEach(activity => {
@@ -676,16 +642,7 @@ export default class SimulationView {
         const element = document.createElement("div");
         element.className = "bg-gray-700 p-4 rounded-lg flex items-start gap-3";
         
-        element.innerHTML = `
-            <div class="w-10 h-10 ${formattedActivity.iconBg} rounded-lg flex items-center justify-center flex-shrink-0">
-                <span class="text-lg">${formattedActivity.icon}</span>
-            </div>
-            <div class="flex-1 min-w-0">
-                <p class="text-white font-medium">${formattedActivity.title}</p>
-                <p class="text-gray-400 text-sm mt-1">${formattedActivity.description}</p>
-                <p class="text-gray-500 text-xs mt-2">${formattedActivity.timeAgo}</p>
-            </div>
-        `;
+        element.innerHTML = getActivityElementTemplate(formattedActivity);
         
         return element;
     }
@@ -746,23 +703,7 @@ export default class SimulationView {
         const element = document.createElement("div");
         element.className = "bg-gray-700 p-4 rounded-lg flex justify-between items-center";
         
-        const currentValue = holding.quantity * holding.avgPrice;
-        
-        element.innerHTML = `
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-cyan-500/20 rounded-lg flex items-center justify-center">
-                    <span class="text-sm font-bold text-cyan-400">${getInitial(ticker)}</span>
-                </div>
-                <div>
-                    <h4 class="font-semibold text-white">${ticker.toUpperCase()}</h4>
-                    <p class="text-sm text-gray-400">${holding.quantity} shares</p>
-                </div>
-            </div>
-            <div class="text-right">
-                <p class="font-semibold text-white">${formatCurrencyWithCommas(currentValue)}</p>
-                <p class="text-sm text-gray-400">@${formatPrice(holding.avgPrice)}</p>
-            </div>
-        `;
+        element.innerHTML = getHoldingElementTemplate(ticker, holding);
         
         return element;
     }
@@ -804,28 +745,7 @@ export default class SimulationView {
         element.className = "bg-gray-700 p-4 rounded-lg flex justify-between items-center";
         
         const tradeConfig = TRADE_TYPE_CONFIG[trade.type];
-        const tradeTypeClass = tradeConfig?.color || "text-gray-400";
-        const tradeIcon = tradeConfig?.icon || "•";
-        const tradeTime = new Date(trade.timestamp).toLocaleDateString();
-        
-        element.innerHTML = `
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-cyan-500/20 rounded-lg flex items-center justify-center">
-                    <span class="text-sm font-bold text-cyan-400">${getInitial(trade.ticker)}</span>
-                </div>
-                <div>
-                    <h4 class="font-semibold text-white">
-                        <span class="${tradeTypeClass}">${tradeIcon} ${trade.type.toUpperCase()}</span>
-                        ${trade.ticker.toUpperCase()}
-                    </h4>
-                    <p class="text-sm text-gray-400">${trade.quantity} shares • ${tradeTime}</p>
-                </div>
-            </div>
-            <div class="text-right">
-                <p class="font-semibold text-white">${formatCurrencyWithCommas(trade.tradeCost)}</p>
-                <p class="text-sm text-gray-400">@${formatPrice(trade.price)}</p>
-            </div>
-        `;
+        element.innerHTML = getTradeElementTemplate(trade, tradeConfig);
         
         return element;
     }
@@ -1351,33 +1271,7 @@ export default class SimulationView {
         const existingBanner = document.getElementById("archive-banner");
         if (existingBanner) return; // Don't show multiple times
 
-        const bannerHTML = `
-            <div id="archive-banner" class="bg-yellow-900/20 border border-yellow-500 rounded-lg p-4 mb-6">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 bg-yellow-500/20 rounded-lg flex items-center justify-center">
-                            <svg class="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h8a2 2 0 002-2V8m-10 4h4m-4 4h4m6-8v8a2 2 0 01-2 2h-2"></path>
-                            </svg>
-                        </div>
-                        <div>
-                            <h4 class="text-yellow-400 font-semibold">Simulation Complete - Archive Results?</h4>
-                            <p class="text-gray-300 text-sm">Archive this simulation to preserve final rankings and make results downloadable.</p>
-                        </div>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <button id="archive-now-btn" class="bg-yellow-600 hover:bg-yellow-500 text-white font-medium py-2 px-4 rounded-lg transition-colors text-sm">
-                            Archive Now
-                        </button>
-                        <button id="dismiss-archive-btn" class="text-gray-400 hover:text-white transition-colors p-2">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        `;
+        const bannerHTML = getArchivePromptBannerTemplate();
 
         // Insert banner at top of simulation content
         const simulationContent = document.getElementById("simulation-content");
