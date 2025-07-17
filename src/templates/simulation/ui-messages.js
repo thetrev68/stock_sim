@@ -165,3 +165,18 @@ export const getStatusDisplayText = (status) => {
             return status.charAt(0).toUpperCase() + status.slice(1);
     }
 };
+
+/** TFC Moved
+ * Generate the main simulation loading template
+ * @returns {string} HTML template string
+ */
+export const getSimulationLoadingTemplate = () => {
+    return `
+        <div id="simulation-loading" class="flex items-center justify-center py-12">
+            <div class="text-center">
+                <div class="w-12 h-12 border-4 border-cyan-400 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                <p class="text-gray-400">${SIMULATION_LOADING_MESSAGES.SIMULATION}</p>
+            </div>
+        </div>
+    `;
+};
