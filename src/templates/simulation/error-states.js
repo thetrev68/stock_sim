@@ -24,8 +24,8 @@ export const getSimulationNotFoundTemplate = () => {
     `;
 };
 
-/**
- * Generate the simulation loading error template
+/** TFC Moved
+ * Generate the simulation loading error template (overwrites existing)
  * @returns {string} HTML template string
  */
 export const getSimulationLoadingErrorTemplate = () => {
@@ -46,8 +46,8 @@ export const getSimulationLoadingErrorTemplate = () => {
     `;
 };
 
-/**
- * Generate the members loading error template
+/** TFC Moved
+ * Generate the members loading error template (overwrites existing)
  * @returns {string} HTML template string
  */
 export const getMembersErrorTemplate = () => {
@@ -62,8 +62,8 @@ export const getMembersErrorTemplate = () => {
     `;
 };
 
-/**
- * Generate the activities error template
+/** TFC Moved
+ * Generate the activities error template (overwrites existing)
  * @returns {string} HTML template string
  */
 export const getActivitiesErrorTemplate = () => {
@@ -78,8 +78,8 @@ export const getActivitiesErrorTemplate = () => {
     `;
 };
 
-/**
- * Generate the portfolio error template
+/** TFC Moved
+ * Generate the portfolio error template (overwrites existing) 
  * @returns {string} HTML template string
  */
 export const getPortfolioErrorTemplate = () => {

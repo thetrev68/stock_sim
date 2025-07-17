@@ -21,54 +21,55 @@ export const getMainSimulationLayoutTemplate = (simulation, _currentUser, _isCre
     `;
 };
 
-/**
- * Generate the header section template
- * @param {Object} simulation - Simulation data
- * @param {boolean} isActive - Whether simulation is active
+/** TFC Moved
+ * Generate the header section template (simulation info header)
  * @returns {string} HTML template string
  */
-export const getHeaderSectionTemplate = (simulation, isActive) => {
+export const getHeaderSectionTemplate = () => {
     return `
-        <div class="bg-gradient-to-r from-cyan-600 to-purple-600 p-6">
-            <div class="max-w-6xl mx-auto">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <h1 id="simulation-title" class="text-3xl font-bold text-white mb-2">${simulation.name}</h1>
-                        <div class="flex items-center gap-4 text-cyan-100">
-                            <span id="simulation-status" class="text-sm font-medium px-3 py-1 rounded-full ${isActive ? "bg-green-500/20 text-green-300" : "bg-red-500/20 text-red-300"}">
-                                ${isActive ? "Active" : "Ended"}
-                            </span>
-                            <span class="text-sm">${new Date(simulation.startDate).toLocaleDateString()} - ${new Date(simulation.endDate).toLocaleDateString()}</span>
-                        </div>
+        <div class="bg-gray-800 p-6 rounded-lg shadow-lg mb-8 border border-gray-700">
+            <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+                <div>
+                    <h1 id="sim-name" class="text-3xl font-bold text-white mb-2">Simulation Name</h1>
+                    <p id="sim-description" class="text-gray-400">Simulation description will appear here</p>
+                    <div class="flex items-center gap-4 mt-3">
+                        <span id="sim-status" class="px-3 py-1 rounded-full text-sm font-semibold bg-green-600 text-white">Active</span>
+                        <span class="text-gray-400 text-sm">•</span>
+                        <span id="sim-participants" class="text-gray-400 text-sm">0/20 participants</span>
+                        <span class="text-gray-400 text-sm">•</span>
+                        <span id="sim-duration" class="text-gray-400 text-sm">Duration info</span>
                     </div>
-                    
-                    ${getHeaderButtonsTemplate()}
+                </div>
+                <div class="flex gap-3">
+                    <button 
+                        id="view-members-btn"
+                        class="bg-purple-600 hover:bg-purple-500 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-300 flex items-center gap-2"
+                    >
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
+                        </svg>
+                        <span id="members-btn-text">Members</span>
+                    </button>
+                    <button 
+                        id="view-leaderboard-btn"
+                        class="bg-yellow-600 hover:bg-yellow-500 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-300 flex items-center gap-2"
+                    >
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                        </svg>
+                        <span id="leaderboard-btn-text">Leaderboard</span>
+                    </button>
+                    <button 
+                        id="trade-in-sim-btn"
+                        class="bg-green-600 hover:bg-green-500 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-300 flex items-center gap-2"
+                    >
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                        </svg>
+                        <span id="trade-btn-text">Trade Now</span>
+                    </button>
                 </div>
             </div>
-        </div>
-    `;
-};
-
-/**
- * Generate header action buttons template
- * @returns {string} HTML template string
- */
-export const getHeaderButtonsTemplate = () => {
-    return `
-        <div class="flex items-center gap-3">
-            <button id="leaderboard-btn" class="bg-white/10 hover:bg-white/20 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 flex items-center gap-2">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                </svg>
-                Leaderboard
-            </button>
-            
-            <button id="invite-btn" class="bg-white/10 hover:bg-white/20 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 flex items-center gap-2">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                </svg>
-                Invite
-            </button>
         </div>
     `;
 };
@@ -205,6 +206,36 @@ export const getOtherTabContentsTemplate = () => {
         <div id="research-content" class="tab-content hidden">
             <div class="text-center py-12">
                 <p class="text-gray-400">Research tools will be loaded here...</p>
+            </div>
+        </div>
+    `;
+};
+
+/** TFC Moved
+ * Generate the simulation rules section template (main content, not sidebar)
+ * @returns {string} HTML template string
+ */
+export const getSimulationRulesSectionTemplate = () => {
+    return `
+        <div class="bg-gray-800 p-6 rounded-lg shadow-lg border border-gray-700">
+            <h3 class="text-xl font-semibold text-white mb-4">Simulation Rules</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
+                <div>
+                    <span class="text-gray-400">Starting Balance</span>
+                    <p id="sim-starting-balance" class="text-white font-medium">$10,000</p>
+                </div>
+                <div>
+                    <span class="text-gray-400">Short Selling</span>
+                    <p id="sim-short-selling" class="text-white font-medium">Not Allowed</p>
+                </div>
+                <div>
+                    <span class="text-gray-400">Trading Hours</span>
+                    <p id="sim-trading-hours" class="text-white font-medium">Market Hours</p>
+                </div>
+                <div>
+                    <span class="text-gray-400">Commission</span>
+                    <p id="sim-commission" class="text-white font-medium">$0 per trade</p>
+                </div>
             </div>
         </div>
     `;
