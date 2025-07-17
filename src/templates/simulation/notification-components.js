@@ -2,7 +2,7 @@
 // Notification and banner templates for simulation view
 // Focused module: Only notification-related display templates (banners, alerts, etc.)
 
-/**
+/** TFC Moved
  * Generate the archive prompt banner template - EXTRACTED FROM simulation.js
  * @returns {string} HTML template string
  */
@@ -36,13 +36,48 @@ export const getArchivePromptBannerTemplate = () => {
     `;
 };
 
-/**
- * Generate the temporary message template (for notifications)
+/** TFC Moved
+ * Generate the archive success info banner template
+ * @param {string} archiveId - Archive ID for the view archive button
+ * @returns {string} HTML template string
+ */
+export const getArchiveSuccessInfoBannerTemplate = (archiveId) => {
+    return `
+        <div id="archive-success-banner" class="bg-green-900/20 border border-green-500 rounded-lg p-4 mb-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-green-500/20 rounded-lg flex items-center justify-center">
+                        <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h4 class="text-green-400 font-semibold">Simulation Archived Successfully!</h4>
+                        <p class="text-gray-300 text-sm">Results are now preserved and available in your simulation history.</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button id="view-archive-btn" class="bg-green-600 hover:bg-green-500 text-white font-medium py-2 px-4 rounded-lg transition-colors text-sm" data-archive-id="${archiveId}">
+                        View Archive
+                    </button>
+                    <button id="dismiss-success-btn" class="text-gray-400 hover:text-white transition-colors p-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                    </div>
+            </div>
+        </div>
+    `;
+};
+
+/** TFC Moved
+ * Generate the temporary message template (for notifications) - extracted from showTemporaryMessage method
  * @param {string} message - Message text to display
  * @param {string} type - Message type ('success', 'error', 'info')
  * @returns {string} HTML template string
  */
-export const getTemporaryMessageTemplate = (message, type = "info") => {
+export const getShowTemporaryMessageTemplate = (message, type = "info") => {
     const colorClasses = {
         success: "bg-green-900/20 border-green-500 text-green-400",
         error: "bg-red-900/20 border-red-500 text-red-400",

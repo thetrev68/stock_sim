@@ -1,29 +1,32 @@
 // src/views/simulation.js - Enhanced with Leaderboards - Session 9
 // Simulation view with member management, activity tracking, and leaderboards
+
+// Core Services
 import { SimulationService } from "../services/simulation.js";
 import { AuthService } from "../services/auth.js";
 import { ActivityService } from "../services/activity.js";
 import { LeaderboardService } from "../services/leaderboard.js";
+import { getPortfolio, initializePortfolio, getRecentTrades } from "../services/trading.js";
+
+// Components
 import { LeaderboardOverview } from "../components/simulation/LeaderboardOverview.js";
 import { LeaderboardTable } from "../components/simulation/LeaderboardTable.js";
-import { getPortfolio, initializePortfolio, getRecentTrades } from "../services/trading.js";
+
+// Constants
 import { REFRESH_INTERVALS } from "../constants/app-config.js";
 import { SIMULATION_STATUS, MEMBER_STATUS } from "../constants/simulation-status.js";
 import { TRADE_TYPE_CONFIG } from "../constants/trade-types.js";
-import { LOADING_MESSAGES } from "../constants/ui-messages.js";
 import { SUCCESS_MESSAGES, INFO_MESSAGES } from "../constants/ui-messages.js";
+
+// Utilities
+import { formatDateRange, calculateDaysRemaining } from "../utils/date-utils.js";
+import { formatCurrencyWithCommas, formatPrice } from "../utils/currency-utils.js";
+import { capitalize } from "../utils/string-utils.js";
+
+// Templates
 import { getSimulationLoadingTemplate } from "../templates/simulation/ui-messages.js";
 import { 
-    convertFirebaseDate, 
-    formatDateRange, 
-    calculateDaysRemaining,
-    getTimeAgo,
-    getTomorrowISO
-} from "../utils/date-utils.js";
-import { formatCurrencyWithCommas, formatPrice} from "../utils/currency-utils.js";
-import { getInitial, capitalize } from "../utils/string-utils.js";
-// Template imports - add after existing imports (CORRECTED with actual exported functions)
-import { getSimulationNotFoundTemplate, 
+    getSimulationNotFoundTemplate, 
     getSimulationLoadingErrorTemplate,
     getPortfolioErrorTemplate,
     getMembersErrorTemplate,
@@ -31,29 +34,15 @@ import { getSimulationNotFoundTemplate,
 } from "../templates/simulation/error-states.js";
 import { getMemberCardTemplate } from "../templates/simulation/member-components.js";
 import { 
-    getMainSimulationLayoutTemplate,
-    getNavigationTabsTemplate,
-    getContentAreaTemplate,
-    getMembersAndActivitySectionTemplate,
     getTabNavigationAndContentTemplate,
     getSimulationRulesSectionTemplate,
     getHeaderSectionTemplate 
 } from "../templates/simulation/simulation-layout.js";
 import {
     getMemberManagementModalTemplate,
-    getSimulationSettingsModalTemplate,
-    getModalWrapperTemplate
+    getSimulationSettingsModalTemplate
 } from "../templates/simulation/simulation-modals.js";
-import {
-    getSimulationSidebarTemplate,
-    getUserRankCardTemplate,
-    getPortfolioValueCardTemplate,
-    getSimulationRulesCardTemplate,
-    getSimulationTimelineCardTemplate,
-    getSidebarLoadingTemplate,
-    getTradeActionButtonTemplate,
-    getMainStatsCardsTemplate 
-} from "../templates/simulation/simulation-sidebar.js";
+import { getMainStatsCardsTemplate } from "../templates/simulation/simulation-sidebar.js";
 import { 
     getActivityElementTemplate, 
     getEmptyActivityFeedTemplate 
@@ -62,8 +51,11 @@ import {
     getHoldingElementTemplate, 
     getTradeElementTemplate 
 } from "../templates/simulation/portfolio-components.js";
-import { getArchivePromptBannerTemplate } from "../templates/simulation/notification-components.js";
-
+import { 
+    getArchivePromptBannerTemplate,
+    getArchiveSuccessInfoBannerTemplate,
+    getShowTemporaryMessageTemplate
+} from "../templates/simulation/notification-components.js";
 
 export default class SimulationView {
     constructor() {
@@ -933,26 +925,7 @@ export default class SimulationView {
             existingMessage.remove();
         }
 
-        const colorClasses = {
-            success: "bg-green-900/20 border-green-500 text-green-400",
-            error: "bg-red-900/20 border-red-500 text-red-400",
-            info: "bg-blue-900/20 border-blue-500 text-blue-400"
-        };
-
-        const messageHTML = `
-            <div id="temp-message" class="fixed top-4 right-4 ${colorClasses[type]} border rounded-lg p-4 z-50 max-w-sm">
-                <div class="flex items-center gap-3">
-                    <div class="flex-1">
-                        <p class="font-medium">${message}</p>
-                    </div>
-                    <button onclick="this.parentElement.parentElement.remove()" class="text-current opacity-70 hover:opacity-100">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                        </svg>
-                    </button>
-                </div>
-            </div>
-        `;
+        const messageHTML = getShowTemporaryMessageTemplate(message, type);
 
         document.body.insertAdjacentHTML("beforeend", messageHTML);
 
@@ -1335,33 +1308,7 @@ export default class SimulationView {
     }
 
     showArchiveSuccessInfo(archiveId) {
-        const infoHTML = `
-            <div id="archive-success-banner" class="bg-green-900/20 border border-green-500 rounded-lg p-4 mb-6">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 bg-green-500/20 rounded-lg flex items-center justify-center">
-                            <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                            </svg>
-                        </div>
-                        <div>
-                            <h4 class="text-green-400 font-semibold">Simulation Archived Successfully!</h4>
-                            <p class="text-gray-300 text-sm">Results are now preserved and available in your simulation history.</p>
-                        </div>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <button id="view-archive-btn" class="bg-green-600 hover:bg-green-500 text-white font-medium py-2 px-4 rounded-lg transition-colors text-sm" data-archive-id="${archiveId}">
-                            View Archive
-                        </button>
-                        <button id="dismiss-success-btn" class="text-gray-400 hover:text-white transition-colors p-2">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        `;
+        const infoHTML = getArchiveSuccessInfoBannerTemplate(archiveId);
 
         const simulationContent = document.getElementById("simulation-content");
         if (simulationContent) {

@@ -387,42 +387,42 @@ export const getSimulationSettingsModalTemplate = (stats) => {
     `;
 };
 
-/**
- * Generate a reusable modal wrapper template
- * @param {string} id - Modal ID
- * @param {string} title - Modal title
- * @param {string} subtitle - Modal subtitle (optional)
- * @param {string} content - Modal body content
- * @param {string} footer - Modal footer content
- * @param {string} maxWidth - Max width class (default: 'max-w-2xl')
- * @returns {string} HTML template string
- */
-export const getModalWrapperTemplate = (id, title, subtitle, content, footer, maxWidth = "max-w-2xl") => {
-    return `
-        <div id="${id}" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div class="bg-gray-800 border border-gray-700 rounded-lg shadow-2xl w-full ${maxWidth} mx-4">
-                <div class="flex justify-between items-center p-6 border-b border-gray-700">
-                    <div>
-                        <h3 class="text-xl font-semibold text-white">${title}</h3>
-                        ${subtitle ? `<p class="text-gray-400 text-sm mt-1">${subtitle}</p>` : ""}
-                    </div>
-                    <button class="modal-close-btn text-gray-400 hover:text-white transition-colors">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                        </svg>
-                    </button>
-                </div>
+// /**
+//  * Generate a reusable modal wrapper template
+//  * @param {string} id - Modal ID
+//  * @param {string} title - Modal title
+//  * @param {string} subtitle - Modal subtitle (optional)
+//  * @param {string} content - Modal body content
+//  * @param {string} footer - Modal footer content
+//  * @param {string} maxWidth - Max width class (default: 'max-w-2xl')
+//  * @returns {string} HTML template string
+//  */
+// export const getModalWrapperTemplate = (id, title, subtitle, content, footer, maxWidth = "max-w-2xl") => {
+//     return `
+//         <div id="${id}" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+//             <div class="bg-gray-800 border border-gray-700 rounded-lg shadow-2xl w-full ${maxWidth} mx-4">
+//                 <div class="flex justify-between items-center p-6 border-b border-gray-700">
+//                     <div>
+//                         <h3 class="text-xl font-semibold text-white">${title}</h3>
+//                         ${subtitle ? `<p class="text-gray-400 text-sm mt-1">${subtitle}</p>` : ""}
+//                     </div>
+//                     <button class="modal-close-btn text-gray-400 hover:text-white transition-colors">
+//                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+//                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+//                         </svg>
+//                     </button>
+//                 </div>
 
-                <div class="p-6 overflow-y-auto max-h-[calc(90vh-200px)]">
-                    ${content}
-                </div>
+//                 <div class="p-6 overflow-y-auto max-h-[calc(90vh-200px)]">
+//                     ${content}
+//                 </div>
 
-                ${footer ? `
-                    <div class="flex justify-end gap-3 p-6 border-t border-gray-700">
-                        ${footer}
-                    </div>
-                ` : ""}
-            </div>
-        </div>
-    `;
-};
+//                 ${footer ? `
+//                     <div class="flex justify-end gap-3 p-6 border-t border-gray-700">
+//                         ${footer}
+//                     </div>
+//                 ` : ""}
+//             </div>
+//         </div>
+//     `;
+// };

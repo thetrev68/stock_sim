@@ -5,15 +5,15 @@
  * and time-related operations extracted from the codebase.
  */
 
-/**
- * Convert Firebase Timestamp to JavaScript Date
- * Handles both Firebase Timestamp objects and regular Date objects
- * @param {*} timestamp - Firebase Timestamp or Date object
- * @returns {Date} JavaScript Date object
- */
-export const convertFirebaseDate = (timestamp) => {
-    return timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-};
+// /**
+//  * Convert Firebase Timestamp to JavaScript Date
+//  * Handles both Firebase Timestamp objects and regular Date objects
+//  * @param {*} timestamp - Firebase Timestamp or Date object
+//  * @returns {Date} JavaScript Date object
+//  */
+// export const convertFirebaseDate = (timestamp) => {
+//     return timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+// };
 
 /**
  * Format date range for display (used in simulation duration)
@@ -84,23 +84,23 @@ export const calculateDaysAgo = (date) => {
     return Math.floor((now - targetDate) / (1000 * 60 * 60 * 24));
 };
 
-/**
- * Get "time ago" string for relative time display
- * Used in activity feeds and member lists
- * @param {Date} date - Date to compare
- * @returns {string} Formatted time ago string
- */
-export const getTimeAgo = (date) => {
-    const now = new Date();
-    const diffInSeconds = Math.floor((now - date) / 1000);
+// /**
+//  * Get "time ago" string for relative time display
+//  * Used in activity feeds and member lists
+//  * @param {Date} date - Date to compare
+//  * @returns {string} Formatted time ago string
+//  */
+// export const getTimeAgo = (date) => {
+//     const now = new Date();
+//     const diffInSeconds = Math.floor((now - date) / 1000);
     
-    if (diffInSeconds < 60) return "just now";
-    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`;
-    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`;
-    if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)} days ago`;
+//     if (diffInSeconds < 60) return "just now";
+//     if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`;
+//     if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`;
+//     if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)} days ago`;
     
-    return date.toLocaleDateString();
-};
+//     return date.toLocaleDateString();
+// };
 
 /**
  * Get compact "time ago" string for activity feeds
@@ -150,14 +150,14 @@ export const formatNewsDate = (timestamp) => {
     }
 };
 
-/**
- * Get minimum date for HTML date inputs (tomorrow)
- * Used for simulation extension forms
- * @returns {string} ISO date string for tomorrow
- */
-export const getTomorrowISO = () => {
-    return new Date(Date.now() + 24*60*60*1000).toISOString().split("T")[0];
-};
+// /**
+//  * Get minimum date for HTML date inputs (tomorrow)
+//  * Used for simulation extension forms
+//  * @returns {string} ISO date string for tomorrow
+//  */
+// export const getTomorrowISO = () => {
+//     return new Date(Date.now() + 24*60*60*1000).toISOString().split("T")[0];
+// };
 
 /**
  * Filter items by date range (used for news filtering)
