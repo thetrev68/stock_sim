@@ -9,7 +9,8 @@ import {
     calculateMarketValue,
     calculateCostBasis,
     formatPrice,
-    formatNumberWithCommas
+    formatNumberWithCommas,
+    formatPercentage
 } from "../../utils/currency-utils.js";
 import { getInitial, toUpperCase } from "../../utils/string-utils.js";
 
@@ -112,7 +113,7 @@ export const getHoldingErrorRowTemplate = (ticker, holding) => {
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-right text-white">${formatCurrencyWithCommas(marketValue)}</td>
             <td class="px-6 py-4 whitespace-nowrap text-right text-gray-500">${formatPrice(0)}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-right text-gray-500">0.00%</td>
+            <td class="px-6 py-4 whitespace-nowrap text-right text-gray-500">${formatPercentage(0)}</td>
         </tr>
     `;
 };

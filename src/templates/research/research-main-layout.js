@@ -2,6 +2,15 @@
 // Main layout templates for research view
 // Focused module: Primary search interface and layout structure exactly as it exists
 
+import { 
+    formatCurrencyWithCommas,
+    formatPortfolioChange, 
+    getGainLossColorClass 
+} from "../../utils/currency-utils.js"; 
+
+// import { getInitial, toUpperCase } from "../../utils/string-utils.js"; // Uncomment if needed for initials or uppercase conversion
+
+
 /** TFC Moved
  * Generate the main research view template
  * @returns {string} HTML template string
@@ -94,9 +103,9 @@ export const getMainResearchLayoutTemplate = () => {
                         </div>
                         
                         <div class="text-right">
-                            <p class="text-4xl font-bold text-white mb-2" id="current-price">$0.00</p>
+                            <p class="text-4xl font-bold text-white mb-2" id="current-price">${formatCurrencyWithCommas(0)}</p>
                             <div class="flex items-center justify-end gap-2">
-                                <span id="price-change" class="text-lg font-semibold">$0.00 (0.00%)</span>
+                                <span id="price-change" class="text-lg font-semibold">${getGainLossColorClass(0)}">${formatPortfolioChange(0, 0)}</span>
                                 <span class="text-gray-400 text-sm">Today</span>
                             </div>
                             <p class="text-gray-400 text-sm mt-1" id="last-updated">Last updated: --</p>

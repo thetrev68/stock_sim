@@ -2,9 +2,10 @@
 // Trade history templates for portfolio view
 // Focused module: Trade history display and filtering exactly as they exist
 
-import { 
-    formatPrice,
-    getTradeTypeColorClass
+import {
+    getTradeTypeColorClass,
+    formatNumberWithCommas,
+    formatCurrencyWithCommas
 } from "../../utils/currency-utils.js";
 import { getInitial, toUpperCase } from "../../utils/string-utils.js";
 
@@ -39,9 +40,9 @@ export const getTradeHistoryRowTemplate = (trade) => {
                     <span class="font-semibold text-white">${toUpperCase(trade.ticker)}</span>
                 </div>
             </td>
-            <td class="px-6 py-4 whitespace-nowrap text-right text-white">${trade.quantity.toLocaleString()}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-right text-gray-300">${formatPrice(trade.price)}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-right text-white font-semibold">${formatPrice(trade.tradeCost)}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-right text-white">${formatNumberWithCommas(trade.quantity)}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-right text-gray-300">${formatCurrencyWithCommas(trade.price)}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-right text-white font-semibold">$${formatCurrencyWithCommas(trade.tradeCost)}</td>
         </tr>
     `;
 };

@@ -2,11 +2,11 @@
 // Modal dialog templates for simulation management
 // Focused module: Only modal-related templates
 
-import { 
-    formatCurrencyWithCommas,
-    formatGainLoss
-} from "../../utils/currency-utils.js";
-import { getInitial } from "../../utils/string-utils.js";
+// import { 
+//     formatCurrencyWithCommas,
+//     formatGainLoss
+// } from "../../utils/currency-utils.js";
+// import { getInitial } from "../../utils/string-utils.js";
 
 /** TFC Moved
  * Generate the member management modal template
@@ -271,7 +271,7 @@ export const getSimulationSettingsModalTemplate = (stats) => {
                                             <input 
                                                 type="date" 
                                                 id="new-end-date" 
-                                                min="${new Date(Date.now() + 24*60*60*1000).toISOString().split('T')[0]}"
+                                                min="${new Date(Date.now() + 24*60*60*1000).toISOString().split("T")[0]}"
                                                 class="w-full bg-gray-700 text-white rounded-lg px-4 py-2 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-cyan-500"
                                             >
                                             <button type="button" id="extend-simulation" class="mt-2 w-full bg-yellow-600 hover:bg-yellow-500 text-white font-medium py-2 px-4 rounded-lg transition-colors">

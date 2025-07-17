@@ -20,14 +20,14 @@ import { SUCCESS_MESSAGES, INFO_MESSAGES } from "../constants/ui-messages.js";
 
 // Utilities
 import { formatDateRange, calculateDaysRemaining } from "../utils/date-utils.js";
-import { formatCurrencyWithCommas, formatPrice } from "../utils/currency-utils.js";
+import { formatCurrencyWithCommas } from "../utils/currency-utils.js";
 import { capitalize } from "../utils/string-utils.js";
 
 // Templates
 import { getSimulationLoadingTemplate } from "../templates/simulation/ui-messages.js";
 import { 
     getSimulationNotFoundTemplate, 
-    getSimulationLoadingErrorTemplate,
+    getSimulationLoadingErrorTemplate, 
     getPortfolioErrorTemplate,
     getMembersErrorTemplate,
     getActivitiesErrorTemplate 
@@ -461,15 +461,6 @@ export default class SimulationView {
         this.stopAutoRefresh();
     }
 
-    // [Include all the existing methods from the original simulation.js file]
-    // displayMembers, createMemberCard, getTimeAgo, isCurrentUserCreator, 
-    // handleKickMember, handleMemberManagement, displayActivities, createActivityElement,
-    // showActivitiesError, showMembersError, loadHoldings, createHoldingElement,
-    // loadRecentTrades, createTradeElement, displaySimulation, updatePortfolioStats,
-    // updateSimulationRules, showPortfolioError, handleTradeNavigation, showNotFound, showError
-
-    // [Copy all existing methods here - keeping them exactly the same]
-    
     displayMembers() {
         const membersLoading = document.getElementById("members-loading");
         const membersList = document.getElementById("members-list");
@@ -958,10 +949,10 @@ export default class SimulationView {
             existingModal.remove();
         }
 
-        const simulation = stats.simulation;
-        const canModifyRules = simulation.status === SIMULATION_STATUS.PENDING;
-        const isActive = simulation.status === SIMULATION_STATUS.ACTIVE;
-        const isEnded = simulation.status === SIMULATION_STATUS.ENDED;
+        // const simulation = stats.simulation;
+        // const canModifyRules = simulation.status === SIMULATION_STATUS.PENDING;
+        // const isActive = simulation.status === SIMULATION_STATUS.ACTIVE;
+        // const isEnded = simulation.status === SIMULATION_STATUS.ENDED;
 
         const modalHTML = getSimulationSettingsModalTemplate(stats);
 

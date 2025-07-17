@@ -2,10 +2,10 @@
 // Member display templates for simulation view
 // Focused module: Only member-related display templates
 
-import { 
-    formatCurrencyWithCommas,
-    formatPercentage
-} from "../../utils/currency-utils.js";
+// import { 
+//     formatCurrencyWithCommas,
+//     formatPercentage
+// } from "../../utils/currency-utils.js";
 import { getTimeAgo } from "../../utils/date-utils.js";
 import { getInitial } from "../../utils/string-utils.js";
 
@@ -60,71 +60,7 @@ export const getMemberCardTemplate = (member, currentUser, isCurrentUserCreator)
     `;
 };
 
-/**
- * Generate the modal member list item template (for member management modal)
- * @param {Object} member - Member data object
- * @param {Object} currentUser - Current user object with uid property
- * @returns {string} HTML template string
- */
-export const getModalMemberListTemplate = (member, currentUser) => {
-    return `
-        <div class="bg-gray-700 p-4 rounded-lg">
-            <div class="flex justify-between items-start">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 bg-gradient-to-br from-cyan-500 to-purple-500 rounded-full flex items-center justify-center">
-                        <span class="text-white font-bold text-sm">${member.displayName.charAt(0).toUpperCase()}</span>
-                    </div>
-                    <div>
-                        <h4 class="text-white font-medium">${member.displayName}</h4>
-                        <p class="text-gray-400 text-sm">${member.role}</p>
-                    </div>
-                </div>
-                ${member.userId !== currentUser.uid ? `
-                    <button class="kick-member-btn bg-red-600 hover:bg-red-500 text-white text-xs font-medium py-1 px-3 rounded transition-colors duration-200" data-user-id="${member.userId}" data-display-name="${member.displayName}">
-                        Remove
-                    </button>
-                ` : `
-                    <span class="text-cyan-400 text-xs font-medium">You</span>
-                `}
-            </div>
-            <div class="mt-3 grid grid-cols-2 gap-4 text-sm">
-                <div>
-                    <span class="text-gray-400">Portfolio Value:</span>
-                    <p class="text-white font-medium">${formatCurrencyWithCommas(member.portfolioValue || 10000)}</p>
-                </div>
-                <div>
-                    <span class="text-gray-400">Total Trades:</span>
-                    <p class="text-white font-medium">${member.totalTrades || 0}</p>
-                </div>
-                <div>
-                    <span class="text-gray-400">P&L:</span>
-                    <p class="${(member.totalGainLoss || 0) >= 0 ? "text-green-400" : "text-red-400"} font-medium">
-                        ${formatPercentage((member.totalGainLoss || 0) * 100)}
-                    </p>
-                </div>
-                <div>
-                    <span class="text-gray-400">Rank:</span>
-                    <p class="text-white font-medium">#${member.rank || "-"}</p>
-                </div>
-            </div>
-        </div>
-    `;
-};
-
-/**
- * Generate the members loading state template
- * @returns {string} HTML template string
- */
-export const getMembersLoadingTemplate = () => {
-    return `
-        <div class="text-center py-8">
-            <div class="w-8 h-8 border-4 border-cyan-400 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-            <p class="text-gray-400">Loading members...</p>
-        </div>
-    `;
-};
-
-/**
+/** TFC Moved
  * Generate the members error state template
  * @returns {string} HTML template string
  */
@@ -143,22 +79,3 @@ export const getMembersErrorTemplate = () => {
         </div>
     `;
 };
-
-/**
- * Generate the empty members state template
- * @returns {string} HTML template string
- */
-export const getEmptyMembersTemplate = () => {
-    return `
-        <div class="text-center py-8">
-            <div class="w-16 h-16 bg-gray-600/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
-                </svg>
-            </div>
-            <p class="text-gray-400 mb-2">No members yet</p>
-            <p class="text-gray-500 text-sm">Invite participants to get started</p>
-        </div>
-    `;
-};
-

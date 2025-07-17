@@ -2,6 +2,8 @@
 // Main layout templates for portfolio view
 // Focused module: Primary portfolio structure exactly as it exists
 
+import { formatCurrencyWithCommas, formatCashPercentage, formatCurrency } from "../../utils/currency-utils.js";
+
 /** TFC Move
  * Generate the main portfolio view template
  * @returns {string} HTML template string
@@ -51,9 +53,9 @@ export const getMainPortfolioLayoutTemplate = () => {
                                 </svg>
                             </div>
                         </div>
-                        <p id="portfolio-value" class="text-3xl font-bold text-white mb-2">$0.00</p>
+                        <p id="portfolio-value" class="text-3xl font-bold text-white mb-2">${formatCurrencyWithCommas(0)}</p>
                         <div class="flex items-center gap-2">
-                            <span id="portfolio-change" class="text-sm font-medium">$0.00 (0.00%)</span>
+                            <span id="portfolio-change" class="text-sm font-medium">--</span>
                             <span id="portfolio-change-label" class="text-xs text-gray-500">vs. starting balance</span>
                         </div>
                     </div>
@@ -68,7 +70,7 @@ export const getMainPortfolioLayoutTemplate = () => {
                                 </svg>
                             </div>
                         </div>
-                        <p id="stock-holdings-value" class="text-3xl font-bold text-white mb-2">$0.00</p>
+                        <p id="stock-holdings-value" class="text-3xl font-bold text-white mb-2">${formatCurrencyWithCommas(0)}</p>
                         <div class="flex items-center gap-2">
                             <span id="holdings-count" class="text-sm text-gray-400">0 positions</span>
                         </div>
@@ -84,9 +86,9 @@ export const getMainPortfolioLayoutTemplate = () => {
                                 </svg>
                             </div>
                         </div>
-                        <p id="available-cash" class="text-3xl font-bold text-green-400 mb-2">$0.00</p>
+                        <p id="available-cash" class="text-3xl font-bold text-green-400 mb-2">${formatCurrencyWithCommas(0)}</p>
                         <div class="flex items-center gap-2">
-                            <span id="cash-percentage" class="text-sm text-gray-400">0% of portfolio</span>
+                            <span id="cash-percentage" class="text-sm text-gray-400">${formatCashPercentage(0, 0)} of portfolio</span>
                         </div>
                     </div>
 
@@ -102,7 +104,7 @@ export const getMainPortfolioLayoutTemplate = () => {
                         </div>
                         <p id="total-trades" class="text-3xl font-bold text-white mb-2">0</p>
                         <div class="flex items-center gap-2">
-                            <span id="trade-volume" class="text-sm text-gray-400">$0 volume</span>
+                            <span id="trade-volume" class="text-sm text-gray-400">${formatCurrency(0)} volume</span>
                         </div>
                     </div>
                 </div>

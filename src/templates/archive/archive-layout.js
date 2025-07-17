@@ -1,5 +1,7 @@
 // templates/archive/archive-layout.js - Main layout templates for simulation archive view
 
+import { formatCurrencyWithCommas, formatCurrency, formatPercentage } from "../../utils/currency-utils";
+
 /** TFC Move
  * Generate the complete archive page layout template
  * @returns {string} HTML template string
@@ -76,7 +78,7 @@ export const getArchivePageLayoutTemplate = () => {
                         </div>
                         <div class="bg-gray-700 p-3 rounded-lg">
                             <p class="text-sm text-gray-400">Total Volume</p>
-                            <p id="archive-volume" class="text-lg font-semibold text-white">$0</p>
+                            <p id="archive-volume" class="text-lg font-semibold text-white">${formatCurrencyWithCommas(0)}</p>
                         </div>
                     </div>
 
@@ -103,13 +105,13 @@ export const getArchivePageLayoutTemplate = () => {
                             <div>
                                 <h2 class="text-2xl font-bold text-yellow-400 mb-1">Simulation Winner</h2>
                                 <p id="winner-name" class="text-xl font-semibold text-white">Winner Name</p>
-                                <p class="text-gray-300 text-sm">Final Portfolio Value: <span id="winner-value" class="font-medium">$0</span></p>
+                                <p class="text-gray-300 text-sm">Final Portfolio Value: <span id="winner-value" class="font-medium">${formatCurrencyWithCommas(0)}</span></p>
                             </div>
                         </div>
                         <div class="text-right">
                             <p class="text-yellow-400 font-medium">Total Return</p>
-                            <p id="winner-return" class="text-3xl font-bold text-white">+$0</p>
-                            <p id="winner-percent" class="text-lg text-yellow-300">+0.00%</p>
+                            <p id="winner-return" class="text-3xl font-bold text-white">+${formatCurrency(0)}</p>
+                            <p id="winner-percent" class="text-lg text-yellow-300">+${formatPercentage(0)}</p>
                         </div>
                     </div>
                 </div>
@@ -203,44 +205,6 @@ export const getArchivePageLayoutTemplate = () => {
         </div>
     `;
 };
-
-// /**
-//  * Generate archive loading state template
-//  * @param {string} message - Loading message
-//  * @returns {string} HTML template string
-//  */
-// export const getArchiveLoadingTemplate = (message = "Loading archived simulation...") => {
-//     return `
-//         <div class="flex items-center justify-center py-12">
-//             <div class="text-center">
-//                 <div class="w-12 h-12 border-4 border-cyan-400 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-//                 <p class="text-gray-400">${message}</p>
-//             </div>
-//         </div>
-//     `;
-// };
-
-// /**
-//  * Generate archive not found error template
-//  * @returns {string} HTML template string
-//  */
-// export const getArchiveNotFoundTemplate = () => {
-//     return `
-//         <div class="bg-red-900/20 border border-red-500 rounded-lg p-8 text-center">
-//             <svg class="w-16 h-16 mx-auto mb-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-//                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-//             </svg>
-//             <h2 class="text-xl font-semibold text-red-400 mb-2">Archive Not Found</h2>
-//             <p class="text-gray-300 mb-4">The archived simulation you're looking for doesn't exist or you don't have access to it.</p>
-//             <button 
-//                 data-navigate="/" 
-//                 class="bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-2 px-6 rounded-lg transition-colors duration-300"
-//             >
-//                 Return to Dashboard
-//             </button>
-//         </div>
-//     `;
-// };
 
 /** TFC Move
  * Generate archive error state template (ADD THIS TO EXISTING archive-layout.js)
