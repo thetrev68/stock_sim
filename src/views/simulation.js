@@ -6,48 +6,33 @@ import { SimulationService } from "../services/simulation.js";
 import { AuthService } from "../services/auth.js";
 import { ActivityService } from "../services/activity.js";
 import { LeaderboardService } from "../services/leaderboard.js";
-import { getPortfolio, initializePortfolio, getRecentTrades } from "../services/trading.js";
 
 // Components
 import { LeaderboardOverview } from "../components/simulation/LeaderboardOverview.js";
 import { LeaderboardTable } from "../components/simulation/LeaderboardTable.js";
 import { SimulationAdminManager } from "../components/simulation/SimulationAdminManager.js";
+import { SimulationPortfolioManager } from "../components/simulation/SimulationPortfolioManager.js";
+import { SimulationMemberManager } from "../components/simulation/SimulationMemberManager.js";
+import { SimulationActivityManager } from "../components/simulation/SimulationActivityManager.js";
+import { SimulationTabManager } from "../components/simulation/SimulationTabManager.js";
+import { SimulationDisplayManager } from "../components/simulation/SimulationDisplayManager.js";
 
 // Constants
 import { REFRESH_INTERVALS } from "../constants/app-config.js";
-import { SIMULATION_STATUS, MEMBER_STATUS } from "../constants/simulation-status.js";
-import { TRADE_TYPE_CONFIG } from "../constants/trade-types.js";
-
-// Utilities
-import { formatDateRange, calculateDaysRemaining } from "../utils/date-utils.js";
-import { formatCurrencyWithCommas } from "../utils/currency-utils.js";
-import { capitalize } from "../utils/string-utils.js";
+import { SIMULATION_STATUS } from "../constants/simulation-status.js";
 
 // Templates
 import { getSimulationLoadingTemplate } from "../templates/simulation/ui-messages.js";
 import { 
     getSimulationNotFoundTemplate, 
-    getSimulationLoadingErrorTemplate, 
-    getPortfolioErrorTemplate,
-    getMembersErrorTemplate,
-    getActivitiesErrorTemplate 
+    getSimulationLoadingErrorTemplate,
 } from "../templates/simulation/error-states.js";
-import { getMemberCardTemplate } from "../templates/simulation/member-components.js";
 import { 
     getTabNavigationAndContentTemplate,
     getSimulationRulesSectionTemplate,
     getHeaderSectionTemplate 
 } from "../templates/simulation/simulation-layout.js";
-import { getMemberManagementModalTemplate } from "../templates/simulation/simulation-modals.js";
 import { getMainStatsCardsTemplate } from "../templates/simulation/simulation-sidebar.js";
-import { 
-    getActivityElementTemplate, 
-    getEmptyActivityFeedTemplate 
-} from "../templates/simulation/activity-components.js";
-import { 
-    getHoldingElementTemplate, 
-    getTradeElementTemplate 
-} from "../templates/simulation/portfolio-components.js";
 import { 
     getArchivePromptBannerTemplate,
     getArchiveSuccessInfoBannerTemplate,
@@ -64,6 +49,11 @@ export default class SimulationView {
         this.leaderboardOverview = new LeaderboardOverview();
         this.leaderboardTable = new LeaderboardTable();
         this.adminManager = null; // Will be initialized after data loads
+        this.portfolioManager = null; // Will be initialized after data loads
+        this.memberManager = null; // Will be initialized after data loads
+        this.activityManager = null; // Will be initialized after data loads
+        this.tabManager = null; // Will be initialized after render
+        this.displayManager = null; // Will be initialized after render
         this.currentSimulation = null;
         this.currentUser = null;
         this.simulationId = null;
@@ -110,6 +100,13 @@ export default class SimulationView {
     }
 
     attachEventListeners(container) {
+        // Initialize tab manager
+        this.tabManager = new SimulationTabManager(this);
+        this.tabManager.attachTabEventListeners();
+
+        // Initialize display manager
+        this.displayManager = new SimulationDisplayManager(this);
+
         // Trade button
         const tradeBtn = container.querySelector("#trade-in-sim-btn");
         const startTradingBtn = container.querySelector("#start-trading-btn");
@@ -120,31 +117,13 @@ export default class SimulationView {
             }
         });
 
-        // Navigation buttons
-        const membersBtn = container.querySelector("#view-members-btn");
-        const leaderboardBtn = container.querySelector("#view-leaderboard-btn");
-        
-        if (membersBtn) {
-            membersBtn.addEventListener("click", () => this.showMembersTab());
-        }
-
-        if (leaderboardBtn) {
-            leaderboardBtn.addEventListener("click", () => this.showLeaderboardTab());
-        }
-
-        // Tab navigation
-        const tabBtns = container.querySelectorAll(".tab-btn");
-        tabBtns.forEach(btn => {
-            btn.addEventListener("click", (e) => this.switchTab(e.target.id));
-        });
-
         // Member management button
         const manageMembersBtn = container.querySelector("#manage-members-btn");
         if (manageMembersBtn) {
             manageMembersBtn.addEventListener("click", () => this.handleMemberManagement());
         }
 
-        // Add this after the existing manageMembersBtn event listener
+        // Simulation settings button
         const settingsBtn = container.querySelector("#simulation-settings-btn");
         if (settingsBtn) {
             settingsBtn.addEventListener("click", () => this.handleSimulationSettings());
@@ -198,6 +177,13 @@ export default class SimulationView {
                 return;
             }
 
+            // Initialize managers now that we have data
+            this.adminManager = new SimulationAdminManager(this);
+            this.portfolioManager = new SimulationPortfolioManager(this);
+            this.memberManager = new SimulationMemberManager(this);
+            this.activityManager = new SimulationActivityManager(this);
+            this.activityManager.initialize(this.simulationId);
+
             // Load all data in parallel for better performance
             await Promise.all([
                 this.loadSimulationMembers(),
@@ -206,9 +192,6 @@ export default class SimulationView {
                 this.loadLeaderboard()
             ]);
 
-            // Initialize admin manager now that we have data
-            this.adminManager = new SimulationAdminManager(this);
-            
             // Display simulation data
             this.displaySimulation();
             
@@ -263,20 +246,9 @@ export default class SimulationView {
     }
 
     updateUserRankDisplay() {
-        if (!this.leaderboardData || !this.currentUser) return;
-
-        const userRanking = this.leaderboardData.rankings?.find(r => r.userId === this.currentUser.uid);
-        
-        // Update rank in header cards
-        const yourRankEl = document.getElementById("your-rank");
-        const totalParticipantsEl = document.getElementById("total-participants");
-        
-        if (yourRankEl && userRanking) {
-            yourRankEl.textContent = `#${userRanking.rank}`;
-        }
-        
-        if (totalParticipantsEl && this.leaderboardData.totalParticipants) {
-            totalParticipantsEl.textContent = this.leaderboardData.totalParticipants;
+        if (this.displayManager) {
+            this.displayManager.updateReferences(this.currentSimulation, this.currentUser, this.leaderboardData);
+            this.displayManager.updateUserRankDisplay();
         }
     }
 
@@ -310,111 +282,47 @@ export default class SimulationView {
     }
 
     async loadSimulationMembers() {
-        try {
-            this.simulationMembers = await this.simulationService.getSimulationMembers(this.simulationId);
-            console.log("Loaded simulation members:", this.simulationMembers);
-            this.displayMembers();
-        } catch (error) {
-            console.error("Error loading simulation members:", error);
-            this.showMembersError();
+        if (this.memberManager) {
+            await this.memberManager.loadSimulationMembers();
         }
     }
 
     async loadSimulationActivities() {
-        try {
-            this.simulationActivities = await this.activityService.getSimulationActivities(this.simulationId, 15);
-            console.log("Loaded simulation activities:", this.simulationActivities);
-            this.displayActivities();
-        } catch (error) {
-            console.error("Error loading simulation activities:", error);
-            this.showActivitiesError();
+        if (this.activityManager) {
+            await this.activityManager.loadSimulationActivities();
+            // Update local reference for backward compatibility
+            this.simulationActivities = this.activityManager.getActivities();
         }
     }
 
     async loadSimulationPortfolio() {
-        try {
-            // Initialize portfolio if it doesn't exist
-            await initializePortfolio(
-                this.currentUser.uid, 
-                this.currentSimulation.startingBalance, 
-                this.simulationId, 
-                this.currentSimulation
-            );
-
-            // Load portfolio data
-            this.simulationPortfolio = await getPortfolio(this.currentUser.uid, this.simulationId);
-            
-            // Load UI components
-            setTimeout(() => {
-                this.loadHoldings();
-                this.loadRecentTrades();
-            }, 0);
-            
-        } catch (error) {
-            console.error("Error loading simulation portfolio:", error);
-            this.showPortfolioError();
+        if (this.portfolioManager) {
+            await this.portfolioManager.loadSimulationPortfolio();
         }
     }
 
     switchTab(tabId) {
-        // Update tab buttons
-        document.querySelectorAll(".tab-btn").forEach(btn => {
-            btn.classList.remove("border-cyan-500", "text-cyan-400", "bg-gray-750");
-            btn.classList.add("border-transparent", "text-gray-400");
-        });
-
-        // Hide all tab content
-        document.querySelectorAll(".tab-content").forEach(content => {
-            content.classList.add("hidden");
-        });
-
-        // Show selected tab
-        const activeBtn = document.getElementById(tabId);
-        const contentId = tabId.replace("tab-", "content-");
-        const activeContent = document.getElementById(contentId);
-
-        if (activeBtn) {
-            activeBtn.classList.add("border-cyan-500", "text-cyan-400", "bg-gray-750");
-            activeBtn.classList.remove("border-transparent", "text-gray-400");
+        if (this.tabManager) {
+            this.tabManager.switchTab(tabId);
         }
-
-        if (activeContent) {
-            activeContent.classList.remove("hidden");
-        }
-
-        // Render leaderboard components when tab is shown
-        if (tabId === "tab-leaderboard") {
-            this.renderLeaderboardComponents();
-        }
-
-        // Update button text based on active tab
-        this.updateNavigationButtonText(tabId);
     }
 
     updateNavigationButtonText(activeTabId) {
-        const membersBtnText = document.getElementById("members-btn-text");
-        const leaderboardBtnText = document.getElementById("leaderboard-btn-text");
-        
-        if (membersBtnText && leaderboardBtnText) {
-            // Reset to default text
-            membersBtnText.textContent = "Members";
-            leaderboardBtnText.textContent = "Leaderboard";
-            
-            // Update based on current tab
-            if (activeTabId === "tab-members") {
-                membersBtnText.textContent = "Portfolio";
-            } else if (activeTabId === "tab-leaderboard") {
-                leaderboardBtnText.textContent = "Portfolio";
-            }
+        if (this.tabManager) {
+            this.tabManager.updateNavigationButtonText(activeTabId);
         }
     }
 
     showLeaderboardTab() {
-        this.switchTab("tab-leaderboard");
+        if (this.tabManager) {
+            this.tabManager.showLeaderboardTab();
+        }
     }
 
     showMembersTab() {
-        this.switchTab("tab-members");
+        if (this.tabManager) {
+            this.tabManager.showMembersTab();
+        }
     }
 
     startAutoRefresh() {
@@ -436,8 +344,7 @@ export default class SimulationView {
                 await this.loadLeaderboard();
                 
                 // Re-render if leaderboard tab is active
-                const activeTab = document.querySelector(".tab-btn.border-cyan-500");
-                if (activeTab && activeTab.id === "tab-leaderboard") {
+                if (this.tabManager && this.tabManager.isTabActive("tab-leaderboard")) {
                     this.renderLeaderboardComponents();
                 }
             } catch (error) {
@@ -463,413 +370,117 @@ export default class SimulationView {
     }
 
     displayMembers() {
-        const membersLoading = document.getElementById("members-loading");
-        const membersList = document.getElementById("members-list");
-        
-        if (membersLoading) membersLoading.classList.add("hidden");
-        if (membersList) {
-            membersList.classList.remove("hidden");
-            membersList.innerHTML = "";
-
-            this.simulationMembers.forEach(member => {
-                const memberCard = this.createMemberCard(member);
-                membersList.appendChild(memberCard);
-            });
-        }
-
-        // Show creator actions if current user is creator
-        const isCreator = this.simulationMembers.some(member => 
-            member.userId === this.currentUser.uid && member.role === "creator"
-        );
-        
-        const creatorActions = document.getElementById("creator-actions");
-        if (creatorActions && isCreator) {
-            creatorActions.classList.remove("hidden");
+        if (this.memberManager) {
+            this.memberManager.displayMembers();
         }
     }
 
     createMemberCard(member) {
-        const memberDiv = document.createElement("div");
-        memberDiv.className = "bg-gray-700 p-4 rounded-lg flex justify-between items-center";
-        
-        const isCreator = this.isCurrentUserCreator();
-        memberDiv.innerHTML = getMemberCardTemplate(member, this.currentUser, isCreator);
-
-        // Attach kick member event listener (existing code stays the same)
-        const kickBtn = memberDiv.querySelector(".kick-member-btn");
-        if (kickBtn) {
-            kickBtn.addEventListener("click", (e) => {
-                const userId = e.target.dataset.userId;
-                const userName = e.target.dataset.userName;
-                this.handleKickMember(userId, userName);
-            });
+        if (this.memberManager) {
+            return this.memberManager.createMemberCard(member);
         }
-
-        return memberDiv;
+        return document.createElement("div");
     }
 
     isCurrentUserCreator() {
-        return this.simulationMembers.some(member => 
-            member.userId === this.currentUser.uid && member.role === "creator"
-        );
+        if (this.memberManager) {
+            return this.memberManager.isCurrentUserCreator();
+        }
+        return false;
     }
 
     async handleKickMember(userId, userName) {
-        const confirmed = confirm(`Are you sure you want to remove ${userName} from this simulation?\n\nThis will:\n• Remove them from the leaderboard\n• Preserve their trading history\n• Prevent them from rejoining\n\nThis action cannot be undone.`);
-        
-        if (!confirmed) return;
-
-        try {
-            // Show loading state
-            const kickButtons = document.querySelectorAll(`[data-user-id="${userId}"]`);
-            kickButtons.forEach(btn => {
-                btn.disabled = true;
-                btn.textContent = "Removing...";
-            });
-
-            // Remove member via simulation service
-            await this.simulationService.removeMemberFromSimulation(
-                this.simulationId, 
-                userId, 
-                this.currentUser.uid
-            );
-
-            // Show success message
-            this.showTemporaryMessage(`${userName} has been removed from the simulation.`, "success");
-
-            // Reload member data
-            await this.loadSimulationMembers();
-            
-            // Also reload leaderboard since member count changed
-            await this.loadLeaderboard();
-
-        } catch (error) {
-            console.error("Error removing member:", error);
-            
-            // Reset button states
-            const kickButtons = document.querySelectorAll(`[data-user-id="${userId}"]`);
-            kickButtons.forEach(btn => {
-                btn.disabled = false;
-                btn.textContent = "Remove";
-            });
-            
-            // Show error message
-            this.showTemporaryMessage(`Failed to remove ${userName}: ${error.message}`, "error");
+        if (this.memberManager) {
+            await this.memberManager.handleKickMember(userId, userName);
         }
     }
 
     async handleMemberManagement() {
-        try {
-            // Load detailed member statistics
-            const memberStats = await this.simulationService.getMemberStatistics(
-                this.simulationId, 
-                this.currentUser.uid
-            );
-
-            this.showMemberManagementModal(memberStats);
-
-        } catch (error) {
-            console.error("Error loading member statistics:", error);
-            alert(`Failed to load member management: ${error.message}`);
+        if (this.memberManager) {
+            await this.memberManager.handleMemberManagement();
         }
     }
 
     showMemberManagementModal(memberStats) {
-        // Remove existing modal if any
-        const existingModal = document.getElementById("member-management-modal");
-        if (existingModal) {
-            existingModal.remove();
+        if (this.memberManager) {
+            this.memberManager.showMemberManagementModal(memberStats);
         }
-
-        const activeMemberCount = memberStats.filter(m => m.status === MEMBER_STATUS.ACTIVE).length;
-        const removedMemberCount = memberStats.filter(m => m.status === MEMBER_STATUS.REMOVED).length;
-
-        const modalHTML = getMemberManagementModalTemplate(memberStats, activeMemberCount, removedMemberCount, this.currentUser);
-
-        document.body.insertAdjacentHTML("beforeend", modalHTML);
-
-        // Attach event listeners
-        document.getElementById("close-management-modal")?.addEventListener("click", () => {
-            document.getElementById("member-management-modal")?.remove();
-        });
-        
-        document.getElementById("close-management-modal-btn")?.addEventListener("click", () => {
-            document.getElementById("member-management-modal")?.remove();
-        });
-
-        // Close on outside click
-        document.getElementById("member-management-modal")?.addEventListener("click", (e) => {
-            if (e.target.id === "member-management-modal") {
-                e.target.remove();
-            }
-        });
     }
 
     displayActivities() {
-        const activityFeed = document.getElementById("activity-feed");
-        
-        if (!activityFeed) return;
-
-        if (this.simulationActivities.length === 0) {
-            activityFeed.innerHTML = getEmptyActivityFeedTemplate();
-        } else {
-            activityFeed.innerHTML = "";
-            this.simulationActivities.forEach(activity => {
-                const activityElement = this.createActivityElement(activity);
-                activityFeed.appendChild(activityElement);
-            });
+        if (this.activityManager) {
+            this.activityManager.displayActivities();
         }
     }
 
     createActivityElement(activity) {
-        const formattedActivity = this.activityService.formatActivity(activity);
-        const element = document.createElement("div");
-        element.className = "bg-gray-700 p-4 rounded-lg flex items-start gap-3";
-        
-        element.innerHTML = getActivityElementTemplate(formattedActivity);
-        
-        return element;
+        if (this.activityManager) {
+            return this.activityManager.createActivityElement(activity);
+        }
+        return document.createElement("div");
     }
 
     showActivitiesError() {
-        const activityFeed = document.getElementById("activity-feed");
-        if (activityFeed) {
-            activityFeed.innerHTML = getActivitiesErrorTemplate();
+        if (this.activityManager) {
+            this.activityManager.showActivitiesError();
         }
     }
 
     showMembersError() {
-        const membersLoading = document.getElementById("members-loading");
-        const membersList = document.getElementById("members-list");
-        
-        if (membersLoading) membersLoading.classList.add("hidden");
-        if (membersList) {
-            membersList.innerHTML = getMembersErrorTemplate();
-            membersList.classList.remove("hidden");
+        if (this.memberManager) {
+            this.memberManager.showMembersError();
         }
     }
 
     async loadHoldings() {
-        const holdingsLoading = document.getElementById("sim-holdings-loading");
-        const holdingsEmpty = document.getElementById("sim-holdings-empty");
-        const holdingsList = document.getElementById("sim-holdings-list");
-
-        if (!this.simulationPortfolio || !this.simulationPortfolio.holdings) {
-            if (holdingsLoading) holdingsLoading.classList.add("hidden");
-            if (holdingsEmpty) holdingsEmpty.classList.remove("hidden");
-            if (holdingsList) holdingsList.classList.add("hidden");
-            return;
-        }
-
-        const holdings = this.simulationPortfolio.holdings;
-        
-        if (Object.keys(holdings).length === 0) {
-            if (holdingsLoading) holdingsLoading.classList.add("hidden");
-            if (holdingsEmpty) holdingsEmpty.classList.remove("hidden");
-            if (holdingsList) holdingsList.classList.add("hidden");
-        } else {
-            if (holdingsLoading) holdingsLoading.classList.add("hidden");
-            if (holdingsEmpty) holdingsEmpty.classList.add("hidden");
-            if (holdingsList) {
-                holdingsList.classList.remove("hidden");
-                holdingsList.innerHTML = "";
-
-                for (const ticker in holdings) {
-                    const holding = holdings[ticker];
-                    const holdingElement = this.createHoldingElement(ticker, holding);
-                    holdingsList.appendChild(holdingElement);
-                }
-            }
+        if (this.portfolioManager) {
+            await this.portfolioManager.loadHoldings();
         }
     }
 
     createHoldingElement(ticker, holding) {
-        const element = document.createElement("div");
-        element.className = "bg-gray-700 p-4 rounded-lg flex justify-between items-center";
-        
-        element.innerHTML = getHoldingElementTemplate(ticker, holding);
-        
-        return element;
+        if (this.portfolioManager) {
+            return this.portfolioManager.createHoldingElement(ticker, holding);
+        }
+        return document.createElement("div");
     }
 
     async loadRecentTrades() {
-        const tradesLoading = document.getElementById("sim-trades-loading");
-        const tradesEmpty = document.getElementById("sim-trades-empty");
-        const tradesList = document.getElementById("sim-trades-list");
-
-        try {
-            const trades = await getRecentTrades(this.currentUser.uid, 5, this.simulationId);
-            
-            if (tradesLoading) tradesLoading.classList.add("hidden");
-            
-            if (trades.length === 0) {
-                if (tradesEmpty) tradesEmpty.classList.remove("hidden");
-                if (tradesList) tradesList.classList.add("hidden");
-            } else {
-                if (tradesEmpty) tradesEmpty.classList.add("hidden");
-                if (tradesList) {
-                    tradesList.classList.remove("hidden");
-                    tradesList.innerHTML = "";
-
-                    trades.forEach(trade => {
-                        const tradeElement = this.createTradeElement(trade);
-                        tradesList.appendChild(tradeElement);
-                    });
-                }
-            }
-        } catch (error) {
-            console.error("Error loading recent trades:", error);
-            if (tradesLoading) tradesLoading.classList.add("hidden");
-            if (tradesEmpty) tradesEmpty.classList.remove("hidden");
+        if (this.portfolioManager) {
+            await this.portfolioManager.loadRecentTrades();
         }
     }
 
     createTradeElement(trade) {
-        const element = document.createElement("div");
-        element.className = "bg-gray-700 p-4 rounded-lg flex justify-between items-center";
-        
-        const tradeConfig = TRADE_TYPE_CONFIG[trade.type];
-        element.innerHTML = getTradeElementTemplate(trade, tradeConfig);
-        
-        return element;
+        if (this.portfolioManager) {
+            return this.portfolioManager.createTradeElement(trade);
+        }
+        return document.createElement("div");
     }
 
     displaySimulation() {
-        const loadingEl = document.getElementById("simulation-loading");
-        const contentEl = document.getElementById("simulation-content");
-        
-        if (loadingEl) loadingEl.classList.add("hidden");
-        if (contentEl) contentEl.classList.remove("hidden");
-
-        // Update header
-        const nameEl = document.getElementById("sim-name");
-        const descEl = document.getElementById("sim-description");
-        const statusEl = document.getElementById("sim-status");
-        const participantsEl = document.getElementById("sim-participants");
-        const durationEl = document.getElementById("sim-duration");
-        const tradeBtnTextEl = document.getElementById("trade-btn-text");
-
-        if (nameEl) nameEl.textContent = this.currentSimulation.name;
-        if (descEl) {
-            if (this.currentSimulation.description) {
-                descEl.textContent = this.currentSimulation.description;
-                descEl.style.display = "block";
-            } else {
-                descEl.style.display = "none";
-            }
+        if (this.displayManager) {
+            this.displayManager.updateReferences(this.currentSimulation, this.currentUser, this.leaderboardData);
+            this.displayManager.displaySimulation();
         }
-
-        // Status
-        if (statusEl) {
-            statusEl.textContent = capitalize(this.currentSimulation.status)
-            const statusClass = this.currentSimulation.status === SIMULATION_STATUS.ACTIVE ? "bg-green-600 text-white" :
-                               this.currentSimulation.status === SIMULATION_STATUS.PENDING ? "bg-yellow-600 text-white" :
-                               "bg-gray-600 text-gray-300";
-            statusEl.className = `px-3 py-1 rounded-full text-sm font-semibold ${statusClass}`;
-        }
-
-        // Update trade button text based on status
-        if (tradeBtnTextEl) {
-            if (this.currentSimulation.status === SIMULATION_STATUS.PENDING) {
-                tradeBtnTextEl.textContent = "Practice Trade";
-            } else if (this.currentSimulation.status === SIMULATION_STATUS.ACTIVE) {
-                tradeBtnTextEl.textContent = "Trade Now";
-            } else {
-                tradeBtnTextEl.textContent = "View Portfolio";
-            }
-        }
-
-        // Participants
-        if (participantsEl) {
-            participantsEl.textContent = `${this.currentSimulation.memberCount}/${this.currentSimulation.maxMembers} participants`;
-        }
-
-        // Duration
-        if (durationEl) {
-           durationEl.textContent = formatDateRange(this.currentSimulation.startDate, this.currentSimulation.endDate);
-        }
-
-        // Update portfolio stats
-        this.updatePortfolioStats();
-
-        // Update simulation rules
-        this.updateSimulationRules();
-
-        // Calculate days remaining
-        const daysRemainingEl = document.getElementById("days-remaining");
-        if (daysRemainingEl) {
-            const diffDays = calculateDaysRemaining(this.currentSimulation.endDate);
-            daysRemainingEl.textContent = diffDays;
-        }
-
-        console.log("Simulation displayed:", this.currentSimulation);
     }
 
     updatePortfolioStats() {
-        if (!this.simulationPortfolio) return;
-
-        const portfolioValueEl = document.getElementById("sim-portfolio-value");
-        const portfolioChangeEl = document.getElementById("sim-portfolio-change");
-        
-        if (portfolioValueEl) {
-            const cash = this.simulationPortfolio.cash;
-            let holdingsValue = 0;
-            
-            const holdings = this.simulationPortfolio.holdings || {};
-            for (const ticker in holdings) {
-                if (Object.prototype.hasOwnProperty.call(holdings, ticker)) {
-                    holdingsValue += holdings[ticker].quantity * holdings[ticker].avgPrice;
-                }
-            }
-            
-            const totalValue = cash + holdingsValue;
-            portfolioValueEl.textContent = formatCurrencyWithCommas(totalValue);
-            
-            if (portfolioChangeEl) {
-                const startingBalance = this.currentSimulation.startingBalance;
-                const change = totalValue - startingBalance;
-                const changePercent = (change / startingBalance * 100);
-                
-                const changeClass = change >= 0 ? "text-green-400" : "text-red-400";
-                portfolioChangeEl.className = `text-sm font-medium ${changeClass}`;
-                portfolioChangeEl.textContent = `${change >= 0 ? "+" : ""}${change.toFixed(2)} (${changePercent >= 0 ? "+" : ""}${changePercent.toFixed(2)}%)`;
-            }
+        if (this.displayManager) {
+            this.displayManager.updatePortfolioStats();
         }
     }
 
     updateSimulationRules() {
-        const startingBalanceEl = document.getElementById("sim-starting-balance");
-        const shortSellingEl = document.getElementById("sim-short-selling");
-        const tradingHoursEl = document.getElementById("sim-trading-hours");
-        const commissionEl = document.getElementById("sim-commission");
-
-        if (startingBalanceEl) {
-            startingBalanceEl.textContent = formatCurrencyWithCommas(this.currentSimulation.startingBalance);
-        }
-
-        if (shortSellingEl) {
-            shortSellingEl.textContent = this.currentSimulation.rules?.allowShortSelling ? "Allowed" : "Not Allowed";
-        }
-
-        if (tradingHoursEl) {
-            const hours = this.currentSimulation.rules?.tradingHours === "24/7" ? "24/7" : "Market Hours";
-            tradingHoursEl.textContent = hours;
-        }
-
-        if (commissionEl) {
-            const commission = this.currentSimulation.rules?.commissionPerTrade || 0;
-            commissionEl.textContent = `${commission} per trade`;
+        if (this.displayManager) {
+            this.displayManager.updateSimulationRules();
         }
     }
 
     showPortfolioError() {
-        const holdingsContainer = document.getElementById("sim-holdings-container");
-        const tradesContainer = document.getElementById("sim-trades-container");
-        
-        const errorContent = getPortfolioErrorTemplate();
-        
-        if (holdingsContainer) holdingsContainer.innerHTML = errorContent;
-        if (tradesContainer) tradesContainer.innerHTML = errorContent;
+        if (this.portfolioManager) {
+            this.portfolioManager.showPortfolioError();
+        }
     }
 
     handleTradeNavigation() {
@@ -878,9 +489,8 @@ export default class SimulationView {
             return;
         }
 
-        const tradeBtnTextEl = document.getElementById("trade-btn-text");
-        if (tradeBtnTextEl) {
-            tradeBtnTextEl.textContent = "Loading...";
+        if (this.displayManager) {
+            this.displayManager.updateTradeButtonText("Loading...");
         }
 
         const tradeUrl = `/trade?sim=${this.simulationId}`;

@@ -368,7 +368,8 @@ export default class TradeView {
         for (const ticker in holdings) {
             if (Object.prototype.hasOwnProperty.call(holdings, ticker)) {
                 const holding = holdings[ticker];
-                const currentPrice = this.stockService.mockPrices[ticker.toUpperCase()] || holding.avgPrice; 
+                const mockPrices = this.stockService.mockPrices || {};
+                const currentPrice = mockPrices[ticker.toUpperCase()] || holding.avgPrice; 
                 totalHoldingsValue += holding.quantity * currentPrice;
             }
         }
@@ -404,7 +405,7 @@ export default class TradeView {
             const tradeTime = new Date(trade.timestamp).toLocaleString();
             
             const tradeItemHTML = getTradeItemTemplate(trade, tradeTypeClass, tradeTime);
-            tradeListContainer.insertAdjacentHTML('beforeend', tradeItemHTML);
+            tradeListContainer.insertAdjacentHTML("beforeend", tradeItemHTML);
         });
     }
 
