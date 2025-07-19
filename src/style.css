@@ -26,10 +26,9 @@ a:hover {
 
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
   min-width: 320px;
   min-height: 100vh;
+  background-color: #1f2937; /* Add dark background */
 }
 
 h1 {
@@ -38,10 +37,27 @@ h1 {
 }
 
 #app {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+  max-width: none;
+  margin: 0;
+  padding: 0.5rem;
+  text-align: left;
+  min-width: 100vw;
+}
+
+/* Responsive app container */
+@media (min-width: 640px) {
+    #app {
+        padding: 1rem;
+        max-width: 640px;
+        margin: 0 auto;
+    }
+}
+
+@media (min-width: 1024px) {
+    #app {
+        padding: 2rem;
+        max-width: 1280px;
+    }
 }
 
 .logo {
@@ -95,4 +111,208 @@ button:focus-visible {
   button {
     background-color: #f9f9f9;
   }
+}
+
+/* Mobile Responsive Utilities - Add to style.css or create as separate file */
+
+/* Auth View Mobile Fixes */
+.auth-view {
+    padding: 1rem; /* Reduce container padding on mobile */
+}
+
+.auth-view .bg-gray-800 {
+    /* Override the fixed padding for mobile */
+    padding: 1.5rem !important; /* Reduce from p-8 (2rem) to 1.5rem */
+    margin: 0 1rem; /* Add side margins for breathing room */
+    max-width: calc(100vw - 2rem) !important; /* Ensure container fits in viewport */
+}
+
+/* Responsive breakpoints for auth container */
+@media (min-width: 640px) {
+    .auth-view {
+        padding: 2rem;
+    }
+    
+    .auth-view .bg-gray-800 {
+        padding: 2rem !important; /* Restore normal padding on larger screens */
+        margin: 0 auto;
+        max-width: 28rem !important; /* max-w-md equivalent */
+    }
+}
+
+/* Enhanced mobile form inputs */
+.auth-view input {
+    font-size: 16px !important; /* Prevent zoom on iOS */
+    min-height: 44px; /* Touch-friendly target size */
+}
+
+/* Mobile-optimized buttons */
+.auth-view button {
+    min-height: 44px; /* Touch-friendly size */
+    font-size: 1rem;
+    padding: 0.875rem 1.5rem;
+}
+
+/* Viewport meta optimization */
+html {
+    /* Prevent horizontal scrolling */
+    overflow-x: hidden;
+}
+
+body {
+    /* Ensure body doesn't exceed viewport */
+    max-width: 100vw;
+    overflow-x: hidden;
+}
+
+/* Mobile Navigation Utilities (for future use) */
+@media (max-width: 768px) {
+    .mobile-hidden {
+        display: none !important;
+    }
+    
+    .mobile-stack {
+        flex-direction: column !important;
+    }
+    
+    .mobile-full-width {
+        width: 100% !important;
+    }
+    
+    .mobile-text-sm {
+        font-size: 0.875rem !important;
+    }
+    
+    .mobile-p-4 {
+        padding: 1rem !important;
+    }
+}
+
+/* Touch-friendly interactive elements */
+@media (hover: none) and (pointer: coarse) {
+    /* Mobile touch devices */
+    button, .clickable {
+        min-height: 44px;
+        min-width: 44px;
+    }
+    
+    /* Remove hover states on touch devices */
+    button:hover {
+        transform: none;
+    }
+}
+
+/* Table responsiveness utilities */
+.mobile-scroll-table {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 768px) {
+    .mobile-scroll-table table {
+        min-width: 600px; /* Force horizontal scroll for wide tables */
+    }
+    
+    .mobile-hide-column {
+        display: none;
+    }
+}
+
+/* Modal mobile optimization */
+@media (max-width: 768px) {
+    .modal-content {
+        margin: 1rem !important;
+        max-height: calc(100vh - 2rem) !important;
+        border-radius: 0.5rem !important;
+    }
+    
+    .modal-body {
+        max-height: calc(100vh - 8rem);
+        overflow-y: auto;
+    }
+}
+
+/* Loading state improvements */
+.loading-spinner {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Error message mobile optimization */
+.error-message {
+    word-break: break-word;
+    hyphens: auto;
+}
+
+/* Navigation Mobile Fix - Add this to your style.css */
+
+/* Mobile Navigation Responsive Fix */
+@media (max-width: 480px) {
+    /* Navigation container - reduce margins and ensure proper scrolling */
+    nav.flex {
+        margin-left: -0.5rem !important;
+        margin-right: -0.5rem !important;
+        padding-left: 0.5rem !important;
+        padding-right: 0.5rem !important;
+        margin-bottom: 1.5rem !important; /* Reduce from mb-8 */
+        scroll-behavior: smooth;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    /* Navigation buttons - optimize for mobile */
+    nav.flex .nav-link {
+        flex-shrink: 0 !important; /* Prevent shrinking */
+        padding: 0.75rem 1rem !important; /* Reduce from py-3 px-6 to smaller */
+        font-size: 0.875rem !important; /* Slightly smaller text */
+        min-width: auto !important;
+        white-space: nowrap !important; /* Prevent text wrapping */
+    }
+    
+    /* Add scroll indicator shadow */
+    nav.flex {
+        position: relative;
+    }
+    
+    nav.flex::after {
+        content: "";
+        position: absolute;
+        right: 0;
+        top: 0;
+        width: 20px;
+        height: 100%;
+        background: linear-gradient(to right, transparent, rgba(17, 24, 39, 0.9));
+        pointer-events: none;
+        z-index: 1;
+    }
+}
+
+/* Tablet adjustments */
+@media (min-width: 481px) and (max-width: 768px) {
+    nav.flex .nav-link {
+        padding: 0.75rem 1.25rem !important; /* Slightly larger than mobile */
+        font-size: 0.9rem !important;
+    }
+}
+
+/* Desktop Navigation Centering */
+@media (min-width: 769px) {
+    nav.flex {
+        justify-content: center !important; /* Center the nav buttons */
+        margin: 0 auto 2rem auto !important; /* Center the nav container and restore margin */
+        max-width: fit-content !important; /* Prevent nav from taking full width */
+    }
+    
+    nav.flex .nav-link {
+        padding: 0.75rem 1.5rem !important; /* Restore larger desktop padding */
+        font-size: 1rem !important; /* Full size text */
+    }
+    
+    /* Remove mobile scroll indicator on desktop */
+    nav.flex::after {
+        display: none !important;
+    }
 }

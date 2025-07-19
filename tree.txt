@@ -1,30 +1,18 @@
 ├── .env
 ├── .firebaserc
 ├── .gitignore
+├── count-js-files.ps1
+├── eslint.config.js
 ├── firebase.json
 ├── firestore.indexes.json
 ├── firestore.rules
 ├── functions
-│   ├── .eslintrc.js
 │   ├── .gitignore
 │   ├── index.js
 │   ├── package-lock.json
 │   └── package.json
 ├── generate-project-map.mjs
 ├── index.html
-├── integration-guide-constants.md
-├── integration-guide-currency-utils.md
-├── integration-guide-date-utils.md
-├── integration-guide-dom-utils.md
-├── integration-guide-math-utils.md
-├── integration-guide-portfolio-templates.md
-├── integration-guide-research-templates.md
-├── integration-guide-simulation-archive.md
-├── integration-guide-simulation-templates-part2.md
-├── integration-guide-simulation-templates.md
-├── integration-guide-string-utils.md
-├── integration-guide-trade-templates.md
-├── integration-guide-validation-utils.md
 ├── package-lock.json
 ├── package.json
 ├── PaperTradingSim.md
@@ -39,12 +27,23 @@
 │   │   ├── layout
 │   │   │   ├── Header.js
 │   │   │   └── Navigation.js
+│   │   ├── research
+│   │   │   ├── ChartManager.js
+│   │   │   ├── NewsManager.js
+│   │   │   ├── SearchManager.js
+│   │   │   └── StockDataManager.js
 │   │   └── simulation
 │   │       ├── CreateSimulationModal.js
 │   │       ├── EmailInviteModal.js
 │   │       ├── JoinSimulationModal.js
 │   │       ├── LeaderboardOverview.js
-│   │       └── LeaderboardTable.js
+│   │       ├── LeaderboardTable.js
+│   │       ├── SimulationActivityManager.js
+│   │       ├── SimulationAdminManager.js
+│   │       ├── SimulationDisplayManager.js
+│   │       ├── SimulationMemberManager.js
+│   │       ├── SimulationPortfolioManager.js
+│   │       └── SimulationTabManager.js
 │   ├── constants
 │   │   ├── app-config.js
 │   │   ├── simulation-status.js
@@ -58,7 +57,17 @@
 │   │   ├── auth.js
 │   │   ├── firebase.js
 │   │   ├── leaderboard.js
+│   │   ├── simulation
+│   │   │   ├── simulation-core.js
+│   │   │   ├── simulation-management.js
+│   │   │   ├── simulation-members.js
+│   │   │   └── simulation-user-operations.js
 │   │   ├── simulation.js
+│   │   ├── stocks
+│   │   │   ├── stock-api.js
+│   │   │   ├── stock-cache.js
+│   │   │   ├── stock-news.js
+│   │   │   └── stock-quotes.js
 │   │   ├── stocks.js
 │   │   └── trading.js
 │   ├── style.css
@@ -66,13 +75,11 @@
 │   │   ├── archive
 │   │   │   ├── archive-export.js
 │   │   │   ├── archive-layout.js
-│   │   │   ├── archive-leaderboard.js
-│   │   │   └── archive-trades.js
+│   │   │   └── archive-leaderboard.js
 │   │   ├── portfolio
 │   │   │   ├── portfolio-errors.js
 │   │   │   ├── portfolio-holdings.js
 │   │   │   ├── portfolio-main-layout.js
-│   │   │   ├── portfolio-overview.js
 │   │   │   └── portfolio-trade-history.js
 │   │   ├── research
 │   │   │   ├── research-charts.js
@@ -85,6 +92,8 @@
 │   │   │   ├── activity-components.js
 │   │   │   ├── error-states.js
 │   │   │   ├── member-components.js
+│   │   │   ├── notification-components.js
+│   │   │   ├── portfolio-components.js
 │   │   │   ├── simulation-layout.js
 │   │   │   ├── simulation-modals.js
 │   │   │   ├── simulation-sidebar.js
@@ -95,6 +104,7 @@
 │   │       ├── trade-main-layout.js
 │   │       ├── trade-order-form.js
 │   │       ├── trade-portfolio-selector.js
+│   │       ├── trade-recent-trades.js
 │   │       └── trade-stock-lookup.js
 │   ├── utils
 │   │   ├── currency-utils.js

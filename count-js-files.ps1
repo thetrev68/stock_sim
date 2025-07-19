@@ -35,7 +35,7 @@ foreach ($file in $jsFiles) {
         $results += [PSCustomObject]@{
             File = $relativePath
             Lines = $lineCount
-            FullPath = $file.FullName
+            FullPath = $file.FullPath
         }
         
         $totalFiles++
@@ -51,8 +51,8 @@ $sortedResults = $results | Sort-Object Lines -Descending
 
 # Display results
 Write-Host "`nJavaScript Files by Line Count:" -ForegroundColor Yellow
-Write-Host "{0,-60} {1,10}" -f "File", "Lines" -ForegroundColor Cyan
-Write-Host "-" * 70 -ForegroundColor Cyan
+Write-Host ("{0,-60} {1,10}" -f "File", "Lines") -ForegroundColor Cyan
+Write-Host ("-" * 70) -ForegroundColor Cyan
 
 foreach ($result in $sortedResults) {
     # Color code based on file size
