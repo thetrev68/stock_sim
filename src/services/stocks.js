@@ -1,12 +1,9 @@
-// src/services/stocks.js - Enhanced with News Integration for Session 11
+// src/services/stocks.js 
 
-// import { API_LIMITS, API_ERROR_CONFIG } from "../constants/app-config.js";
 import { StockNewsService } from "./stocks/stock-news.js";
 import { StockCacheService } from "./stocks/stock-cache.js";
 import { StockApiService } from "./stocks/stock-api.js";
 import { StockQuotesService } from "./stocks/stock-quotes.js";
-// import { filterByDateRange, sortByDateDesc } from "../utils/date-utils.js";
-// import { generateSummaryFromHeadline, generateUniqueId, filterBySearch } from "../utils/string-utils.js";
 
 /**
  * StockService with live Finnhub API integration
@@ -14,18 +11,13 @@ import { StockQuotesService } from "./stocks/stock-quotes.js";
  */
 export class StockService {
     constructor() {
-
-        // Initialize cache service
-        this.cacheService = new StockCacheService();
-
-        // Initialize API service
+        // Initialize API and cache services first
         this.apiService = new StockApiService();
+        this.cacheService = new StockCacheService();
         
-        // Initialize quotes service
+        // Then initialize services that depend on them
+        this.newsService = new StockNewsService(this.apiService, this.cacheService);
         this.quotesService = new StockQuotesService(this.apiService, this.cacheService);
-
-        // Initialize news service
-        this.newsService = new StockNewsService();
     }
 
     // ==========================================

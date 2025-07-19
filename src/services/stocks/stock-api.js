@@ -1,3 +1,5 @@
+// file: src/services/stocks/stock-api.js
+
 /**
  * Stock API Service
  * 

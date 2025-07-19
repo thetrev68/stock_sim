@@ -1,3 +1,5 @@
+// file: src/services/stocks/stock-cache.js
+
 /**
  * Stock Cache Service
  * 

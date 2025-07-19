@@ -5,38 +5,18 @@
  * Extracted from services/stocks.js
  */
 
-import { API_LIMITS, CACHE_CONFIG, API_ERROR_CONFIG } from "../../constants/app-config.js";
+import { CACHE_CONFIG } from "../../constants/app-config.js";
 import { filterByDateRange, sortByDateDesc } from "../../utils/date-utils.js";
 import { generateSummaryFromHeadline, generateUniqueId, filterBySearch } from "../../utils/string-utils.js";
 
 export class StockNewsService {
-    constructor() {
-        // Your Finnhub API key (current data)
-        this.apiKey = "d1n5qs9r01qlvnp5lkugd1n5qs9r01qlvnp5lkv0";
-        this.baseUrl = "https://finnhub.io/api/v1";
-
-        // NEW: Add this line - automatically detects development environment
-        this.useMockDataFallback = window.location.hostname === "localhost" || 
-                                window.location.hostname === "127.0.0.1" ||
-                                window.location.hostname.includes("localhost");
+    constructor(apiService, cacheService) {
+        this.apiService = apiService;
+        this.cacheService = cacheService;
         
-        // Client-side cache to minimize API calls
-        this.newsCache = new Map(); // NEW: Add news cache
-        this.cacheTimeout = CACHE_CONFIG.STOCK_PRICES; // 5 minutes cache
-        
-        // Enhanced rate limiting
-        this.lastApiCall = 0;
-        this.minTimeBetweenCalls = API_LIMITS.MIN_TIME_BETWEEN_CALLS; // 2 seconds
-        this.apiCallCount = 0;
-        this.maxCallsPerMinute = API_LIMITS.MAX_CALLS_PER_MINUTE; // Conservative limit
-        this.callTimestamps = []; // Track call timestamps
-        
-        // API status tracking
-        this.apiStatus = {
-            isDown: false,
-            lastFailureTime: 0,
-            cooldownPeriod: API_ERROR_CONFIG // 5 minutes cooldown after failures
-        };
+        // Cache management  
+        this.newsCache = new Map();
+        this.cacheTimeout = CACHE_CONFIG.STOCK_NEWS; // 10 minutes cache
 
         // NEW: Mock news data for fallback
         this.mockNews = {
@@ -111,8 +91,8 @@ export class StockNewsService {
         }
 
         // Check if API should be used
-        if (!this.shouldUseAPI()) {
-            if (this.useMockDataFallback) {
+        if (!this.apiService.shouldUseAPI()) {
+            if (this.apiService.useMockDataFallback) {
                 return this.getFallbackNews(upperTicker, limit);
             } else {
                 throw new Error(`News API temporarily unavailable for ${upperTicker}`);
@@ -120,7 +100,7 @@ export class StockNewsService {
         }
 
         try {
-            await this.enforceRateLimit();
+            await this.apiService.enforceRateLimit();
             
             // Calculate date range (last 30 days)
             const toDate = new Date();
@@ -131,7 +111,7 @@ export class StockNewsService {
             const toDateStr = toDate.toISOString().split("T")[0];
             
             // Build Finnhub company news URL
-            const url = `${this.baseUrl}/company-news?symbol=${upperTicker}&from=${fromDateStr}&to=${toDateStr}&token=${this.apiKey}`;
+            const url = `${this.apiService.baseUrl}/company-news?symbol=${upperTicker}&from=${fromDateStr}&to=${toDateStr}&token=${this.apiService.apiKey}`;
             
             console.log(`Fetching news for ${upperTicker}...`);
             
@@ -154,13 +134,13 @@ export class StockNewsService {
                 this.setInCache(this.newsCache, cacheKey, processedNews);
                 
                 // Reset API status on success
-                this.apiStatus.isDown = false;
+                this.apiService.apiStatus.isDown = false;
                 
                 console.log(`Fetched ${processedNews.length} news articles for ${upperTicker}`);
                 return processedNews;
             } else {
                 console.warn(`No news data returned for ${upperTicker}`);
-                if (this.useMockDataFallback) {
+                if (this.apiService.useMockDataFallback) {
                     return this.getFallbackNews(upperTicker, limit);
                 } else {
                     throw new Error(`No news articles found for ${upperTicker}`);
@@ -169,10 +149,10 @@ export class StockNewsService {
             
         } catch (error) {
             console.error(`Error fetching news for ${upperTicker}:`, error);
-            this.handleAPIError(error, "news");
+            this.apiService.handleAPIError(error, "news");
             
             // Only use fallback data in development environment
-            if (this.useMockDataFallback) {
+            if (this.apiService.useMockDataFallback) {
                 console.log("Development environment detected - using mock news data");
                 return this.getFallbackNews(upperTicker, limit);
             } else {
@@ -312,63 +292,7 @@ export class StockNewsService {
         return sortByDateDesc(newsArticles);
     }
 
-    // === Shared Utility Methods (copied from original) ===
-
-    shouldUseAPI() {
-        const now = Date.now();
-        
-        // Check if API is in cooldown after failures
-        if (this.apiStatus.isDown && (now - this.apiStatus.lastFailureTime) < this.apiStatus.cooldownPeriod) {
-            console.log("API in cooldown, using fallback data");
-            return false;
-        }
-        
-        // Check rate limiting
-        this.callTimestamps = this.callTimestamps.filter(timestamp => now - timestamp < API_LIMITS.RATE_LIMIT_WINDOW);
-        if (this.callTimestamps.length >= this.maxCallsPerMinute) {
-            console.log("Rate limit exceeded, using fallback data");
-            return false;
-        }
-        
-        return true;
-    }
-
-    handleAPIError(error, endpoint) {
-        console.error(`API Error at ${endpoint}:`, error.message);
-        
-        // If it's a 403 or 429, mark API as down temporarily
-        if (error.message.includes("403") || error.message.includes("429")) {
-            this.apiStatus.isDown = true;
-            this.apiStatus.lastFailureTime = Date.now();
-            console.warn("API marked as down due to rate limiting. Using fallback data for 5 minutes.");
-        }
-    }
-
-    async enforceRateLimit() {
-        const now = Date.now();
-        
-        // Clean old timestamps
-        this.callTimestamps = this.callTimestamps.filter(timestamp => now - timestamp < API_LIMITS.RATE_LIMIT_WINDOW);
-        
-        // Check if we're hitting rate limits
-        if (this.callTimestamps.length >= this.maxCallsPerMinute) {
-            const oldestCall = Math.min(...this.callTimestamps);
-            const waitTime = API_LIMITS.RATE_LIMIT_WINDOW - (now - oldestCall) + API_LIMITS.MIN_TIME_BETWEEN_CALLS;
-            console.log(`Rate limit protection: waiting ${Math.round(waitTime/1000)}s...`);
-            await new Promise(resolve => setTimeout(resolve, waitTime));
-        }
-        
-        // Enforce minimum time between calls
-        const timeSinceLastCall = now - this.lastApiCall;
-        if (timeSinceLastCall < this.minTimeBetweenCalls) {
-            const waitTime = this.minTimeBetweenCalls - timeSinceLastCall;
-            await new Promise(resolve => setTimeout(resolve, waitTime));
-        }
-        
-        // Track this call
-        this.callTimestamps.push(Date.now());
-        this.lastApiCall = Date.now();
-    }
+    // === Local Cache Management for News ===
 
     getFromCache(cache, key) {
         const cached = cache.get(key);
