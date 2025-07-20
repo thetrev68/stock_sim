@@ -172,21 +172,23 @@ export class CreateSimulationModal {
                                         <h4 class="text-white font-medium">Short Selling</h4>
                                         <p class="text-sm text-gray-400">Allow participants to sell stocks they don't own</p>
                                     </div>
-                                    <label class="relative inline-flex items-center cursor-pointer">
-                                        <input type="checkbox" id="sim-short-selling" class="sr-only peer">
-                                        <div class="w-11 h-6 bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-cyan-300/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-600"></div>
+                                    <label class="relative inline-flex items-center cursor-pointer" style="width: 44px; height: 24px;">
+                                        <input type="checkbox" id="sim-short-selling" class="absolute opacity-0" onchange="this.nextElementSibling.querySelector('div').style.transform = this.checked ? 'translateX(20px)' : 'translateX(0)'; this.nextElementSibling.style.backgroundColor = this.checked ? '#06b6d4' : '#4b5563';">
+                                        <div class="w-11 h-6 bg-gray-600 rounded-full relative transition-colors duration-200">
+                                            <div class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform duration-200 ease-in-out"></div>
+                                        </div>
                                     </label>
                                 </div>
 
                                 <div class="p-4 bg-gray-700 rounded-lg">
                                     <h4 class="text-white font-medium mb-3">Trading Hours</h4>
                                     <div class="space-y-2">
-                                        <label class="flex items-center">
-                                            <input type="radio" name="trading-hours" value="market" checked class="w-4 h-4 text-cyan-600 bg-gray-600 border-gray-500 focus:ring-cyan-500">
+                                        <label class="flex items-center cursor-pointer" style="margin: 4px 0;">
+                                            <input type="radio" name="trading-hours" value="market" checked class="text-cyan-600 bg-gray-600 border-gray-500 focus:ring-cyan-500" style="width: 16px; height: 16px; margin: 0; cursor: pointer;">
                                             <span class="ml-3 text-white">Market Hours Only</span>
                                         </label>
-                                        <label class="flex items-center">
-                                            <input type="radio" name="trading-hours" value="24/7" class="w-4 h-4 text-cyan-600 bg-gray-600 border-gray-500 focus:ring-cyan-500">
+                                        <label class="flex items-center cursor-pointer" style="margin: 4px 0;">
+                                            <input type="radio" name="trading-hours" value="24/7" class="text-cyan-600 bg-gray-600 border-gray-500 focus:ring-cyan-500" style="width: 16px; height: 16px; margin: 0; cursor: pointer;">
                                             <span class="ml-3 text-white">24/7 Trading</span>
                                         </label>
                                     </div>

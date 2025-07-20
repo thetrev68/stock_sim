@@ -183,6 +183,17 @@ export const getCleanHeaderSectionTemplate = () => {
                         <span id="sim-status" class="px-3 py-1 rounded-full text-sm font-semibold bg-green-600 text-white">Active</span>
                         <span id="sim-participants" class="text-gray-300 text-sm">0/20 participants</span>
                         <span id="sim-duration" class="text-gray-300 text-sm">Duration info</span>
+
+                        <!-- ADD THIS INVITE CODE SECTION -->
+                        <div class="flex items-center gap-2 bg-gray-700 px-3 py-1 rounded-lg">
+                            <span class="text-gray-400 text-sm">Invite Code:</span>
+                            <code id="sim-invite-code" class="text-cyan-400 font-mono text-sm font-bold">ABC123</code>
+                            <button id="copy-invite-code-btn" class="text-gray-400 hover:text-white transition-colors" title="Copy invite code">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                </svg>
+                            </button>
+                        </div>
                     </div>
                 </div>
                 
@@ -237,8 +248,8 @@ export const getCleanStatsCardsTemplate = () => {
                         </svg>
                     </div>
                 </div>
-                <p id="user-portfolio-value" class="text-3xl font-bold text-white mb-2">$50,000.00</p>
-                <p id="user-portfolio-change" class="text-sm text-green-400">+0.00 (+0.00%)</p>
+                <p id="sim-portfolio-value" class="text-3xl font-bold text-white mb-2">$50,000.00</p>
+                <p id="sim-portfolio-change" class="text-sm text-green-400">+0.00 (+0.00%)</p>
             </div>
 
             <!-- Time Remaining -->

@@ -89,6 +89,12 @@ export class SimulationDisplayManager {
             daysRemainingEl.textContent = diffDays;
         }
 
+        // Update invite code
+        const inviteCodeEl = document.getElementById("sim-invite-code");
+        if (inviteCodeEl && this.currentSimulation.inviteCode) {
+            inviteCodeEl.textContent = this.currentSimulation.inviteCode;
+        }
+
         console.log("Simulation displayed:", this.currentSimulation);
     }
 

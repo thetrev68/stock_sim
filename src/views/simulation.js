@@ -112,6 +112,18 @@ export default class SimulationView {
         // Initialize display manager
         this.displayManager = new SimulationDisplayManager(this);
 
+        // Simulation dropdown handler (ADD THIS)
+        const simulationDropdown = container.querySelector("#simulation-dropdown");
+        if (simulationDropdown) {
+            simulationDropdown.addEventListener("change", (e) => this.handleSimulationSwitch(e.target.value));
+        }
+
+        // Refresh button handler (ADD THIS)
+        const refreshBtn = container.querySelector("#refresh-simulation-btn");
+        if (refreshBtn) {
+            refreshBtn.addEventListener("click", () => this.handleRefresh());
+        }
+
         // Trade button
         const tradeBtn = container.querySelector("#trade-in-sim-btn");
         const startTradingBtn = container.querySelector("#start-trading-btn");
@@ -121,6 +133,12 @@ export default class SimulationView {
                 btn.addEventListener("click", () => this.handleTradeNavigation());
             }
         });
+
+        // Copy invite code button
+        const copyInviteBtn = container.querySelector("#copy-invite-code-btn");
+        if (copyInviteBtn) {
+            copyInviteBtn.addEventListener("click", () => this.handleCopyInviteCode());
+        }
 
         // Member management button
         const manageMembersBtn = container.querySelector("#manage-members-btn");
@@ -280,6 +298,8 @@ export default class SimulationView {
                 }
             });
         }, 1000); // Wait 1 second after page loads
+        
+        await this.loadUserSimulationsForDropdown();
     }
 
     async loadLeaderboard() {
@@ -599,10 +619,21 @@ export default class SimulationView {
     }
 
     displaySimulation() {
+        // Show content and hide loading
+        const loadingEl = document.getElementById("simulation-loading");
+        const contentEl = document.getElementById("simulation-content");
+        
+        if (loadingEl) loadingEl.classList.add("hidden");
+        if (contentEl) contentEl.classList.remove("hidden");  // <- This is crucial!
+        
+        // Your existing displayManager code...
         if (this.displayManager) {
             this.displayManager.updateReferences(this.currentSimulation, this.currentUser, this.leaderboardData);
             this.displayManager.displaySimulation();
         }
+        
+        // Add this to render leaderboard components
+        this.renderLeaderboardComponents();
     }
 
     updatePortfolioStats() {
@@ -629,9 +660,21 @@ export default class SimulationView {
             return;
         }
 
-        if (this.displayManager) {
-            this.displayManager.updateTradeButtonText("Loading...");
-        }
+        // Update button text to show loading
+        const tradeBtns = document.querySelectorAll("#trade-in-sim-btn, #start-trading-btn");
+        tradeBtns.forEach(btn => {
+            if (btn) {
+                const originalText = btn.textContent;
+                btn.textContent = "Loading...";
+                btn.disabled = true;
+                
+                // Reset after navigation attempt
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.disabled = false;
+                }, 3000);
+            }
+        });
 
         const tradeUrl = `/trade?sim=${this.simulationId}`;
         
@@ -643,6 +686,7 @@ export default class SimulationView {
             }
         });
     }
+
 
     showNotFound() {
         const loadingEl = document.getElementById("simulation-loading");
@@ -870,6 +914,104 @@ export default class SimulationView {
         // FIX: Remove the initialize call for adminManager  
         this.adminManager = new SimulationAdminManager(this);
         // this.adminManager.initialize(this.simulationId, this.currentUser); // REMOVE THIS LINE
+    }
+
+    async handleSimulationSwitch(newSimulationId) {
+        if (!newSimulationId || newSimulationId === this.simulationId) {
+            return;
+        }
+
+        try {
+            // Navigate to the new simulation
+            const newUrl = `/simulation?id=${newSimulationId}`;
+            
+            if (window.app && window.app.router) {
+                window.app.router.navigate(newUrl);
+            } else {
+                window.location.href = newUrl;
+            }
+            
+        } catch (error) {
+            console.error("Error switching simulation:", error);
+            this.showTemporaryMessage(`Failed to switch simulation: ${error.message}`, "error");
+            
+            // Reset dropdown to current simulation
+            const dropdown = document.querySelector("#simulation-dropdown");
+            if (dropdown) {
+                dropdown.value = this.simulationId;
+            }
+        }
+    }
+
+    async handleRefresh() {
+        try {
+            this.showTemporaryMessage("Refreshing simulation data...", "info");
+            
+            // Reload simulation data
+            await this.loadSimulationData();
+            
+            // Refresh leaderboard using existing method
+            await this.refreshLeaderboard();
+            
+            // Update display
+            this.displaySimulation();
+            
+            this.showTemporaryMessage("Data refreshed successfully!", "success");
+            
+        } catch (error) {
+            console.error("Error refreshing simulation:", error);
+            this.showTemporaryMessage(`Refresh failed: ${error.message}`, "error");
+        }
+    }
+
+    async loadUserSimulationsForDropdown() {
+        try {
+            // Get all simulations the user is a member of
+            const userSimulations = await this.simulationService.getUserSimulations(this.currentUser.uid);
+            this.populateSimulationDropdown(userSimulations);
+        } catch (error) {
+            console.error("Error loading user simulations:", error);
+        }
+    }
+
+    populateSimulationDropdown(userSimulations = []) {
+        const dropdown = document.querySelector("#simulation-dropdown");
+        if (!dropdown) return;
+
+        // Clear existing options except the first one
+        dropdown.innerHTML = "<option value=\"\">Switch Simulation...</option>";
+
+        // Add current simulation first
+        if (this.currentSimulation) {
+            const currentOption = document.createElement("option");
+            currentOption.value = this.currentSimulation.id;
+            currentOption.textContent = `${this.currentSimulation.name} (Current)`;
+            currentOption.selected = true;
+            dropdown.appendChild(currentOption);
+        }
+
+        // Add other simulations
+        userSimulations.forEach(sim => {
+            if (sim.id !== this.simulationId) {
+                const option = document.createElement("option");
+                option.value = sim.id;
+                option.textContent = sim.name;
+                dropdown.appendChild(option);
+            }
+        });
+
+        console.log("Simulation dropdown populated with", userSimulations.length, "simulations");
+    }
+
+    // And add this method to your SimulationView class:
+    async handleCopyInviteCode() {
+        try {
+            await navigator.clipboard.writeText(this.currentSimulation.inviteCode);
+            this.showTemporaryMessage("Invite code copied to clipboard!", "success");
+        } catch (error) {
+            // Fallback for older browsers
+            alert(`Invite Code: ${this.currentSimulation.inviteCode}`);
+        }
     }
 }
 

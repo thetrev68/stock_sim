@@ -24,7 +24,7 @@
 @import './components/buttons.css';
 @import './components/forms.css';
 @import './components/cards.css';
-/* @import './components/modals.css'; */
+@import './components/modals.css';
 @import './components/tables.css';
 @import './components/loading.css';
 

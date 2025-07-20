@@ -139,14 +139,26 @@ export class SimulationPortfolioManager {
             const cash = this.simulationPortfolio.cash;
             let holdingsValue = 0;
             
+            console.log("=== PORTFOLIO DEBUG ===");
+            console.log("Cash:", cash);
+            console.log("Holdings:", this.simulationPortfolio.holdings);
+            
             const holdings = this.simulationPortfolio.holdings || {};
             for (const ticker in holdings) {
                 if (Object.prototype.hasOwnProperty.call(holdings, ticker)) {
-                    holdingsValue += holdings[ticker].quantity * holdings[ticker].avgPrice;
+                    const currentPrice = holdings[ticker].currentPrice || holdings[ticker].avgPrice;
+                    const holdingValue = holdings[ticker].quantity * currentPrice;
+                    holdingsValue += holdingValue;
+                    
+                    console.log(`${ticker}: ${holdings[ticker].quantity} shares @ $${currentPrice} = $${holdingValue}`);
                 }
             }
             
             const totalValue = cash + holdingsValue;
+            console.log("Total holdings value:", holdingsValue);
+            console.log("Total portfolio value:", totalValue);
+            console.log("========================");
+            
             portfolioValueEl.textContent = formatCurrencyWithCommas(totalValue);
             
             if (portfolioChangeEl) {

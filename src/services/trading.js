@@ -74,8 +74,9 @@ export async function initializePortfolio(userId, initialBalance = 10000, simula
                 const activityService = new ActivityService();
                 activityService.initialize();
                 
-                // Get user display name (you might want to pass this as a parameter)
-                const userDisplayName = simulationInfo.userDisplayName || "Anonymous User";
+                // Get user display name from current auth user
+                const currentUser = this.authService?.getCurrentUser(); // if you have access to authService
+                const userDisplayName = currentUser?.displayName || currentUser?.email?.split("@")[0] || "Anonymous User";
                 await activityService.logJoinActivity(simulationId, userId, userDisplayName);
             } catch (error) {
                 console.error("Error logging join activity:", error);
