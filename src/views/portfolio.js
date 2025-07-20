@@ -18,14 +18,14 @@ import {
 } from "../utils/currency-utils.js";
 
 // Portfolio Templates
-import { getMainPortfolioLayoutTemplate } from '../templates/portfolio/portfolio-main-layout.js';
+import { getMainPortfolioLayoutTemplate } from "../templates/portfolio/portfolio-main-layout.js";
 import { 
     getHoldingLoadingRowTemplate,
     getHoldingRowTemplate,
     getHoldingErrorRowTemplate
-} from '../templates/portfolio/portfolio-holdings.js';
-import { getTradeHistoryRowTemplate } from '../templates/portfolio/portfolio-trade-history.js';
-import { getPortfolioErrorTemplate } from '../templates/portfolio/portfolio-errors.js';
+} from "../templates/portfolio/portfolio-holdings.js";
+import { getTradeHistoryRowTemplate } from "../templates/portfolio/portfolio-trade-history.js";
+import { getPortfolioErrorTemplate } from "../templates/portfolio/portfolio-errors.js";
 
 export default class PortfolioView {
     constructor() {

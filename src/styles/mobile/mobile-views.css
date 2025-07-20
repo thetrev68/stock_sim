@@ -3,6 +3,16 @@
 
 @media (max-width: 768px) {
 
+  /* Force show the tab container that's hiding everything */
+  /* .bg-gray-800.rounded-lg.shadow-lg.border.border-gray-700.mb-8 {
+    display: block !important;
+  }
+   */
+  /* Also target it more specifically if needed */
+  /* .simulation-view .bg-gray-800.rounded-lg {
+    display: block !important;
+  } */
+
   /* ========================================
      SIMULATION VIEW MOBILE LAYOUT
      ======================================== */
@@ -42,10 +52,37 @@
   }
 
   /* ========================================
+     SIMULATION HEADER BUTTONS MOBILE
+     ======================================== */
+  
+  /* Stack the header buttons vertically on mobile */
+  .simulation-header .flex.gap-3,
+  .bg-gray-800 .flex.gap-3 {
+    flex-direction: column !important;
+    gap: var(--space-md) !important;
+    width: 100% !important;
+  }
+  
+  /* Make buttons full width on mobile */
+  .simulation-header .flex.gap-3 button,
+  .bg-gray-800 .flex.gap-3 button {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+  
+  /* Ensure the simulation header itself stacks properly */
+  .simulation-header,
+  .bg-gray-800 .flex.flex-col.lg\:flex-row {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: var(--space-lg) !important;
+  }
+
+  /* ========================================
      TAB NAVIGATION MOBILE
      ======================================== */
   
-  .tab-navigation {
+  /* .tab-navigation {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
@@ -74,11 +111,81 @@
     border-radius: var(--radius-lg);
     min-height: var(--touch-target);
   }
-  
-  /* Active tab indicator */
+   
   .tab-btn.active {
     background-color: var(--color-primary);
     color: var(--text-inverse);
+  } */
+
+  /* ========================================
+     FORCE SHOW ALL CONTENT SECTIONS
+     ======================================== */
+  
+  /* Override the hidden class on content sections */
+  #content-portfolio.hidden,
+  #content-leaderboard.hidden, 
+  #content-members.hidden {
+    display: block !important;
+  }
+  
+  /* Make sure content areas are always visible and properly spaced */
+  #content-portfolio,
+  #content-leaderboard,
+  #content-members {
+    display: block !important;
+    margin-bottom: var(--space-2xl) !important;
+    padding: var(--space-lg) !important;
+    background: var(--bg-card) !important;
+    border-radius: var(--radius-lg) !important;
+    border: 1px solid var(--border-color) !important;
+  }
+  
+  /* Also ensure tab-content class doesn't hide anything */
+  .tab-content {
+    display: block !important;
+  }
+  
+  .tab-content.hidden {
+    display: block !important;
+  }
+
+  /* ========================================
+     HIDE REDUNDANT TAB NAVIGATION ON MOBILE
+     ======================================== */
+  
+  /* Hide the bottom tab navigation entirely on mobile */
+  /* .tab-navigation,
+  .simulation-tabs,
+  .bg-gray-800.rounded-lg .flex.border-b.border-gray-700 {
+    display: none !important;
+  }
+   */
+  /* Also hide any tab container with the tab buttons */
+  /* .bg-gray-800.rounded-lg.shadow-lg.border.border-gray-700.mb-8:has(.tab-btn) {
+    display: none !important;
+  } */
+
+  /* Make sure content areas are always visible */
+  /* .tab-content {
+    display: block !important;
+  } */
+  
+  /* Remove any tab-specific hiding */
+  #content-portfolio,
+  #content-leaderboard, 
+  #content-members {
+    display: block !important;
+  }
+  
+  /* Stack the content sections vertically with spacing */
+  #content-portfolio,
+  #content-leaderboard,
+  #content-members {
+    margin-bottom: var(--space-2xl);
+    padding: var(--space-lg);
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-color);
   }
 
   /* ========================================

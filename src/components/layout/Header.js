@@ -11,9 +11,9 @@ export class HeaderComponent {
 
     getTemplate() {
         return `
-            <div class="header-component flex flex-col sm:flex-row justify-between sm:items-center mb-8 gap-4">
+            <div class="header-component flex flex-col sm:flex-row justify-between sm:items-center mb-8 gap-4 px-4 sm:px-0">
                 <div>
-                    <h1 class="text-3xl font-bold text-cyan-400">Paper Trading Simulator</h1>
+                    <h1 class="text-3xl font-bold text-cyan-400">Stock Trading Simulator</h1>
                     <p class="text-gray-400">Master the markets with zero risk</p>
                 </div>
                 
@@ -28,7 +28,7 @@ export class HeaderComponent {
                     <div id="user-menu" class="hidden">
                         <div class="flex items-center space-x-3">
                             <span id="user-email" class="text-sm text-gray-300"></span>
-                            <button id="sign-out-btn" class="text-sm text-red-400 hover:text-red-300 transition">
+                            <button id="sign-out-btn" class="text-sm text-red-500 hover:text-red-400 transition font-medium">
                                 Sign Out
                             </button>
                         </div>

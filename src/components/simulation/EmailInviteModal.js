@@ -388,7 +388,7 @@ export class EmailInviteModal {
     generateInviteText(invitationData) {
         const baseMessage = `🎯 You're invited to join a trading simulation!
 
-${invitationData.inviterName} has invited you to compete in "${invitationData.simulationName}" - a fun paper trading competition.
+${invitationData.inviterName} has invited you to compete in "${invitationData.simulationName}" - a fun stock trading competition.
 
 ${invitationData.personalMessage ? `Personal message: "${invitationData.personalMessage}"` : ""}
 

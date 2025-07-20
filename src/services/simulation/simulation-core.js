@@ -9,19 +9,19 @@ import {
     addDoc, 
     getDoc, 
     getDocs, 
-    updateDoc, 
+    // updateDoc, 
     query, 
     where, 
-    orderBy, 
+    // orderBy, 
     serverTimestamp 
 } from "firebase/firestore";
 import { SIMULATION_STATUS } from "../../constants/simulation-status.js";
-import { 
-    convertFirebaseDate, 
-    calculateDaysRemaining,
-    calculateDaysElapsed,
-    calculateTotalDuration
-} from "../../utils/date-utils.js";
+// import { 
+//     convertFirebaseDate, 
+//     calculateDaysRemaining,
+//     calculateDaysElapsed,
+//     calculateTotalDuration
+// } from "../../utils/date-utils.js";
 import { generateInviteCode } from "../../utils/string-utils.js";
 
 const SIMULATIONS_COLLECTION = "simulations";

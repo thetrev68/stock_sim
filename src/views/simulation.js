@@ -15,7 +15,7 @@ import { SimulationAdminManager } from "../components/simulation/SimulationAdmin
 import { SimulationPortfolioManager } from "../components/simulation/SimulationPortfolioManager.js";
 import { SimulationMemberManager } from "../components/simulation/SimulationMemberManager.js";
 import { SimulationActivityManager } from "../components/simulation/SimulationActivityManager.js";
-import { SimulationTabManager } from "../components/simulation/SimulationTabManager.js";
+// import { SimulationTabManager } from "../components/simulation/SimulationTabManager.js";
 import { SimulationDisplayManager } from "../components/simulation/SimulationDisplayManager.js";
 
 // Constants
@@ -29,16 +29,23 @@ import {
     getSimulationLoadingErrorTemplate,
 } from "../templates/simulation/error-states.js";
 import { 
-    getTabNavigationAndContentTemplate,
     getSimulationRulesSectionTemplate,
-    getHeaderSectionTemplate 
+    getCleanHeaderSectionTemplate,
+    getCleanStatsCardsTemplate,
+    getPortfolioSectionTemplate,
+    getLeaderboardSectionTemplate,
+    getActivitySectionTemplate, 
 } from "../templates/simulation/simulation-layout.js";
-import { getMainStatsCardsTemplate } from "../templates/simulation/simulation-sidebar.js";
+// import { getMainStatsCardsTemplate } from "../templates/simulation/simulation-sidebar.js";
 import { 
     getArchivePromptBannerTemplate,
     getArchiveSuccessInfoBannerTemplate,
     getShowTemporaryMessageTemplate
 } from "../templates/simulation/notification-components.js";
+// import { 
+//     getCleanSimulationLayoutTemplate, 
+//     getCleanSimulationLoadingTemplate 
+// } from "../templates/simulation/simulation-layout-clean.js";
 
 export default class SimulationView {
     constructor() {
@@ -89,11 +96,15 @@ export default class SimulationView {
                 ${getSimulationNotFoundTemplate()}
 
                 <div id="simulation-content" class="hidden">
-                    ${getHeaderSectionTemplate()}
+                    ${getCleanHeaderSectionTemplate()}
 
-                    ${getMainStatsCardsTemplate()}
+                    ${getCleanStatsCardsTemplate()}
 
-                    ${getTabNavigationAndContentTemplate()}
+                    ${getPortfolioSectionTemplate()}
+
+                    ${getLeaderboardSectionTemplate()}
+
+                    ${getActivitySectionTemplate()}
 
                     ${getSimulationRulesSectionTemplate()}
                 </div>
@@ -103,8 +114,7 @@ export default class SimulationView {
 
     attachEventListeners(container) {
         // Initialize tab manager
-        this.tabManager = new SimulationTabManager(this);
-        this.tabManager.attachTabEventListeners();
+        this.attachSimplifiedEventListeners();
 
         // Initialize display manager
         this.displayManager = new SimulationDisplayManager(this);
@@ -129,6 +139,61 @@ export default class SimulationView {
         const settingsBtn = container.querySelector("#simulation-settings-btn");
         if (settingsBtn) {
             settingsBtn.addEventListener("click", () => this.handleSimulationSettings());
+        }
+    }
+
+    attachSimplifiedEventListeners() {
+        // Force show all content sections on mobile
+        const contentSections = ["content-portfolio", "content-leaderboard", "content-members"];
+        contentSections.forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.classList.remove("hidden");
+            }
+        });
+        
+        // Portfolio & Trades button - scroll to portfolio content
+        const portfolioBtn = document.querySelector("#view-members-btn");
+        if (portfolioBtn) {
+            portfolioBtn.addEventListener("click", () => {
+                const portfolioContent = document.getElementById("content-portfolio");
+                if (portfolioContent) {
+                    portfolioContent.scrollIntoView({ 
+                        behavior: "smooth", 
+                        block: "start" 
+                    });
+                }
+            });
+        }
+
+        // Leaderboard button - scroll to leaderboard content  
+        const leaderboardBtn = document.querySelector("#view-leaderboard-btn");
+        if (leaderboardBtn) {
+            leaderboardBtn.addEventListener("click", () => {
+                const leaderboardContent = document.getElementById("content-leaderboard");
+                if (leaderboardContent) {
+                    leaderboardContent.scrollIntoView({ 
+                        behavior: "smooth", 
+                        block: "start" 
+                    });
+                    // Ensure leaderboard data is rendered
+                    this.renderLeaderboardComponents();
+                }
+            });
+        }
+
+        // Members & Activity button - scroll to members content
+        const activityBtn = document.querySelector("#view-activity-btn");
+        if (activityBtn) {
+            activityBtn.addEventListener("click", () => {
+                const membersContent = document.getElementById("content-members");
+                if (membersContent) {
+                    membersContent.scrollIntoView({ 
+                        behavior: "smooth", 
+                        block: "start" 
+                    });
+                }
+            });
         }
     }
 
@@ -207,6 +272,21 @@ export default class SimulationView {
             console.error("Error loading simulation:", error);
             this.showError();
         }
+
+        setTimeout(() => {
+            // Force show all content sections after everything loads
+            const contentSections = ["content-portfolio", "content-leaderboard", "content-members"];
+            contentSections.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.classList.remove("hidden");
+                    element.style.display = "block";
+                    console.log(`Showing ${id}:`, element);
+                } else {
+                    console.log(`Element ${id} not found`);
+                }
+            });
+        }, 1000); // Wait 1 second after page loads
     }
 
     async loadLeaderboard() {

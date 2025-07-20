@@ -5,26 +5,34 @@
  * and financial calculations extracted from the codebase.
  */
 
-/** TFC
- * Format a number as currency with commas and 2 decimal places
+/**
+ * Format a number as currency with exactly 2 decimal places (no commas)
  * @param {number} amount - Amount to format
  * @param {boolean} includeDollarSign - Whether to include $ symbol (default: true)
  * @returns {string} Formatted currency string
  */
 export const formatCurrency = (amount, includeDollarSign = true) => {
+    if (amount === null || amount === undefined || isNaN(amount)) return includeDollarSign ? "$0.00" : "0.00";
+    
     const prefix = includeDollarSign ? "$" : "";
     return `${prefix}${amount.toFixed(2)}`;
 };
 
-/** TFC
- * Format a number as currency with thousand separators
+/**
+ * Format a number as currency with thousand separators and exactly 2 decimal places
  * @param {number} amount - Amount to format
  * @param {boolean} includeDollarSign - Whether to include $ symbol (default: true)
  * @returns {string} Formatted currency string with commas
  */
 export const formatCurrencyWithCommas = (amount, includeDollarSign = true) => {
+    if (amount === null || amount === undefined || isNaN(amount)) return includeDollarSign ? "$0.00" : "0.00";
+    
     const prefix = includeDollarSign ? "$" : "";
-    return `${prefix}${amount.toLocaleString()}`;
+    // Force exactly 2 decimal places with minimumFractionDigits and maximumFractionDigits
+    return `${prefix}${amount.toLocaleString("en-US", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    })}`;
 };
 
 /** TFC
@@ -123,17 +131,6 @@ export const calculateCostBasis = (quantity, avgPrice) => {
     return quantity * avgPrice;
 };
 
-// /** TFC - Not Used
-//  * Calculate portfolio percentage for a specific holding
-//  * @param {number} holdingValue - Value of the holding
-//  * @param {number} totalPortfolioValue - Total portfolio value
-//  * @returns {number} Percentage of portfolio (as decimal)
-//  */
-// export const calculatePortfolioPercentage = (holdingValue, totalPortfolioValue) => {
-//     if (totalPortfolioValue === 0) return 0;
-//     return (holdingValue / totalPortfolioValue) * 100;
-// };
-
 /** TFC
  * Format portfolio change with appropriate styling
  * Used in portfolio headers and simulation stats
@@ -153,32 +150,14 @@ export const formatPortfolioChange = (change, changePercent) => {
     };
 };
 
-// /** TFC Not Used
-//  * Format large numbers with appropriate suffixes (K, M, B)
-//  * Used for volume, market cap display
-//  * @param {number} num - Number to format
-//  * @param {number} decimals - Number of decimal places (default: 1)
-//  * @returns {string} Formatted number with suffix
-//  */
-// export const formatLargeNumber = (num, decimals = 1) => {
-//     if (num === 0) return "0";
-    
-//     const units = ["", "K", "M", "B", "T"];
-//     const magnitude = Math.floor(Math.log10(Math.abs(num)) / 3);
-//     const index = Math.min(magnitude, units.length - 1);
-//     const scaled = num / Math.pow(10, index * 3);
-    
-//     return `${scaled.toFixed(decimals)}${units[index]}`;
-// };
-
-/** TFC
+/**
  * Format price for display (always 2 decimal places)
  * @param {number} price - Price to format
  * @param {boolean} includeDollarSign - Whether to include $ symbol (default: true)
  * @returns {string} Formatted price string
  */
 export const formatPrice = (price, includeDollarSign = true) => {
-    if (price === null || price === undefined) return "--";
+    if (price === null || price === undefined || isNaN(price)) return "--";
     const prefix = includeDollarSign ? "$" : "";
     return `${prefix}${price.toFixed(2)}`;
 };

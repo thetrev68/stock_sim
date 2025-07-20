@@ -1,4 +1,4 @@
-/* Main CSS - Import Manager for Paper Trading Simulator */
+/* Main CSS - Import Manager for Stock Trading Simulator */
 /* Phase 1 Implementation - Only importing files that exist */
 
 /* ========================================
@@ -160,7 +160,7 @@ textarea:not(.form-textarea) {
   }
   
   /* Better text contrast on mobile */
-  .text-sm {
+  /* .text-sm {
     font-weight: var(--font-medium) !important;
     color: var(--color-gray-200) !important;
   }
@@ -168,5 +168,5 @@ textarea:not(.form-textarea) {
   .text-xs {
     font-weight: var(--font-medium) !important;
     color: var(--color-gray-300) !important;
-  }
+  } */
 }

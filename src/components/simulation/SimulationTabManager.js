@@ -63,26 +63,26 @@ export class SimulationTabManager {
         }
 
         // Update button text based on active tab
-        this.updateNavigationButtonText(tabId);
+        // this.updateNavigationButtonText(tabId);
     }
 
-    updateNavigationButtonText(activeTabId) {
-        const membersBtnText = document.getElementById("members-btn-text");
-        const leaderboardBtnText = document.getElementById("leaderboard-btn-text");
+    // updateNavigationButtonText(activeTabId) {
+    //     const membersBtnText = document.getElementById("members-btn-text");
+    //     const leaderboardBtnText = document.getElementById("leaderboard-btn-text");
         
-        if (membersBtnText && leaderboardBtnText) {
-            // Reset to default text
-            membersBtnText.textContent = "Members";
-            leaderboardBtnText.textContent = "Leaderboard";
+    //     if (membersBtnText && leaderboardBtnText) {
+    //         // Reset to default text
+    //         membersBtnText.textContent = "Members";
+    //         leaderboardBtnText.textContent = "Leaderboard";
             
-            // Update based on current tab
-            if (activeTabId === "tab-members") {
-                membersBtnText.textContent = "Portfolio";
-            } else if (activeTabId === "tab-leaderboard") {
-                leaderboardBtnText.textContent = "Portfolio";
-            }
-        }
-    }
+    //         // Update based on current tab
+    //         if (activeTabId === "tab-members") {
+    //             membersBtnText.textContent = "Portfolio";
+    //         } else if (activeTabId === "tab-leaderboard") {
+    //             leaderboardBtnText.textContent = "Portfolio";
+    //         }
+    //     }
+    // }
 
     showLeaderboardTab() {
         this.switchTab("tab-leaderboard");

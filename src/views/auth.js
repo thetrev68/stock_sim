@@ -19,7 +19,7 @@ export default class AuthView {
             <div class="auth-view min-h-screen flex items-center justify-center">
                 <div class="bg-gray-800 p-8 rounded-lg shadow-2xl w-full max-w-md border border-gray-700">
                     <div class="text-center mb-8">
-                        <h1 class="text-3xl font-bold text-cyan-400 mb-2">Paper Trading Simulator</h1>
+                        <h1 class="text-3xl font-bold text-cyan-400 mb-2">Stock Trading Simulator</h1>
                         <p class="text-gray-400">Sign in to start trading</p>
                     </div>
 
