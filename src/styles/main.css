@@ -1,0 +1,172 @@
+/* Main CSS - Import Manager for Paper Trading Simulator */
+/* Phase 1 Implementation - Only importing files that exist */
+
+/* ========================================
+   TAILWIND BASE
+   ======================================== */
+@import "tailwindcss";
+
+/* ========================================
+   BASE LAYER - Foundation
+   ======================================== */
+@import './base/variables.css';
+@import './base/reset.css';
+
+/* ========================================
+   LAYOUT LAYER - Structure
+   ======================================== */
+@import './layout/containers.css';
+@import './layout/navigation.css';
+
+/* ========================================
+   COMPONENT LAYER - UI Components
+   ======================================== */
+@import './components/buttons.css';
+@import './components/forms.css';
+@import './components/cards.css';
+@import './components/modals.css';
+@import './components/tables.css';
+@import './components/loading.css';
+
+/* ========================================
+   VIEW LAYER - Page-Specific Styles
+   ======================================== */
+/* TODO: Create view-specific CSS files as needed */
+/* @import './views/auth.css'; */
+@import './views/dashboard.css';
+@import './views/simulation.css';
+/* @import './views/portfolio.css'; */
+/* @import './views/trade.css'; */
+/* @import './views/research.css'; */
+
+/* ========================================
+   MOBILE LAYER - Mobile Optimizations
+   ======================================== */
+@import './mobile/mobile-base.css';
+@import './mobile/mobile-navigation.css';
+@import './mobile/mobile-tables.css';
+@import './mobile/mobile-modals.css';
+@import './mobile/mobile-views.css';
+
+/* ========================================
+   ANIMATION LAYER - Interactions
+   ======================================== */
+@import './animations/transitions.css';
+@import './animations/micro.css';
+
+/* ========================================
+   TEMPORARY COMPATIBILITY STYLES
+   ======================================== */
+
+/* These styles ensure compatibility with existing Tailwind classes */
+/* Remove these once full migration is complete */
+
+/* Ensure existing utility classes work */
+.bg-gray-800 {
+  background-color: var(--color-gray-800) !important;
+}
+
+.bg-gray-900 {
+  background-color: var(--color-gray-900) !important;
+}
+
+.text-white {
+  color: var(--text-primary) !important;
+}
+
+.text-gray-400 {
+  color: var(--color-gray-400) !important;
+}
+
+.border-gray-700 {
+  border-color: var(--border-color) !important;
+}
+
+/* Add to the compatibility section in main.css */
+.bg-gray-750 {
+  background-color: #374151 !important;
+}
+
+.text-cyan-400 {
+  color: var(--color-primary) !important;
+}
+
+.border-cyan-500 {
+  border-color: var(--color-primary) !important;
+}
+
+/* Button compatibility */
+.bg-cyan-600 {
+  background-color: var(--color-primary) !important;
+}
+
+.hover\:bg-cyan-500:hover {
+  background-color: var(--color-primary-light) !important;
+}
+
+/* Navigation compatibility */
+.nav-link-active {
+  background-color: var(--color-primary-dark) !important;
+  color: var(--text-primary) !important;
+  border-bottom-color: var(--color-primary) !important;
+}
+
+.ticker-symbol {
+  font-variant-caps: all-small-caps;
+}
+
+/* Modal compatibility */
+.bg-black {
+  background-color: rgba(0, 0, 0, 0.75) !important;
+}
+
+.rounded-lg {
+  border-radius: var(--radius-lg) !important;
+}
+
+/* Button enhancements that work with existing code */
+button:not(.btn) {
+  font-weight: var(--font-semibold);
+  transition: all var(--transition-fast);
+}
+
+button:not(.btn):hover {
+  transform: translateY(-1px);
+}
+
+/* Form enhancements */
+input:not(.form-input),
+select:not(.form-select),
+textarea:not(.form-textarea) {
+  font-size: 16px; /* Prevent iOS zoom */
+}
+
+/* Mobile-specific overrides for existing classes */
+@media (max-width: 768px) {
+  .p-6 {
+    padding: var(--space-lg) !important;
+  }
+  
+  .p-8 {
+    padding: var(--space-lg) !important;
+  }
+  
+  .gap-4 {
+    gap: var(--space-md) !important;
+  }
+  
+  .gap-6 {
+    gap: var(--space-lg) !important;
+  }
+  
+  /* Better text contrast on mobile */
+  .text-sm {
+    font-weight: var(--font-medium) !important;
+    color: var(--color-gray-200) !important;
+  }
+  
+  .text-xs {
+    font-weight: var(--font-medium) !important;
+    color: var(--color-gray-300) !important;
+  }
+}

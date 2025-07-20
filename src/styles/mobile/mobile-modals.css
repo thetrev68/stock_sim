@@ -1,0 +1,408 @@
+/* Mobile Modal Optimizations */
+
+/* ========================================
+   MOBILE MODAL STRATEGY
+   ======================================== */
+
+/* Mobile: 320px - 768px */
+@media (max-width: 768px) {
+
+  /* ========================================
+     MODAL POSITIONING & SIZING
+     ======================================== */
+  
+  .modal {
+    padding: var(--space-sm);
+    align-items: flex-end;
+  }
+  
+  .modal-content {
+    max-width: 100%;
+    max-height: calc(100vh - 1rem);
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+    transform: translateY(100%);
+    transition: transform var(--transition-normal) ease-out;
+  }
+  
+  .modal.modal-active .modal-content {
+    transform: translateY(0);
+  }
+  
+  /* Bottom sheet style for mobile */
+  .modal-bottom-sheet .modal-content {
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+    border-bottom: none;
+  }
+  
+  /* ========================================
+     MODAL HEADER MOBILE OPTIMIZATION
+     ======================================== */
+  
+  .modal-header {
+    padding: var(--space-lg);
+    position: relative;
+  }
+  
+  /* Add drag handle for bottom sheet feel */
+  .modal-header::before {
+    content: '';
+    position: absolute;
+    top: var(--space-sm);
+    left: 50%;
+    transform: translateX(-50%);
+    width: 2rem;
+    height: 4px;
+    background-color: var(--color-gray-600);
+    border-radius: var(--radius-full);
+  }
+  
+  .modal-title {
+    font-size: var(--text-lg);
+    margin-top: var(--space-sm);
+  }
+  
+  .modal-close {
+    position: absolute;
+    top: var(--space-lg);
+    right: var(--space-lg);
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+
+  /* ========================================
+     MODAL BODY MOBILE SCROLLING
+     ======================================== */
+  
+  .modal-body {
+    padding: var(--space-lg);
+    max-height: calc(100vh - 10rem);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Improved touch scrolling */
+  .modal-body::-webkit-scrollbar {
+    display: none;
+  }
+  
+  /* Add momentum scrolling */
+  .modal-body {
+    scroll-behavior: smooth;
+  }
+
+  /* ========================================
+     MODAL FOOTER MOBILE OPTIMIZATION
+     ======================================== */
+  
+  .modal-footer {
+    padding: var(--space-lg);
+    flex-direction: column-reverse;
+    gap: var(--space-sm);
+    background-color: var(--bg-modal);
+    border-top: 1px solid var(--border-color);
+  }
+  
+  .modal-footer .btn {
+    width: 100%;
+    min-height: var(--touch-target);
+    font-size: 1rem;
+    font-weight: var(--font-semibold);
+  }
+  
+  /* Primary action gets more prominence on mobile */
+  .modal-footer .btn-primary {
+    order: -1;
+  }
+
+  /* ========================================
+     SPECIFIC MODAL MOBILE ADAPTATIONS
+     ======================================== */
+  
+  /* Trade confirmation modal mobile */
+  .trade-modal .trade-summary {
+    margin: var(--space-md) 0;
+    padding: var(--space-lg);
+    border-radius: var(--radius-lg);
+  }
+  
+  .trade-summary-row {
+    margin-bottom: var(--space-md);
+    flex-wrap: wrap;
+    gap: var(--space-xs);
+  }
+  
+  .trade-summary-label {
+    font-weight: var(--font-medium);
+    color: var(--text-muted);
+  }
+  
+  .trade-summary-value {
+    font-weight: var(--font-semibold);
+    color: var(--text-primary);
+  }
+  
+  /* Settings modal mobile - use accordion style */
+  .settings-modal .settings-section {
+    padding: var(--space-lg);
+  }
+  
+  .settings-section-title {
+    font-size: var(--text-base);
+    margin-bottom: var(--space-md);
+  }
+  
+  /* Form modals on mobile */
+  .modal-form .modal-body {
+    padding-bottom: 0;
+  }
+  
+  .modal-form .form-row {
+    flex-direction: column;
+    gap: var(--space-lg);
+  }
+  
+  .modal-form .form-actions {
+    margin: 0;
+    padding: var(--space-lg);
+    background-color: var(--bg-modal);
+    border-top: 1px solid var(--border-color);
+    flex-direction: column-reverse;
+    gap: var(--space-sm);
+  }
+  
+  .modal-form .form-actions .btn {
+    width: 100%;
+  }
+
+  /* ========================================
+     MODAL BACKDROP MOBILE BEHAVIOR
+     ======================================== */
+  
+  .modal-backdrop {
+    background-color: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(2px);
+  }
+  
+  /* Prevent backdrop clicks on mobile - force use of close button */
+  .modal-backdrop {
+    pointer-events: auto;
+  }
+
+  /* ========================================
+     MODAL ANIMATION MOBILE OPTIMIZATION
+     ======================================== */
+  
+  @keyframes mobileModalSlideUp {
+    from {
+      transform: translateY(100%);
+    }
+    to {
+      transform: translateY(0);
+    }
+  }
+  
+  .modal-slide-up {
+    animation: mobileModalSlideUp var(--transition-normal) ease-out;
+  }
+  
+  /* Reduced motion support */
+  @media (prefers-reduced-motion: reduce) {
+    .modal-content {
+      transition: none;
+      animation: none;
+    }
+  }
+
+  /* ========================================
+     MODAL SIZE VARIANTS MOBILE
+     ======================================== */
+  
+  /* Small modals become full width on mobile */
+  .modal-sm .modal-content,
+  .modal-md .modal-content {
+    max-width: 100%;
+  }
+  
+  /* Large modals get more breathing room */
+  .modal-lg .modal-content,
+  .modal-xl .modal-content {
+    max-width: 100%;
+    max-height: calc(100vh - 1rem);
+  }
+  
+  /* Full modals take entire screen on mobile */
+  .modal-full .modal-content {
+    max-width: 100%;
+    max-height: 100vh;
+    border-radius: 0;
+  }
+  
+  .modal-full .modal-header::before {
+    display: none;
+  }
+
+  /* ========================================
+     SPECIFIC COMPONENT MOBILE FIXES
+     ======================================== */
+  
+  /* Join simulation modal */
+  .join-modal .invite-code-input {
+    font-size: var(--text-xl);
+    padding: var(--space-lg);
+    text-align: center;
+    letter-spacing: 0.2em;
+  }
+  
+  /* Create simulation modal */
+  .create-simulation-modal .form-section {
+    margin-bottom: var(--space-xl);
+  }
+  
+  /* Stock search modal */
+  .stock-search-modal .search-results {
+    max-height: calc(100vh - 16rem);
+    overflow-y: auto;
+  }
+  
+  .stock-search-modal .stock-item {
+    padding: var(--space-lg);
+    border-bottom: 1px solid var(--border-color);
+    min-height: var(--touch-target);
+    display: flex;
+    align-items: center;
+  }
+
+  /* ========================================
+     MOBILE MODAL ACCESSIBILITY
+     ======================================== */
+  
+  /* Larger touch targets */
+  .modal-close {
+    min-width: var(--touch-target);
+    min-height: var(--touch-target);
+  }
+  
+  /* Better focus indicators */
+  .modal-close:focus {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+  
+  /* Ensure readable text size */
+  .modal-body {
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+  
+  .modal-subtitle {
+    font-size: 0.9375rem;
+    line-height: 1.5;
+  }
+
+  /* ========================================
+     MODAL SAFE AREA SUPPORT
+     ======================================== */
+  
+  /* Support for devices with notches/safe areas */
+  .modal {
+    padding-left: max(var(--space-sm), env(safe-area-inset-left));
+    padding-right: max(var(--space-sm), env(safe-area-inset-right));
+    padding-bottom: max(var(--space-sm), env(safe-area-inset-bottom));
+  }
+  
+  .modal-footer {
+    padding-bottom: max(var(--space-lg), calc(var(--space-lg) + env(safe-area-inset-bottom)));
+  }
+
+  /* ========================================
+     MODAL KEYBOARD AVOIDANCE
+     ======================================== */
+  
+  /* Adjust modal when virtual keyboard appears */
+  .modal-form .modal-content {
+    max-height: calc(100vh - 1rem);
+  }
+  
+  /* Focus management for forms in modals */
+  .modal-form .form-input:focus,
+  .modal-form .form-select:focus,
+  .modal-form .form-textarea:focus {
+    scroll-margin-top: 2rem;
+  }
+
+}
+
+/* ========================================
+   LANDSCAPE MOBILE OPTIMIZATIONS
+   ======================================== */
+
+@media (max-width: 768px) and (orientation: landscape) {
+  .modal {
+    align-items: center;
+    padding: var(--space-xs);
+  }
+  
+  .modal-content {
+    max-height: calc(100vh - 1rem);
+    border-radius: var(--radius-xl);
+    transform: scale(0.95);
+  }
+  
+  .modal.modal-active .modal-content {
+    transform: scale(1);
+  }
+  
+  .modal-header::before {
+    display: none;
+  }
+  
+  .modal-header {
+    padding: var(--space-md) var(--space-lg);
+  }
+  
+  .modal-body {
+    max-height: calc(100vh - 8rem);
+    padding: var(--space-md) var(--space-lg);
+  }
+  
+  .modal-footer {
+    padding: var(--space-md) var(--space-lg);
+    flex-direction: row;
+    gap: var(--space-md);
+  }
+  
+  .modal-footer .btn {
+    width: auto;
+    flex: 1;
+  }
+}
+
+/* ========================================
+   VERY SMALL SCREENS (< 375px)
+   ======================================== */
+
+@media (max-width: 374px) {
+  .modal {
+    padding: 0;
+  }
+  
+  .modal-content {
+    max-width: 100vw;
+    max-height: 100vh;
+    border-radius: 0;
+  }
+  
+  .modal-header::before {
+    display: none;
+  }
+  
+  .modal-header,
+  .modal-body,
+  .modal-footer {
+    padding: var(--space-md);
+  }
+  
+  .modal-title {
+    font-size: var(--text-base);
+  }
+}

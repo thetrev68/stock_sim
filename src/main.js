@@ -1,5 +1,5 @@
 // Main application entry point - Updated for Session 7
-import "./style.css"; // Import global styles
+import "./styles/main.css"; // Import global styles
 import { initializeApp } from "./services/firebase.js";
 import { Router } from "./utils/router.js";
 import { AuthService } from "./services/auth.js";

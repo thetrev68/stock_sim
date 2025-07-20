@@ -1,0 +1,203 @@
+/* Mobile Navigation Styles */
+
+/* ========================================
+   MOBILE NAVIGATION LAYOUT
+   ======================================== */
+
+@media (max-width: 768px) {
+  
+  /* Main navigation container */
+  nav.flex {
+    /* Enable horizontal scrolling */
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+    
+    /* Extend to edges on mobile */
+    margin-left: -var(--space-sm);
+    margin-right: -var(--space-sm);
+    padding-left: var(--space-sm);
+    padding-right: var(--space-sm);
+    margin-bottom: var(--space-xl);
+    
+    /* Position for scroll indicator */
+    position: relative;
+  }
+  
+  /* Navigation links */
+  nav.flex .nav-link {
+    /* Prevent shrinking */
+    flex-shrink: 0;
+    
+    /* Touch-friendly sizing */
+    padding: var(--space-md) var(--space-lg);
+    font-size: var(--text-sm);
+    min-width: auto;
+    white-space: nowrap;
+    
+    /* Better visual feedback */
+    border-radius: var(--radius-lg);
+    transition: all var(--transition-fast);
+  }
+  
+  /* Scroll indicator gradient */
+  nav.flex::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 20px;
+    height: 100%;
+    background: linear-gradient(to right, transparent, var(--bg-primary));
+    pointer-events: none;
+    z-index: 1;
+  }
+}
+
+/* ========================================
+   TABLET NAVIGATION (481px - 768px)
+   ======================================== */
+
+@media (min-width: 481px) and (max-width: 768px) {
+  nav.flex .nav-link {
+    padding: var(--space-md) 1.25rem;
+    font-size: 0.9rem;
+  }
+}
+
+/* ========================================
+   DESKTOP NAVIGATION (769px+)
+   ======================================== */
+
+@media (min-width: 769px) {
+  nav.flex {
+    /* Center navigation on desktop */
+    justify-content: center;
+    margin: 0 auto var(--space-2xl) auto;
+    max-width: fit-content;
+  }
+  
+  nav.flex .nav-link {
+    padding: var(--space-md) var(--space-xl);
+    font-size: var(--text-base);
+  }
+  
+  /* Hide scroll indicator on desktop */
+  nav.flex::after {
+    display: none;
+  }
+}
+
+/* ========================================
+   SIMULATION VIEW MOBILE NAVIGATION
+   ======================================== */
+
+@media (max-width: 768px) {
+  
+  /* Back to dashboard button */
+  .back-to-dashboard {
+    position: sticky;
+    top: 0;
+    z-index: var(--z-sticky);
+    background: rgba(17, 24, 39, 0.95);
+    backdrop-filter: blur(8px);
+    padding: var(--space-lg);
+    margin: -var(--space-lg) -var(--space-lg) var(--space-lg) -var(--space-lg);
+    border-bottom: 1px solid var(--border-color);
+  }
+  
+  .back-to-dashboard button {
+    width: 100%;
+    justify-content: flex-start;
+    gap: var(--space-md);
+    font-size: 0.9375rem;
+    padding: var(--space-md) var(--space-lg);
+  }
+  
+  /* Tab navigation in simulation view */
+  .simulation-tabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+    border-bottom: 1px solid var(--border-color);
+    position: relative;
+  }
+  
+  .simulation-tabs .tab-btn {
+    flex-shrink: 0;
+    min-width: 120px;
+    padding: var(--space-md) var(--space-lg);
+    font-size: var(--text-sm);
+    white-space: nowrap;
+    border-bottom: 2px solid transparent;
+    transition: all var(--transition-fast);
+  }
+  
+  .simulation-tabs .tab-btn.active {
+    border-bottom-color: var(--color-primary);
+    color: var(--color-primary);
+  }
+  
+  /* Tab scroll indicator */
+  .simulation-tabs::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 20px;
+    height: 100%;
+    background: linear-gradient(to right, transparent, var(--bg-card));
+    pointer-events: none;
+    z-index: 1;
+  }
+}
+
+/* ========================================
+   MOBILE MENU BUTTON (Future Enhancement)
+   ======================================== */
+
+.mobile-menu-button {
+  display: none;
+}
+
+@media (max-width: 480px) {
+  .mobile-menu-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--touch-target);
+    height: var(--touch-target);
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    color: var(--text-primary);
+  }
+  
+  .mobile-menu-button svg {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+/* ========================================
+   BREADCRUMB NAVIGATION
+   ======================================== */
+
+@media (max-width: 768px) {
+  .breadcrumb {
+    font-size: var(--text-sm);
+    color: var(--text-muted);
+    margin-bottom: var(--space-lg);
+    padding: 0 var(--space-sm);
+  }
+  
+  .breadcrumb a {
+    color: var(--color-primary);
+    text-decoration: none;
+  }
+  
+  .breadcrumb .separator {
+    margin: 0 var(--space-sm);
+    color: var(--text-muted);
+  }
+}

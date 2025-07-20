@@ -1,0 +1,491 @@
+/* Page Transitions & Animation System */
+
+/* ========================================
+   CSS CUSTOM PROPERTIES FOR ANIMATIONS
+   ======================================== */
+
+:root {
+  /* Animation durations */
+  --duration-fast: 150ms;
+  --duration-normal: 300ms;
+  --duration-slow: 500ms;
+  --duration-slower: 750ms;
+  
+  /* Animation easing functions */
+  --ease-linear: linear;
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* ========================================
+   PAGE TRANSITION UTILITIES
+   ======================================== */
+
+.page-transition {
+  transition: all var(--duration-normal) var(--ease-out);
+}
+
+.fade-enter {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.fade-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity var(--duration-normal) var(--ease-out),
+              transform var(--duration-normal) var(--ease-out);
+}
+
+.fade-exit {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.fade-exit-active {
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: opacity var(--duration-fast) var(--ease-in),
+              transform var(--duration-fast) var(--ease-in);
+}
+
+/* ========================================
+   SLIDE TRANSITIONS
+   ======================================== */
+
+.slide-up-enter {
+  opacity: 0;
+  transform: translateY(100%);
+}
+
+.slide-up-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity var(--duration-normal) var(--ease-out),
+              transform var(--duration-normal) var(--ease-out);
+}
+
+.slide-up-exit {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.slide-up-exit-active {
+  opacity: 0;
+  transform: translateY(-20px);
+  transition: opacity var(--duration-fast) var(--ease-in),
+              transform var(--duration-fast) var(--ease-in);
+}
+
+.slide-down-enter {
+  opacity: 0;
+  transform: translateY(-100%);
+}
+
+.slide-down-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity var(--duration-normal) var(--ease-out),
+              transform var(--duration-normal) var(--ease-out);
+}
+
+.slide-left-enter {
+  opacity: 0;
+  transform: translateX(100%);
+}
+
+.slide-left-enter-active {
+  opacity: 1;
+  transform: translateX(0);
+  transition: opacity var(--duration-normal) var(--ease-out),
+              transform var(--duration-normal) var(--ease-out);
+}
+
+.slide-right-enter {
+  opacity: 0;
+  transform: translateX(-100%);
+}
+
+.slide-right-enter-active {
+  opacity: 1;
+  transform: translateX(0);
+  transition: opacity var(--duration-normal) var(--ease-out),
+              transform var(--duration-normal) var(--ease-out);
+}
+
+/* ========================================
+   SCALE TRANSITIONS
+   ======================================== */
+
+.scale-enter {
+  opacity: 0;
+  transform: scale(0.9);
+}
+
+.scale-enter-active {
+  opacity: 1;
+  transform: scale(1);
+  transition: opacity var(--duration-normal) var(--ease-out),
+              transform var(--duration-normal) var(--ease-spring);
+}
+
+.scale-exit {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.scale-exit-active {
+  opacity: 0;
+  transform: scale(0.95);
+  transition: opacity var(--duration-fast) var(--ease-in),
+              transform var(--duration-fast) var(--ease-in);
+}
+
+.scale-bounce-enter {
+  opacity: 0;
+  transform: scale(0.3);
+}
+
+.scale-bounce-enter-active {
+  opacity: 1;
+  transform: scale(1);
+  transition: opacity var(--duration-normal) var(--ease-out),
+              transform var(--duration-slow) var(--ease-bounce);
+}
+
+/* ========================================
+   MODAL TRANSITIONS
+   ======================================== */
+
+.modal-backdrop-enter {
+  opacity: 0;
+}
+
+.modal-backdrop-enter-active {
+  opacity: 1;
+  transition: opacity var(--duration-normal) var(--ease-out);
+}
+
+.modal-backdrop-exit {
+  opacity: 1;
+}
+
+.modal-backdrop-exit-active {
+  opacity: 0;
+  transition: opacity var(--duration-fast) var(--ease-in);
+}
+
+.modal-content-enter {
+  opacity: 0;
+  transform: translateY(-3rem) scale(0.9);
+}
+
+.modal-content-enter-active {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  transition: opacity var(--duration-normal) var(--ease-out),
+              transform var(--duration-normal) var(--ease-spring);
+}
+
+.modal-content-exit {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.modal-content-exit-active {
+  opacity: 0;
+  transform: translateY(-1rem) scale(0.95);
+  transition: opacity var(--duration-fast) var(--ease-in),
+              transform var(--duration-fast) var(--ease-in);
+}
+
+/* ========================================
+   DRAWER/SIDEBAR TRANSITIONS
+   ======================================== */
+
+.drawer-enter {
+  transform: translateX(-100%);
+}
+
+.drawer-enter-active {
+  transform: translateX(0);
+  transition: transform var(--duration-normal) var(--ease-out);
+}
+
+.drawer-exit {
+  transform: translateX(0);
+}
+
+.drawer-exit-active {
+  transform: translateX(-100%);
+  transition: transform var(--duration-fast) var(--ease-in);
+}
+
+.drawer-right-enter {
+  transform: translateX(100%);
+}
+
+.drawer-right-enter-active {
+  transform: translateX(0);
+  transition: transform var(--duration-normal) var(--ease-out);
+}
+
+.drawer-right-exit {
+  transform: translateX(0);
+}
+
+.drawer-right-exit-active {
+  transform: translateX(100%);
+  transition: transform var(--duration-fast) var(--ease-in);
+}
+
+/* ========================================
+   TAB TRANSITIONS
+   ======================================== */
+
+.tab-content-enter {
+  opacity: 0;
+  transform: translateX(2rem);
+}
+
+.tab-content-enter-active {
+  opacity: 1;
+  transform: translateX(0);
+  transition: opacity var(--duration-normal) var(--ease-out),
+              transform var(--duration-normal) var(--ease-out);
+}
+
+.tab-content-exit {
+  opacity: 1;
+  transform: translateX(0);
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+}
+
+.tab-content-exit-active {
+  opacity: 0;
+  transform: translateX(-2rem);
+  transition: opacity var(--duration-fast) var(--ease-in),
+              transform var(--duration-fast) var(--ease-in);
+}
+
+/* ========================================
+   LIST ITEM TRANSITIONS
+   ======================================== */
+
+.list-item-enter {
+  opacity: 0;
+  transform: translateY(2rem);
+  max-height: 0;
+}
+
+.list-item-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  max-height: 1000px;
+  transition: opacity var(--duration-normal) var(--ease-out),
+              transform var(--duration-normal) var(--ease-out),
+              max-height var(--duration-slow) var(--ease-out);
+}
+
+.list-item-exit {
+  opacity: 1;
+  transform: translateY(0);
+  max-height: 1000px;
+}
+
+.list-item-exit-active {
+  opacity: 0;
+  transform: translateY(-1rem);
+  max-height: 0;
+  margin-bottom: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  transition: opacity var(--duration-fast) var(--ease-in),
+              transform var(--duration-fast) var(--ease-in),
+              max-height var(--duration-normal) var(--ease-in),
+              margin var(--duration-normal) var(--ease-in),
+              padding var(--duration-normal) var(--ease-in);
+}
+
+/* ========================================
+   STAGGER ANIMATIONS
+   ======================================== */
+
+.stagger-children > * {
+  animation-delay: calc(var(--stagger-delay, 50ms) * var(--index, 0));
+}
+
+.stagger-fade-in > * {
+  opacity: 0;
+  transform: translateY(1rem);
+  animation: staggerFadeIn var(--duration-normal) var(--ease-out) forwards;
+}
+
+@keyframes staggerFadeIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ========================================
+   LOADING STATE TRANSITIONS
+   ======================================== */
+
+.loading-enter {
+  opacity: 0;
+}
+
+.loading-enter-active {
+  opacity: 1;
+  transition: opacity var(--duration-fast) var(--ease-out);
+}
+
+.loading-exit {
+  opacity: 1;
+}
+
+.loading-exit-active {
+  opacity: 0;
+  transition: opacity var(--duration-fast) var(--ease-in);
+}
+
+.skeleton-enter {
+  opacity: 0;
+  transform: scaleY(0.8);
+}
+
+.skeleton-enter-active {
+  opacity: 1;
+  transform: scaleY(1);
+  transition: opacity var(--duration-normal) var(--ease-out),
+              transform var(--duration-normal) var(--ease-out);
+}
+
+.skeleton-exit {
+  opacity: 1;
+  transform: scaleY(1);
+}
+
+.skeleton-exit-active {
+  opacity: 0;
+  transform: scaleY(0.8);
+  transition: opacity var(--duration-fast) var(--ease-in),
+              transform var(--duration-fast) var(--ease-in);
+}
+
+/* ========================================
+   PAGE NAVIGATION TRANSITIONS
+   ======================================== */
+
+.page-container {
+  position: relative;
+  min-height: 100vh;
+}
+
+.page-view {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+}
+
+.route-transition-enter {
+  opacity: 0;
+  transform: translateX(100%);
+}
+
+.route-transition-enter-active {
+  opacity: 1;
+  transform: translateX(0);
+  transition: opacity var(--duration-normal) var(--ease-out),
+              transform var(--duration-normal) var(--ease-out);
+}
+
+.route-transition-exit {
+  opacity: 1;
+  transform: translateX(0);
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+}
+
+.route-transition-exit-active {
+  opacity: 0;
+  transform: translateX(-100%);
+  transition: opacity var(--duration-fast) var(--ease-in),
+              transform var(--duration-fast) var(--ease-in);
+}
+
+/* ========================================
+   UTILITY CLASSES
+   ======================================== */
+
+.transition-none {
+  transition: none !important;
+}
+
+.transition-fast {
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.transition-normal {
+  transition: all var(--duration-normal) var(--ease-out);
+}
+
+.transition-slow {
+  transition: all var(--duration-slow) var(--ease-out);
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  
+  .transition-fast,
+  .transition-normal,
+  .transition-slow {
+    transition: none !important;
+  }
+}
+
+/* ========================================
+   TRANSFORM UTILITIES
+   ======================================== */
+
+.transform-gpu {
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+.transform-origin-center {
+  transform-origin: center;
+}
+
+.transform-origin-top {
+  transform-origin: top;
+}
+
+.transform-origin-bottom {
+  transform-origin: bottom;
+}
+
+.transform-origin-left {
+  transform-origin: left;
+}
+
+.transform-origin-right {
+  transform-origin: right;
+}

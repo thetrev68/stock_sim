@@ -4,44 +4,182 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Paper Trading Simulator</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="description" content="Practice trading with virtual money in real-time market conditions">
+    <meta name="theme-color" content="#22d3ee">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Paper Trading">
+    
+    <!-- Preconnect to improve loading performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.tailwindcss.com">
+    
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- NEW: Organized CSS Architecture -->
+    <link rel="stylesheet" href="/src/styles/main.css">
+    
+    <!-- Inter Font with optimized loading -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📈</text></svg>">
+    
+    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Critical CSS for immediate rendering -->
     <style>
-        body { font-family: 'Inter', sans-serif; }
-        .ticker-symbol { font-variant-caps: all-small-caps; }
+        /* Font loading optimization */
+        body { 
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        
+        /* Critical loading state styles */
+        #loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #111827;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+        
+        .loading-spinner {
+            width: 3rem;
+            height: 3rem;
+            border: 4px solid #374151;
+            border-top-color: #22d3ee;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Prevent FOUC (Flash of Unstyled Content) */
+        #app-content {
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+        
+        #app-content.loaded {
+            opacity: 1;
+        }
+        
+        /* Critical mobile fixes */
+        @media (max-width: 768px) {
+            body {
+                font-size: 16px; /* Prevent iOS zoom */
+                -webkit-text-size-adjust: 100%;
+            }
+        }
+        
+        /* Navigation utility classes for component compatibility */
         .nav-link-active { 
             background-color: #0891b2 !important; 
             color: white !important; 
             border-bottom-color: #22d3ee; 
         }
+        
+        .ticker-symbol { 
+            font-variant-caps: all-small-caps; 
+        }
     </style>
 </head>
 <body class="bg-gray-900 text-white antialiased">
-    <div id="app" class="max-w-6xl mx-auto p-4 sm:p-6 lg:p-8">
-        <!-- Loading state -->
-        <div id="loading" class="flex items-center justify-center min-h-screen">
-            <div class="text-center">
-                <div class="w-12 h-12 border-4 border-cyan-400 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                <p class="text-gray-400">Loading Paper Trading Simulator...</p>
-            </div>
-        </div>
-
-        <!-- Main app content (hidden initially) -->
-        <div id="app-content" class="hidden">
-            <!-- Header will be injected here -->
-            <header id="header"></header>
-            
-            <!-- Navigation will be injected here -->
-            <nav id="navigation"></nav>
-            
-            <!-- Main content area -->
-            <main id="main-content"></main>
+    <!-- Loading state with enhanced accessibility -->
+    <div id="loading" role="status" aria-label="Loading application">
+        <div class="text-center">
+            <div class="loading-spinner mx-auto mb-4" aria-hidden="true"></div>
+            <p class="text-gray-400 text-lg font-medium">Loading Paper Trading Simulator...</p>
+            <p class="text-gray-500 text-sm mt-2">Preparing your trading environment</p>
         </div>
     </div>
 
-    <!-- Firebase SDKs -->
+    <!-- Main app container with enhanced responsive design -->
+    <div id="app" class="max-w-6xl mx-auto">
+        <!-- Main app content (hidden initially) -->
+        <div id="app-content" class="min-h-screen">
+            <!-- Header will be injected here -->
+            <header id="header" role="banner"></header>
+            
+            <!-- Navigation will be injected here -->
+            <nav id="navigation" role="navigation" aria-label="Main navigation"></nav>
+            
+            <!-- Main content area with improved semantics -->
+            <main id="main-content" role="main" class="p-4 sm:p-6 lg:p-8">
+                <!-- Dynamic content will be injected here -->
+            </main>
+            
+            <!-- Toast notifications container -->
+            <div id="toast-container" 
+                 class="fixed top-4 right-4 z-50 space-y-2" 
+                 role="region" 
+                 aria-label="Notifications" 
+                 aria-live="polite">
+                <!-- Toast messages will be injected here -->
+            </div>
+            
+            <!-- Modal container -->
+            <div id="modal-container" role="dialog" aria-hidden="true">
+                <!-- Modals will be injected here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Service Worker Registration for PWA features -->
+    <script>
+        // Register service worker for offline capabilities (future enhancement)
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                // Service worker registration can be added here
+            });
+        }
+        
+        // App loading optimization
+        document.addEventListener('DOMContentLoaded', () => {
+            // Add loaded class for smooth transition
+            setTimeout(() => {
+                const appContent = document.getElementById('app-content');
+                if (appContent) {
+                    appContent.classList.add('loaded');
+                }
+            }, 100);
+        });
+        
+        // Performance monitoring
+        window.addEventListener('load', () => {
+            // Log performance metrics for debugging
+            if (performance && performance.timing) {
+                const loadTime = performance.timing.loadEventEnd - performance.timing.navigationStart;
+                console.log(`App loaded in ${loadTime}ms`);
+            }
+        });
+        
+        // Error boundary for unhandled errors
+        window.addEventListener('error', (event) => {
+            console.error('Unhandled error:', event.error);
+            // Could send to error reporting service
+        });
+        
+        // Handle unhandled promise rejections
+        window.addEventListener('unhandledrejection', (event) => {
+            console.error('Unhandled promise rejection:', event.reason);
+            // Could send to error reporting service
+        });
+    </script>
+
+    <!-- Firebase SDKs and Main Application -->
     <script type="module" src="/src/main.js"></script>
 </body>
 </html>

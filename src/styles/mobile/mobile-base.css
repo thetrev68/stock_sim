@@ -1,0 +1,209 @@
+/* Mobile Base Styles - Core Mobile Optimizations */
+
+/* ========================================
+   MOBILE BREAKPOINT STRATEGY
+   ======================================== */
+
+/* Mobile: 320px - 768px */
+@media (max-width: 768px) {
+
+  /* ========================================
+     TOUCH TARGET OPTIMIZATION
+     ======================================== */
+  
+  /* Ensure all interactive elements meet minimum touch target */
+  button,
+  .btn,
+  .nav-btn,
+  .clickable,
+  .tab-btn,
+  input[type="checkbox"],
+  input[type="radio"],
+  select {
+    min-height: var(--touch-target);
+    min-width: var(--touch-target);
+  }
+  
+  /* Button specific touch optimizations */
+  .btn {
+    padding: 0.75rem 1.5rem;
+    font-size: 0.9375rem;
+  }
+  
+  .btn-sm {
+    min-height: var(--touch-target-sm);
+    padding: 0.6875rem 1.25rem;
+    font-size: 0.875rem;
+  }
+
+  /* ========================================
+     TYPOGRAPHY MOBILE SCALING
+     ======================================== */
+  
+  /* Scale down headings for mobile */
+  h1 { font-size: var(--text-2xl); }
+  h2 { font-size: var(--text-xl); }
+  h3 { font-size: var(--text-lg); }
+  
+  /* Improve text contrast on mobile */
+  .text-gray-400 {
+    color: var(--color-gray-300) !important;
+  }
+  
+  .text-gray-500 {
+    color: var(--color-gray-400) !important;
+  }
+  
+  .text-sm {
+    font-weight: var(--font-medium);
+    color: var(--color-gray-200) !important;
+  }
+  
+  .text-xs {
+    font-weight: var(--font-medium);
+    color: var(--color-gray-300) !important;
+  }
+
+  /* ========================================
+     LAYOUT MOBILE ADJUSTMENTS
+     ======================================== */
+  
+  /* Container mobile padding */
+  .container {
+    padding: 0 var(--space-lg);
+  }
+  
+  /* Force single column for mobile */
+  .card-grid,
+  .card-grid-2,
+  .card-grid-3,
+  .card-grid-4 {
+    grid-template-columns: 1fr;
+    gap: var(--space-lg);
+  }
+  
+  /* Stack flex layouts on mobile */
+  .mobile-stack {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: var(--space-md) !important;
+  }
+  
+  /* Full width on mobile */
+  .mobile-full-width {
+    width: 100% !important;
+  }
+
+  /* ========================================
+     SPACING MOBILE OPTIMIZATION
+     ======================================== */
+  
+  /* Reduce large gaps on mobile */
+  .gap-2xl { gap: var(--space-xl) !important; }
+  .gap-xl { gap: var(--space-lg) !important; }
+  .gap-lg { gap: var(--space-md) !important; }
+  
+  /* Adjust card padding */
+  .p-2xl { padding: var(--space-lg) !important; }
+  .p-xl { padding: var(--space-lg) !important; }
+  
+  /* Specific padding overrides */
+  .bg-gray-800.p-6 {
+    padding: var(--space-lg) !important;
+  }
+
+  /* ========================================
+     MOBILE UTILITY CLASSES
+     ======================================== */
+  
+  .mobile-hidden {
+    display: none !important;
+  }
+  
+  .mobile-block {
+    display: block !important;
+  }
+  
+  .mobile-flex {
+    display: flex !important;
+  }
+  
+  .mobile-text-center {
+    text-align: center !important;
+  }
+  
+  .mobile-text-left {
+    text-align: left !important;
+  }
+
+  /* ========================================
+     FORM INPUT OPTIMIZATIONS
+     ======================================== */
+  
+  /* Prevent iOS zoom on input focus */
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+    min-height: var(--touch-target);
+  }
+  
+  /* Better form field spacing */
+  .form-field {
+    margin-bottom: var(--space-lg);
+  }
+
+  /* ========================================
+     BORDER AND VISUAL ENHANCEMENTS
+     ======================================== */
+  
+  /* Enhanced card borders for mobile */
+  .bg-gray-800 {
+    border: 1px solid var(--color-gray-600) !important;
+  }
+  
+  /* Better button contrast */
+  button {
+    font-weight: var(--font-semibold) !important;
+  }
+}
+
+/* ========================================
+   TOUCH DEVICE SPECIFIC OPTIMIZATIONS
+   ======================================== */
+
+@media (hover: none) and (pointer: coarse) {
+  /* Remove hover effects on touch devices */
+  button:hover,
+  .btn:hover,
+  .clickable:hover,
+  .nav-btn:hover {
+    transform: none !important;
+    box-shadow: none !important;
+  }
+  
+  /* Add active states for better touch feedback */
+  button:active,
+  .btn:active,
+  .clickable:active {
+    transform: scale(0.98) !important;
+    transition: transform 0.1s ease !important;
+  }
+}
+
+/* ========================================
+   LANDSCAPE PHONE OPTIMIZATIONS
+   ======================================== */
+
+@media (max-width: 768px) and (orientation: landscape) {
+  /* Reduce vertical spacing in landscape */
+  .gap-xl { gap: var(--space-md) !important; }
+  .gap-lg { gap: var(--space-sm) !important; }
+  
+  /* Compact header in landscape */
+  h1 { font-size: var(--text-xl); }
+  h2 { font-size: var(--text-lg); }
+  
+  /* Reduce padding in landscape */
+  .p-xl { padding: var(--space-md) !important; }
+}
