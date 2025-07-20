@@ -6,7 +6,6 @@ import { SimulationService } from "../services/simulation.js";
 import { AuthService } from "../services/auth.js";
 import { ActivityService } from "../services/activity.js";
 import { LeaderboardService } from "../services/leaderboard.js";
-// import { permissionService } from "../services/auth/permission-service.js";
 
 // Components
 import { LeaderboardOverview } from "../components/simulation/LeaderboardOverview.js";
@@ -15,7 +14,6 @@ import { SimulationAdminManager } from "../components/simulation/SimulationAdmin
 import { SimulationPortfolioManager } from "../components/simulation/SimulationPortfolioManager.js";
 import { SimulationMemberManager } from "../components/simulation/SimulationMemberManager.js";
 import { SimulationActivityManager } from "../components/simulation/SimulationActivityManager.js";
-// import { SimulationTabManager } from "../components/simulation/SimulationTabManager.js";
 import { SimulationDisplayManager } from "../components/simulation/SimulationDisplayManager.js";
 
 // Constants
@@ -36,16 +34,11 @@ import {
     getLeaderboardSectionTemplate,
     getActivitySectionTemplate, 
 } from "../templates/simulation/simulation-layout.js";
-// import { getMainStatsCardsTemplate } from "../templates/simulation/simulation-sidebar.js";
 import { 
     getArchivePromptBannerTemplate,
     getArchiveSuccessInfoBannerTemplate,
     getShowTemporaryMessageTemplate
 } from "../templates/simulation/notification-components.js";
-// import { 
-//     getCleanSimulationLayoutTemplate, 
-//     getCleanSimulationLoadingTemplate 
-// } from "../templates/simulation/simulation-layout-clean.js";
 
 export default class SimulationView {
     constructor() {
