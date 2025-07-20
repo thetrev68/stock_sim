@@ -2,6 +2,7 @@
 ├── .firebaserc
 ├── .gitignore
 ├── count-js-files.ps1
+├── css-restructure.md
 ├── eslint.config.js
 ├── firebase.json
 ├── firestore.indexes.json
@@ -52,6 +53,7 @@
 │   ├── counter.js
 │   ├── javascript.svg
 │   ├── main.js
+│   ├── mobile-responsive.css.backup
 │   ├── services
 │   │   ├── activity.js
 │   │   ├── auth.js
@@ -70,7 +72,34 @@
 │   │   │   └── stock-quotes.js
 │   │   ├── stocks.js
 │   │   └── trading.js
-│   ├── style.css
+│   ├── style.css.backup
+│   ├── styles
+│   │   ├── animations
+│   │   │   ├── micro.css
+│   │   │   └── transitions.css
+│   │   ├── base
+│   │   │   ├── reset.css
+│   │   │   └── variables.css
+│   │   ├── components
+│   │   │   ├── buttons.css
+│   │   │   ├── cards.css
+│   │   │   ├── forms.css
+│   │   │   ├── loading.css
+│   │   │   ├── modals.css
+│   │   │   └── tables.css
+│   │   ├── layout
+│   │   │   ├── containers.css
+│   │   │   └── navigation.css
+│   │   ├── main.css
+│   │   ├── mobile
+│   │   │   ├── mobile-base.css
+│   │   │   ├── mobile-modals.css
+│   │   │   ├── mobile-navigation.css
+│   │   │   ├── mobile-tables.css
+│   │   │   └── mobile-views.css
+│   │   └── views
+│   │       ├── dashboard.css
+│   │       └── simulation.css
 │   ├── templates
 │   │   ├── archive
 │   │   │   ├── archive-export.js

@@ -1,184 +1,28 @@
-/* Button Component Styles */
+/* Minimal Button Styles - Only What You Actually Use */
 
-/* ========================================
-   BASE BUTTON STYLES
-   ======================================== */
-
-.btn {
-  /* Layout */
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-sm);
-  
-  /* Typography */
-  font-family: var(--font-sans);
-  font-weight: var(--font-semibold);
-  font-size: var(--text-sm);
-  line-height: 1;
-  text-decoration: none;
-  white-space: nowrap;
-  
-  /* Spacing */
-  padding: var(--space-md) var(--space-lg);
-  
-  /* Appearance */
-  border: var(--border-width) solid transparent;
-  border-radius: var(--radius-lg);
-  
-  /* Interaction */
-  cursor: pointer;
-  transition: all var(--transition-fast);
-  
-  /* States */
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    pointer-events: none;
-  }
-}
-
-/* ========================================
-   BUTTON VARIANTS
-   ======================================== */
-
-/* Primary Button */
-.btn-primary {
+/* Navigation active state (from Navigation.js) */
+.nav-link-active {
   background-color: var(--color-primary);
   color: var(--text-inverse);
-  border-color: var(--color-primary);
+  border-bottom-color: var(--color-primary);
 }
 
-.btn-primary:hover:not(:disabled) {
-  background-color: var(--color-primary-dark);
-  border-color: var(--color-primary-dark);
-  transform: translateY(-1px);
-}
-
-.btn-primary:active {
-  transform: translateY(0);
-}
-
-/* Secondary Button */
-.btn-secondary {
-  background-color: var(--bg-card);
-  color: var(--text-primary);
-  border-color: var(--border-color);
-}
-
-.btn-secondary:hover:not(:disabled) {
-  background-color: var(--color-gray-700);
-  border-color: var(--border-color-light);
-}
-
-/* Success Button */
-.btn-success {
-  background-color: var(--color-success);
-  color: var(--text-primary);
-  border-color: var(--color-success);
-}
-
-.btn-success:hover:not(:disabled) {
-  background-color: var(--color-success-light);
-  transform: translateY(-1px);
-}
-
-/* Danger Button */
-.btn-danger {
-  background-color: var(--color-error);
-  color: var(--text-primary);
-  border-color: var(--color-error);
-}
-
-.btn-danger:hover:not(:disabled) {
-  background-color: var(--color-error-light);
-  transform: translateY(-1px);
-}
-
-/* Outline Button */
-.btn-outline {
-  background-color: transparent;
-  color: var(--text-primary);
-  border-color: var(--border-color);
-}
-
-.btn-outline:hover:not(:disabled) {
-  background-color: var(--bg-card);
-  border-color: var(--border-color-light);
-}
-
-/* Ghost Button */
-.btn-ghost {
-  background-color: transparent;
-  color: var(--text-secondary);
-  border-color: transparent;
-}
-
-.btn-ghost:hover:not(:disabled) {
-  background-color: var(--bg-card);
-  color: var(--text-primary);
-}
-
-/* ========================================
-   BUTTON SIZES
-   ======================================== */
-
-.btn-xs {
-  font-size: var(--text-xs);
-  padding: var(--space-xs) var(--space-sm);
-  border-radius: var(--radius-sm);
-}
-
-.btn-sm {
-  font-size: var(--text-sm);
-  padding: var(--space-sm) var(--space-md);
-  border-radius: var(--radius-md);
-}
-
-.btn-lg {
-  font-size: var(--text-lg);
-  padding: var(--space-lg) var(--space-xl);
-  border-radius: var(--radius-xl);
-}
-
-.btn-xl {
-  font-size: var(--text-xl);
-  padding: var(--space-xl) var(--space-2xl);
-  border-radius: var(--radius-xl);
-}
-
-/* ========================================
-   BUTTON MODIFIERS
-   ======================================== */
-
-/* Full width button */
-.btn-block {
-  width: 100%;
-}
-
-/* Icon only button */
-.btn-icon {
-  aspect-ratio: 1;
-  padding: var(--space-md);
-}
-
-.btn-icon.btn-sm {
-  padding: var(--space-sm);
-}
-
-.btn-icon.btn-lg {
-  padding: var(--space-lg);
-}
-
-/* Loading state */
+/* Loading spinner for buttons (from modals) */
 .btn-loading {
   position: relative;
-  color: transparent !important;
+  pointer-events: none;
+}
+
+.btn-loading .btn-text {
+  opacity: 0;
 }
 
 .btn-loading::after {
   content: '';
   position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   width: 16px;
   height: 16px;
   border: 2px solid currentColor;
@@ -187,120 +31,6 @@
   animation: spin 1s linear infinite;
 }
 
-/* ========================================
-   BUTTON GROUPS
-   ======================================== */
-
-.btn-group {
-  display: inline-flex;
-  gap: 0;
-}
-
-.btn-group .btn {
-  border-radius: 0;
-  border-right-width: 0;
-}
-
-.btn-group .btn:first-child {
-  border-top-left-radius: var(--radius-lg);
-  border-bottom-left-radius: var(--radius-lg);
-}
-
-.btn-group .btn:last-child {
-  border-top-right-radius: var(--radius-lg);
-  border-bottom-right-radius: var(--radius-lg);
-  border-right-width: var(--border-width);
-}
-
-.btn-group .btn:only-child {
-  border-radius: var(--radius-lg);
-  border-right-width: var(--border-width);
-}
-
-/* ========================================
-   SPECIFIC APP BUTTONS
-   ======================================== */
-
-/* Navigation button styles */
-.nav-btn {
-  font-weight: var(--font-medium);
-  color: var(--text-secondary);
-  background-color: transparent;
-  border: none;
-  padding: var(--space-md) var(--space-lg);
-  border-radius: var(--radius-lg);
-  transition: all var(--transition-fast);
-}
-
-.nav-btn:hover {
-  color: var(--text-primary);
-  background-color: var(--bg-card);
-}
-
-.nav-btn.active {
-  color: var(--color-primary);
-  background-color: rgba(34, 211, 238, 0.1);
-}
-
-/* Trade action buttons */
-.trade-btn-buy {
-  background-color: var(--color-success);
-  color: var(--text-primary);
-  border-color: var(--color-success);
-}
-
-.trade-btn-buy:hover:not(:disabled) {
-  background-color: var(--color-success-light);
-}
-
-.trade-btn-sell {
-  background-color: var(--color-error);
-  color: var(--text-primary);
-  border-color: var(--color-error);
-}
-
-.trade-btn-sell:hover:not(:disabled) {
-  background-color: var(--color-error-light);
-}
-
-/* Status buttons */
-.status-btn {
-  font-size: var(--text-xs);
-  font-weight: var(--font-medium);
-  padding: var(--space-xs) var(--space-sm);
-  border-radius: var(--radius-full);
-  border: none;
-}
-
-.status-btn-active {
-  background-color: rgba(16, 185, 129, 0.2);
-  color: var(--color-success-light);
-}
-
-.status-btn-pending {
-  background-color: rgba(245, 158, 11, 0.2);
-  color: var(--color-warning-light);
-}
-
-.status-btn-ended {
-  background-color: rgba(107, 114, 128, 0.2);
-  color: var(--color-gray-400);
-}
-
-/* ========================================
-   FOCUS STATES
-   ======================================== */
-
-.btn:focus-visible {
-  outline: 2px solid var(--color-primary);
-  outline-offset: 2px;
-}
-
-/* ========================================
-   ANIMATIONS
-   ======================================== */
-
 @keyframes spin {
-  from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
-}
+} 

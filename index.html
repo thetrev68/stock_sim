@@ -66,14 +66,13 @@
             to { transform: rotate(360deg); }
         }
         
-        /* Prevent FOUC (Flash of Unstyled Content) */
+        /* ADD THIS: */
         #app-content {
-            opacity: 0;
-            transition: opacity 0.3s ease-in-out;
+            display: block; /* Default visible */
         }
-        
-        #app-content.loaded {
-            opacity: 1;
+
+        .hidden {
+            display: none !important;
         }
         
         /* Critical mobile fixes */
@@ -107,9 +106,9 @@
     </div>
 
     <!-- Main app container with enhanced responsive design -->
-    <div id="app" class="max-w-6xl mx-auto">
+    <div id="app-content" class="max-w-6xl mx-auto min-h-screen hidden">
         <!-- Main app content (hidden initially) -->
-        <div id="app-content" class="min-h-screen">
+        <!-- <div id="app-content" class="min-h-screen"> -->
             <!-- Header will be injected here -->
             <header id="header" role="banner"></header>
             
@@ -134,7 +133,7 @@
             <div id="modal-container" role="dialog" aria-hidden="true">
                 <!-- Modals will be injected here -->
             </div>
-        </div>
+        <!-- </div> -->
     </div>
 
     <!-- Service Worker Registration for PWA features -->
@@ -145,17 +144,6 @@
                 // Service worker registration can be added here
             });
         }
-        
-        // App loading optimization
-        document.addEventListener('DOMContentLoaded', () => {
-            // Add loaded class for smooth transition
-            setTimeout(() => {
-                const appContent = document.getElementById('app-content');
-                if (appContent) {
-                    appContent.classList.add('loaded');
-                }
-            }, 100);
-        });
         
         // Performance monitoring
         window.addEventListener('load', () => {

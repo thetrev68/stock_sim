@@ -24,7 +24,7 @@
 @import './components/buttons.css';
 @import './components/forms.css';
 @import './components/cards.css';
-@import './components/modals.css';
+/* @import './components/modals.css'; */
 @import './components/tables.css';
 @import './components/loading.css';
 
@@ -34,7 +34,7 @@
 /* TODO: Create view-specific CSS files as needed */
 /* @import './views/auth.css'; */
 @import './views/dashboard.css';
-@import './views/simulation.css';
+/* @import './views/simulation.css'; */
 /* @import './views/portfolio.css'; */
 /* @import './views/trade.css'; */
 /* @import './views/research.css'; */
@@ -51,8 +51,8 @@
 /* ========================================
    ANIMATION LAYER - Interactions
    ======================================== */
-@import './animations/transitions.css';
-@import './animations/micro.css';
+/* @import './animations/transitions.css'; */
+/* @import './animations/micro.css'; */
 
 /* ========================================
    TEMPORARY COMPATIBILITY STYLES
