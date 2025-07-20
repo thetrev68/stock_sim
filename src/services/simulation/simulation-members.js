@@ -212,7 +212,7 @@ export function calculateHoldingsValue(holdings) {
 
 /**
  * Get detailed member statistics for admin view
- * EXACT COPY from services/simulation.js
+ * FIXED VERSION - resolves "Cannot access before initialization" error
  */
 export async function getMemberStatistics(simulationId, adminUserId, db = null) {
     const database = db || getFirestoreDb();
@@ -226,8 +226,18 @@ export async function getMemberStatistics(simulationId, adminUserId, db = null) 
             throw new Error("Simulation not found");
         }
 
-        const simulation = simSnap.data();
-        if (simulation.createdBy !== adminUserId) {
+        const simulationData = simSnap.data(); // Changed variable name to avoid conflicts
+        
+        console.log("=== getMemberStatistics DEBUG ===");
+        console.log("simulationData.createdBy:", simulationData.createdBy);
+        console.log("adminUserId:", adminUserId);
+        console.log("Type of simulationData.createdBy:", typeof simulationData.createdBy);
+        console.log("Type of adminUserId:", typeof adminUserId);
+        console.log("Are they equal?:", simulationData.createdBy === adminUserId);
+        console.log("Are they equal (loose)?:", simulationData.createdBy == adminUserId);
+        console.log("================================");
+        
+        if (simulationData.createdBy !== adminUserId) {
             throw new Error("Only simulation creator can view detailed statistics");
         }
 
@@ -242,16 +252,16 @@ export async function getMemberStatistics(simulationId, adminUserId, db = null) 
         const memberStats = [];
 
         for (const memberDoc of memberDocs.docs) {
-            const member = memberDoc.data();
+            const memberData = memberDoc.data(); // Changed variable name to avoid conflicts
             
             // Get portfolio data if member is active
             let portfolioData = null;
-            if (member.status === SIMULATION_STATUS.ACTIVE) {
+            if (memberData.status === SIMULATION_STATUS.ACTIVE) {
                 try {
                     const { getPortfolio } = await import("../trading.js");
-                    portfolioData = await getPortfolio(member.userId, simulationId);
+                    portfolioData = await getPortfolio(memberData.userId, simulationId);
                 } catch (error) {
-                    console.warn(`Could not load portfolio for ${member.userId}:`, error);
+                    console.warn(`Could not load portfolio for ${memberData.userId}:`, error);
                 }
             }
 
@@ -261,14 +271,14 @@ export async function getMemberStatistics(simulationId, adminUserId, db = null) 
                 const { ActivityService } = await import("../activity.js");
                 const activityService = new ActivityService();
                 activityService.initialize();
-                const activities = await activityService.getUserActivities(simulationId, member.userId, 100);
+                const activities = await activityService.getUserActivities(simulationId, memberData.userId, 100);
                 activityCount = activities.length;
             } catch (error) {
-                console.warn(`Could not load activities for ${member.userId}:`, error);
+                console.warn(`Could not load activities for ${memberData.userId}:`, error);
             }
 
             memberStats.push({
-                ...member,
+                ...memberData,
                 memberId: memberDoc.id,
                 portfolioValue: portfolioData ? (portfolioData.cash + calculateHoldingsValue(portfolioData.holdings)) : 0,
                 totalTrades: portfolioData ? (portfolioData.trades?.length || 0) : 0,

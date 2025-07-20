@@ -34,6 +34,15 @@ export class SimulationActivityManager {
 
     displayActivities() {
         const activityFeed = document.getElementById("activity-feed");
+        const activityLoading = document.getElementById("activity-loading");
+        
+        // Hide loading state and show activity feed
+        if (activityLoading) {
+            activityLoading.classList.add("hidden");
+        }
+        if (activityFeed) {
+            activityFeed.classList.remove("hidden");
+        }
         
         if (!activityFeed) return;
 

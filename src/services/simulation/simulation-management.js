@@ -322,6 +322,7 @@ export async function canUserManageSimulation(userId, simulationId, db = null) {
 
 /**
  * Extend simulation duration (admin only)
+ * FIXED: Proper date comparison handling
  */
 export async function extendSimulation(simulationId, adminUserId, newEndDate, reason = "", db = null) {
     const database = getDb(db);
@@ -334,17 +335,43 @@ export async function extendSimulation(simulationId, adminUserId, newEndDate, re
         }
 
         const currentEndDate = toDate(simulation.endDate);
-        const extensionDate = new Date(newEndDate);
+        
+        // FIX: Parse the date string correctly to avoid timezone issues
+        // Input format: "2025-07-27" -> parse as local timezone date
+        const dateParts = newEndDate.split("-");
+        const extensionDate = new Date(parseInt(dateParts[0]), parseInt(dateParts[1]) - 1, parseInt(dateParts[2]));
 
-        if (extensionDate <= currentEndDate) {
-            throw new Error("New end date must be after current end date");
+        // DEBUG: Log the dates for comparison
+        console.log("=== EXTEND SIMULATION DEBUG ===");
+        console.log("Current end date:", currentEndDate);
+        console.log("New end date input:", newEndDate);
+        console.log("Extension date object (fixed):", extensionDate);
+        console.log("Current end date getTime():", currentEndDate.getTime());
+        console.log("Extension date getTime():", extensionDate.getTime());
+        console.log("Extension > Current?:", extensionDate.getTime() > currentEndDate.getTime());
+        console.log("================================");
+
+        // Normalize both dates to start of day for comparison
+        const currentEndTime = new Date(currentEndDate.getFullYear(), currentEndDate.getMonth(), currentEndDate.getDate()).getTime();
+        const extensionTime = new Date(extensionDate.getFullYear(), extensionDate.getMonth(), extensionDate.getDate()).getTime();
+
+        if (extensionTime <= currentEndTime) {
+            throw new Error(`New end date (${extensionDate.toDateString()}) must be after current end date (${currentEndDate.toDateString()})`);
         }
-        if (extensionDate <= new Date()) {
+        
+        const now = new Date();
+        const todayTime = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+        
+        if (extensionTime <= todayTime) {
             throw new Error("New end date must be in the future");
         }
 
+        // Set the extension date to end of day (23:59:59) to match original simulation behavior
+        const finalExtensionDate = new Date(extensionDate);
+        finalExtensionDate.setHours(23, 59, 59, 999);
+
         await updateDoc(simRef, {
-            endDate: extensionDate,
+            endDate: finalExtensionDate,
             extendedAt: serverTimestamp(),
             extendedBy: adminUserId,
             extensionReason: reason,
@@ -352,7 +379,7 @@ export async function extendSimulation(simulationId, adminUserId, newEndDate, re
             originalEndDate: simulation.originalEndDate || simulation.endDate
         });
 
-        console.log(`Simulation ${simulationId} extended to ${extensionDate.toISOString()} by ${adminUserId}`);
+        console.log(`Simulation ${simulationId} extended to ${finalExtensionDate.toISOString()} by ${adminUserId}`);
         return { success: true };
     } catch (error) {
         return handleError("extending simulation", error);
@@ -361,6 +388,7 @@ export async function extendSimulation(simulationId, adminUserId, newEndDate, re
 
 /**
  * Get simulation management statistics
+ * RESTORED to original structure with proper date utilities
  */
 export async function getSimulationManagementStats(simulationId, adminUserId, db = null) {
     const database = getDb(db);
@@ -370,49 +398,60 @@ export async function getSimulationManagementStats(simulationId, adminUserId, db
 
         const memberQuery = query(
             collection(database, SIMULATION_MEMBERS_COLLECTION),
-            where("simulationId", "==", simulationId),
-            where("status", "==", "active")
+            where("simulationId", "==", simulationId)
         );
-
         const memberDocs = await getDocs(memberQuery);
-        const activeMembers = memberDocs.size;
 
-        // Calculate timeline information
-        const startDate = toDate(simulation.startDate);
-        const endDate = toDate(simulation.endDate);
-        const now = new Date();
-        
-        let totalDuration = 0;
-        let daysElapsed = 0;
-        let daysRemaining = 0;
-        
-        if (startDate && endDate) {
-            totalDuration = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
-            daysElapsed = Math.max(0, Math.ceil((now - startDate) / (1000 * 60 * 60 * 24)));
-            daysRemaining = Math.max(0, Math.ceil((endDate - now) / (1000 * 60 * 60 * 24)));
-        }
+        const activeMembers = memberDocs.docs.filter(doc => doc.data().status === SIMULATION_STATUS.ACTIVE).length;
+        const removedMembers = memberDocs.docs.filter(doc => doc.data().status === "removed").length;
+        const totalJoined = memberDocs.docs.length;
 
-        const originalEndDate = simulation.originalEndDate ? toDate(simulation.originalEndDate) : null;
-
-        // Get basic trading statistics
         let totalTrades = 0;
+        let totalVolume = 0;
         try {
-            // This would require portfolio data, simplified for now
-            totalTrades = 0; 
+            const { ActivityService } = await import("../activity.js");
+            const activityService = new ActivityService();
+            activityService.initialize();
+            const activities = await activityService.getSimulationActivities(simulationId, 1000);
+
+            const tradeActivities = activities.filter(a => a.action === "executed_trade");
+            totalTrades = tradeActivities.length;
+            totalVolume = tradeActivities.reduce((sum, activity) => sum + (activity.data.amount || 0), 0);
         } catch (error) {
-            console.warn("Could not calculate total trades:", error);
+            console.warn("Could not load activity stats:", error);
         }
 
+        // Import date utilities properly
+        const { 
+            calculateTotalDuration, 
+            calculateDaysElapsed, 
+            calculateDaysRemaining 
+        } = await import("../../utils/date-utils.js");
+
+        // Use proper date utility functions
+        const totalDuration = calculateTotalDuration(simulation.startDate, simulation.endDate);
+        const daysElapsed = calculateDaysElapsed(simulation.startDate);
+        const daysRemaining = calculateDaysRemaining(simulation.endDate);
+        
+        // Calculate original duration if simulation was extended
+        const originalDuration = simulation.originalEndDate ? 
+            calculateTotalDuration(simulation.startDate, simulation.originalEndDate) : null;
+
+        // RETURN CORRECT STRUCTURE - this is what the modal template expects
         return {
-            basicInfo: {
-                name: simulation.name,
-                status: simulation.status,
-                memberCount: activeMembers,
-                maxMembers: simulation.maxMembers || 50,
-                isAtCapacity: activeMembers >= (simulation.maxMembers || 50)
+            simulation: {
+                ...simulation,
+                id: simulationId
             },
-            trading: {
+            members: {
+                active: activeMembers,
+                removed: removedMembers,
+                totalJoined: totalJoined,
+                utilizationPercent: simulation.maxMembers > 0 ? Math.round((activeMembers / simulation.maxMembers) * 100) : 0
+            },
+            activity: {
                 totalTrades,
+                totalVolume,
                 avgTradesPerMember: activeMembers > 0 ? Math.round(totalTrades / activeMembers) : 0
             },
             timeline: {
@@ -420,8 +459,8 @@ export async function getSimulationManagementStats(simulationId, adminUserId, db
                 daysElapsed,
                 daysRemaining,
                 progressPercent: totalDuration > 0 ? Math.round((daysElapsed / totalDuration) * 100) : 0,
-                wasExtended: !!originalEndDate,
-                originalDuration: originalEndDate ? Math.ceil((originalEndDate - startDate) / (1000 * 60 * 60 * 24)) : null
+                wasExtended: !!simulation.originalEndDate,
+                originalDuration
             }
         };
     } catch (error) {

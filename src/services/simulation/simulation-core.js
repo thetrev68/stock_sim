@@ -172,7 +172,7 @@ export async function createSimulation(creatorUserId, simulationData, db = null)
         const simulation = {
             name: simulationData.name,
             description: simulationData.description || "",
-            creatorUserId: creatorUserId,
+            createdBy: creatorUserId,  // ✅ CORRECT FIELD NAME
             startDate: startDate,
             endDate: endDate,
             startingBalance: simulationData.startingBalance || 10000,

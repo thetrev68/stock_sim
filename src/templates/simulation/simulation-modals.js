@@ -127,6 +127,22 @@ export const getMemberManagementModalTemplate = (memberStats, activeMemberCount,
  * @returns {string} HTML template string
  */
 export const getSimulationSettingsModalTemplate = (stats) => {
+    // Safety check - ensure we have required data
+    if (!stats || !stats.simulation) {
+        console.error("Invalid stats object passed to modal template:", stats);
+        return `
+            <div id="simulation-settings-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                <div class="bg-gray-800 rounded-xl shadow-2xl w-full max-w-md border border-gray-700 p-6">
+                    <h2 class="text-xl font-bold text-white mb-4">Error</h2>
+                    <p class="text-gray-400 mb-4">Unable to load simulation settings. Missing simulation data.</p>
+                    <button onclick="this.parentElement.parentElement.remove()" class="bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded">
+                        Close
+                    </button>
+                </div>
+            </div>
+        `;
+    }
+    
     const simulation = stats.simulation;
     const canModifyRules = simulation.status === "pending";
     const isEnded = simulation.status === "ended";

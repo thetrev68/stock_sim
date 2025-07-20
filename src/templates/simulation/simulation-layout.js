@@ -422,8 +422,8 @@ export const getActivitySectionTemplate = () => {
                                 <p class="text-gray-400 text-sm">Loading activity...</p>
                             </div>
                             
-                            <div id="activity-list" class="space-y-3 hidden">
-                                <!-- Activity list will be populated here -->
+                            <div id="activity-feed" class="space-y-3">
+                                <!-- Activity feed will be populated here -->
                             </div>
                         </div>
                     </div>

@@ -158,15 +158,4 @@ textarea:not(.form-textarea) {
   .gap-6 {
     gap: var(--space-lg) !important;
   }
-  
-  /* Better text contrast on mobile */
-  /* .text-sm {
-    font-weight: var(--font-medium) !important;
-    color: var(--color-gray-200) !important;
-  }
-  
-  .text-xs {
-    font-weight: var(--font-medium) !important;
-    color: var(--color-gray-300) !important;
-  } */
 }

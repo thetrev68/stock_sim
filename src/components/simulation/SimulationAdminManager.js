@@ -64,7 +64,7 @@ export class SimulationAdminManager {
 
         // Save basic settings
         document.getElementById("save-basic-settings")?.addEventListener("click", async () => {
-            await this.handleSaveBasicSettings(stats.simulation);
+            await this.handleSaveBasicSettings();
         });
 
         // Reset basic settings
@@ -101,7 +101,7 @@ export class SimulationAdminManager {
         });
     }
 
-    async handleSaveBasicSettings(originalSimulation) {
+    async handleSaveBasicSettings() {
         const nameInput = document.getElementById("sim-name-input");
         const maxMembersInput = document.getElementById("max-members-input");
         const descriptionInput = document.getElementById("sim-description-input");
