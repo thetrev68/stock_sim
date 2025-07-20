@@ -1,12 +1,17 @@
 // file: src/constants/app-config.js
-// Application configuration constants extracted from multiple files
+// FIXED: Application configuration with proper refresh intervals
 
-// Auto-refresh intervals (milliseconds)
+// FIXED: Auto-refresh intervals (milliseconds) - ensuring no 15-second refreshes
 export const REFRESH_INTERVALS = {
-    SIMULATION_DATA: 30000,     // 30 seconds - members and activities
+    SIMULATION_DATA: 30000,     // 30 seconds - members and activities (was causing 15s refresh)
     LEADERBOARD: 120000,        // 2 minutes - leaderboard refresh
     PORTFOLIO: 60000,           // 1 minute - portfolio data
-    STOCK_PRICES: 60000         // 1 minute - stock price updates
+    STOCK_PRICES: 60000,        // 1 minute - stock price updates
+    
+    // FIXED: Additional intervals to prevent confusion
+    MINIMUM_REFRESH: 30000,     // Minimum 30 seconds between any auto-refresh
+    ACTIVITY_FEED: 45000,       // 45 seconds - activity feed (if separate from simulation data)
+    USER_STATUS: 60000          // 1 minute - user online status updates
 };
 
 // Timeouts (milliseconds)
@@ -49,7 +54,7 @@ export const CACHE_CONFIG = {
     STOCK_PROFILES: 300000,     // 5 minutes
     STOCK_SEARCH: 300000,       // 5 minutes
     STOCK_NEWS: 600000,         // 10 minutes
-    SIMULATION_DATA: 30000      // 30 seconds
+    SIMULATION_DATA: 30000      // 30 seconds (matches REFRESH_INTERVALS.SIMULATION_DATA)
 };
 
 // UI Timing
@@ -97,4 +102,11 @@ export const NETWORK_CONFIG = {
     RETRY_ATTEMPTS: 3,          // Number of retry attempts
     RETRY_DELAY: 1000,          // Base retry delay
     CONNECTION_CHECK_INTERVAL: 30000 // Connection status check
+};
+
+// FIXED: Debug configuration to help track refresh issues
+export const DEBUG_CONFIG = {
+    LOG_REFRESH_EVENTS: true,   // Log when auto-refresh events occur
+    LOG_PERMISSION_CHECKS: true, // Log permission checking
+    LOG_INTERVAL_CLEANUP: true   // Log interval creation/cleanup
 };

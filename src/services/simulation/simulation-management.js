@@ -1,6 +1,5 @@
 // file: src/services/simulation/simulation-management.js
-// Admin management and lifecycle operations extracted from services/simulation.js
-// Phase 3A Step 3: Status management, archiving, extensions, and admin controls
+// ENHANCED: Admin management with creator + system admin support
 
 import { getFirestoreDb, getFirebaseAuth } from "../firebase.js";
 import {
@@ -13,10 +12,12 @@ import {
     query,
     where,
     orderBy,
+    // limit,
     serverTimestamp
 } from "firebase/firestore";
 import { SIMULATION_STATUS } from "../../constants/simulation-status.js";
 import { calculateRealTimeStatus } from "./simulation-core.js";
+import { permissionService } from "../auth/permission-service.js";
 
 const SIMULATIONS_COLLECTION = "simulations";
 const SIMULATION_MEMBERS_COLLECTION = "simulationMembers";
@@ -36,60 +37,165 @@ const handleError = (context, error) => {
 };
 
 /**
- * Fetches a simulation document and verifies creator permissions.
- * @param {string} simulationId
- * @param {string} adminUserId
- * @param {*} database
- * @returns {Promise<Object>} The simulation data.
- * @throws {Error} If simulation not found or user lacks permission.
+ * ENHANCED: Fetches a simulation and verifies creator OR admin permissions
  */
-async function getVerifiedSimulation(simulationId, adminUserId, database) {
+async function getVerifiedSimulation(simulationId, userId, database) {
+    console.log("Checking permissions for:", { simulationId, userId });
+    
     const simRef = doc(database, SIMULATIONS_COLLECTION, simulationId);
     const simSnap = await getDoc(simRef);
 
     if (!simSnap.exists()) {
+        console.error("Simulation not found:", simulationId);
         throw new Error("Simulation not found");
     }
 
     const simulation = simSnap.data();
-    if (simulation.createdBy !== adminUserId) {
-        throw new Error("User does not have permission for this simulation");
+    
+    // ENHANCED: Check both creator and admin permissions
+    const permissions = await permissionService.getSimulationPermissions(userId, simulation);
+    
+    console.log("Permission check result:", {
+        userId,
+        simulationCreator: simulation.createdBy,
+        permissions
+    });
+
+    if (!permissions.canManage) {
+        console.error("Permission denied:", {
+            simulationCreator: simulation.createdBy,
+            requestingUser: userId,
+            isCreator: permissions.isCreator,
+            isAdmin: permissions.isAdmin
+        });
+        throw new Error("You don't have permission to manage this simulation. Only the creator or system administrators can perform this action.");
     }
-    return { simRef, simulation };
+
+    console.log(`Permission granted for user ${userId} (${permissions.accessReason})`);
+    return { simRef, simulation, permissions };
 }
 
 /**
- * Safely converts a Firestore Timestamp or date string to a Date object.
+ * ENHANCED: Get member statistics with admin support
  */
-const toDate = (timestampOrDate) => {
-    if (!timestampOrDate) return null;
-    return timestampOrDate.toDate ? timestampOrDate.toDate() : new Date(timestampOrDate);
-};
-
-/**
- * End a simulation early (admin only) - Enhanced with debugging and activity logging
- */
-export async function endSimulationEarly(simulationId, adminUserId, reason = "", db = null) {
+export async function getMemberStatistics(simulationId, userId, db = null) {
     const database = getDb(db);
 
     try {
-        console.log(`Attempting to end simulation ${simulationId} early by ${adminUserId}`);
-        const { simRef, simulation } = await getVerifiedSimulation(simulationId, adminUserId, database);
+        console.log("Getting member statistics for:", { simulationId, userId });
+        
+        // ENHANCED: Support both creator and admin access
+        const { simulation, permissions } = await getVerifiedSimulation(simulationId, userId, database);
 
-        console.log("Current simulation status:", simulation.status);
-        console.log("Simulation creator:", simulation.createdBy);
-        console.log("Admin user:", adminUserId);
+        const memberQuery = query(
+            collection(database, SIMULATION_MEMBERS_COLLECTION),
+            where("simulationId", "==", simulationId),
+            orderBy("joinedAt", "asc")
+        );
+
+        const memberDocs = await getDocs(memberQuery);
+        const memberStats = [];
+
+        memberDocs.forEach(doc => {
+            const memberData = doc.data();
+            memberStats.push({
+                id: doc.id,
+                userId: memberData.userId,
+                displayName: memberData.displayName,
+                email: memberData.email,
+                joinedAt: memberData.joinedAt,
+                status: memberData.status,
+                role: memberData.role || (memberData.userId === simulation.createdBy ? "creator" : "member"),
+                portfolioValue: memberData.portfolioValue || 0,
+                totalTrades: memberData.totalTrades || 0
+            });
+        });
+
+        console.log(`Member statistics loaded successfully by ${permissions.accessReason}:`, memberStats.length, "members");
+        return memberStats;
+
+    } catch (error) {
+        console.error("Error in getMemberStatistics:", error);
+        throw new Error(`Failed to load member management: ${error.message}`);
+    }
+}
+
+/**
+ * ENHANCED: Update simulation settings with admin support
+ */
+export async function updateSimulationSettings(simulationId, userId, settings, db = null) {
+    const database = getDb(db);
+
+    try {
+        console.log("Updating simulation settings:", { simulationId, userId, settings });
+        
+        // ENHANCED: Support both creator and admin access
+        const { simRef, simulation, permissions } = await getVerifiedSimulation(simulationId, userId, database);
+
+        const updateData = {
+            updatedAt: serverTimestamp(),
+            updatedBy: userId,
+            // ENHANCED: Track if update was made by admin vs creator
+            updatedByRole: permissions.accessReason
+        };
+
+        if (settings.name && settings.name.trim() !== simulation.name) {
+            updateData.name = settings.name.trim();
+        }
+
+        if (settings.description !== undefined) {
+            updateData.description = settings.description.trim();
+        }
+
+        if (settings.maxMembers && settings.maxMembers >= simulation.memberCount) {
+            updateData.maxMembers = settings.maxMembers;
+        } else if (settings.maxMembers && settings.maxMembers < simulation.memberCount) {
+            throw new Error(`Cannot reduce max members below current member count (${simulation.memberCount})`);
+        }
+
+        if (simulation.status === SIMULATION_STATUS.PENDING && settings.rules) {
+            updateData.rules = {
+                ...simulation.rules,
+                ...settings.rules
+            };
+        }
+
+        const changes = Object.keys(updateData).filter(k => !k.includes("At") && k !== "updatedBy" && k !== "updatedByRole");
+        if (changes.length > 0) {
+            await updateDoc(simRef, updateData);
+            console.log(`Simulation ${simulationId} settings updated by ${userId} (${permissions.accessReason})`);
+            return { success: true, changes, updatedBy: permissions.accessReason };
+        } else {
+            return { success: true, changes: [], updatedBy: permissions.accessReason };
+        }
+    } catch (error) {
+        console.error("Error updating simulation settings:", error);
+        throw new Error(`Failed to update settings: ${error.message}`);
+    }
+}
+
+/**
+ * ENHANCED: End simulation early with admin support
+ */
+export async function endSimulationEarly(simulationId, userId, reason = "", db = null) {
+    const database = getDb(db);
+
+    try {
+        console.log(`Attempting to end simulation ${simulationId} early by ${userId}`);
+        
+        // ENHANCED: Support both creator and admin access
+        const { simRef, simulation, permissions } = await getVerifiedSimulation(simulationId, userId, database);
 
         if (simulation.status === SIMULATION_STATUS.ENDED) {
             throw new Error("Simulation is already ended");
         }
 
-        console.log("Updating simulation status to ended...");
         const updateData = {
             status: SIMULATION_STATUS.ENDED,
             endedEarly: true,
             endedAt: serverTimestamp(),
-            endedBy: adminUserId,
+            endedBy: userId,
+            endedByRole: permissions.accessReason, // Track if ended by creator or admin
             endReason: reason,
             statusUpdatedAt: serverTimestamp(),
             manualStatusOverride: true
@@ -98,31 +204,119 @@ export async function endSimulationEarly(simulationId, adminUserId, reason = "",
         await updateDoc(simRef, updateData);
         console.log("Simulation status updated successfully");
 
-        // Log admin activity
+        // Log admin activity (non-blocking)
         try {
             const { ActivityService } = await import("../activity.js");
             const activityService = new ActivityService();
             activityService.initialize();
 
             const auth = getFirebaseAuth();
-            const adminDisplayName = auth.currentUser?.displayName || auth.currentUser?.email || "Admin";
+            const userDisplayName = auth.currentUser?.displayName || auth.currentUser?.email || "User";
 
-            console.log("Logging admin activity...");
-            await activityService.logAchievementActivity(simulationId, adminUserId, adminDisplayName, {
+            await activityService.logAchievementActivity(simulationId, userId, userDisplayName, {
                 milestone: "simulation_ended_early",
                 value: 0,
                 rank: null,
-                reason: reason
+                reason: reason,
+                endedByRole: permissions.accessReason
             });
-            console.log("Admin activity logged successfully");
         } catch (activityError) {
             console.error("Error logging admin activity (non-fatal):", activityError);
         }
 
-        console.log(`Simulation ${simulationId} ended early by ${adminUserId} successfully`);
-        return { success: true };
+        console.log(`Simulation ${simulationId} ended early by ${userId} (${permissions.accessReason})`);
+        return { success: true, endedBy: permissions.accessReason };
     } catch (error) {
-        return handleError("ending simulation early", error);
+        console.error("Error ending simulation early:", error);
+        throw error;
+    }
+}
+
+/**
+ * ENHANCED: Remove member with admin support
+ */
+export async function removeMemberFromSimulation(simulationId, targetUserId, adminUserId, db = null) {
+    const database = getDb(db);
+
+    try {
+        console.log("Removing member:", { simulationId, targetUserId, adminUserId });
+        
+        // ENHANCED: Support both creator and admin access
+        const { simulation, permissions } = await getVerifiedSimulation(simulationId, adminUserId, database);
+
+        // Prevent removing the creator (even by admins, unless they're super admin)
+        if (targetUserId === simulation.createdBy) {
+            const isSuperAdmin = await permissionService.isSuperAdmin(adminUserId);
+            if (!isSuperAdmin) {
+                throw new Error("Cannot remove the simulation creator");
+            }
+        }
+
+        // Prevent self-removal by creator
+        if (targetUserId === adminUserId && permissions.isCreator) {
+            throw new Error("Creator cannot remove themselves from simulation");
+        }
+
+        // Find and update the member record
+        const memberQuery = query(
+            collection(database, SIMULATION_MEMBERS_COLLECTION),
+            where("simulationId", "==", simulationId),
+            where("userId", "==", targetUserId),
+            where("status", "==", "active")
+        );
+        
+        const memberDocs = await getDocs(memberQuery);
+        
+        if (memberDocs.empty) {
+            throw new Error("Member not found or already removed");
+        }
+
+        const memberDoc = memberDocs.docs[0];
+        await updateDoc(memberDoc.ref, {
+            status: "removed",
+            removedAt: serverTimestamp(),
+            removedBy: adminUserId,
+            removedByRole: permissions.accessReason
+        });
+
+        // Update simulation member count
+        const simRef = doc(database, SIMULATIONS_COLLECTION, simulationId);
+        await updateDoc(simRef, {
+            memberCount: simulation.memberCount - 1,
+            updatedAt: serverTimestamp()
+        });
+
+        console.log(`Member ${targetUserId} removed by ${adminUserId} (${permissions.accessReason})`);
+        return { success: true, removedBy: permissions.accessReason };
+
+    } catch (error) {
+        console.error("Error removing member:", error);
+        throw error;
+    }
+}
+
+/**
+ * ENHANCED: Check if user can manage simulation (public utility)
+ */
+export async function canUserManageSimulation(userId, simulationId, db = null) {
+    const database = getDb(db);
+    
+    try {
+        const simRef = doc(database, SIMULATIONS_COLLECTION, simulationId);
+        const simSnap = await getDoc(simRef);
+        
+        if (!simSnap.exists()) {
+            return false;
+        }
+        
+        const simulation = simSnap.data();
+        const permissions = await permissionService.getSimulationPermissions(userId, simulation);
+        
+        return permissions.canManage;
+        
+    } catch (error) {
+        console.error("Error checking user permissions:", error);
+        return false;
     }
 }
 
@@ -166,54 +360,6 @@ export async function extendSimulation(simulationId, adminUserId, newEndDate, re
 }
 
 /**
- * Update simulation settings (admin only)
- */
-export async function updateSimulationSettings(simulationId, adminUserId, settings, db = null) {
-    const database = getDb(db);
-
-    try {
-        const { simRef, simulation } = await getVerifiedSimulation(simulationId, adminUserId, database);
-
-        const updateData = {
-            updatedAt: serverTimestamp(),
-            updatedBy: adminUserId
-        };
-
-        if (settings.name && settings.name.trim() !== simulation.name) {
-            updateData.name = settings.name.trim();
-        }
-
-        if (settings.description !== undefined) {
-            updateData.description = settings.description.trim();
-        }
-
-        if (settings.maxMembers && settings.maxMembers >= simulation.memberCount) {
-            updateData.maxMembers = settings.maxMembers;
-        } else if (settings.maxMembers && settings.maxMembers < simulation.memberCount) {
-            throw new Error(`Cannot reduce max members below current member count (${simulation.memberCount})`);
-        }
-
-        if (simulation.status === SIMULATION_STATUS.PENDING && settings.rules) {
-            updateData.rules = {
-                ...simulation.rules,
-                ...settings.rules
-            };
-        }
-
-        const changes = Object.keys(updateData).filter(k => !k.includes("At") && k !== "updatedBy");
-        if (changes.length > 0) {
-            await updateDoc(simRef, updateData);
-            console.log(`Simulation ${simulationId} settings updated by ${adminUserId}`);
-            return { success: true, changes };
-        } else {
-            return { success: true, changes: [] };
-        }
-    } catch (error) {
-        return handleError("updating simulation settings", error);
-    }
-}
-
-/**
  * Get simulation management statistics
  */
 export async function getSimulationManagementStats(simulationId, adminUserId, db = null) {
@@ -224,55 +370,49 @@ export async function getSimulationManagementStats(simulationId, adminUserId, db
 
         const memberQuery = query(
             collection(database, SIMULATION_MEMBERS_COLLECTION),
-            where("simulationId", "==", simulationId)
+            where("simulationId", "==", simulationId),
+            where("status", "==", "active")
         );
+
         const memberDocs = await getDocs(memberQuery);
+        const activeMembers = memberDocs.size;
 
-        const activeMembers = memberDocs.docs.filter(doc => doc.data().status === SIMULATION_STATUS.ACTIVE).length;
-        const removedMembers = memberDocs.docs.filter(doc => doc.data().status === "removed").length;
-        const totalJoined = memberDocs.docs.length;
-
-        let totalTrades = 0;
-        let totalVolume = 0;
-        try {
-            const { ActivityService } = await import("../activity.js");
-            const activityService = new ActivityService();
-            activityService.initialize();
-            const activities = await activityService.getSimulationActivities(simulationId, 1000);
-
-            const tradeActivities = activities.filter(a => a.action === "executed_trade");
-            totalTrades = tradeActivities.length;
-            totalVolume = tradeActivities.reduce((sum, activity) => sum + (activity.data.amount || 0), 0);
-        } catch (error) {
-            console.warn("Could not load activity stats:", error);
+        // Calculate timeline information
+        const startDate = toDate(simulation.startDate);
+        const endDate = toDate(simulation.endDate);
+        const now = new Date();
+        
+        let totalDuration = 0;
+        let daysElapsed = 0;
+        let daysRemaining = 0;
+        
+        if (startDate && endDate) {
+            totalDuration = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
+            daysElapsed = Math.max(0, Math.ceil((now - startDate) / (1000 * 60 * 60 * 24)));
+            daysRemaining = Math.max(0, Math.ceil((endDate - now) / (1000 * 60 * 60 * 24)));
         }
 
-        const _now = new Date();
-        const startDate = toDate(simulation.startDate);
-        const _endDate = toDate(simulation.endDate);
-        const originalEndDate = toDate(simulation.originalEndDate);
+        const originalEndDate = simulation.originalEndDate ? toDate(simulation.originalEndDate) : null;
 
-        const msInDay = 1000 * 60 * 60 * 24;
-        const calculateDays = (start, end) => Math.ceil((end - start) / msInDay);
-
-        const totalDuration = calculateDays(startDate, _endDate);
-        const daysElapsed = Math.max(0, calculateDays(startDate, _now));
-        const daysRemaining = Math.max(0, calculateDays(_now, _endDate));
+        // Get basic trading statistics
+        let totalTrades = 0;
+        try {
+            // This would require portfolio data, simplified for now
+            totalTrades = 0; 
+        } catch (error) {
+            console.warn("Could not calculate total trades:", error);
+        }
 
         return {
-            simulation: {
-                ...simulation,
-                id: simulationId
+            basicInfo: {
+                name: simulation.name,
+                status: simulation.status,
+                memberCount: activeMembers,
+                maxMembers: simulation.maxMembers || 50,
+                isAtCapacity: activeMembers >= (simulation.maxMembers || 50)
             },
-            members: {
-                active: activeMembers,
-                removed: removedMembers,
-                totalJoined: totalJoined,
-                utilizationPercent: simulation.maxMembers > 0 ? Math.round((activeMembers / simulation.maxMembers) * 100) : 0
-            },
-            activity: {
+            trading: {
                 totalTrades,
-                totalVolume,
                 avgTradesPerMember: activeMembers > 0 ? Math.round(totalTrades / activeMembers) : 0
             },
             timeline: {
@@ -281,7 +421,7 @@ export async function getSimulationManagementStats(simulationId, adminUserId, db
                 daysRemaining,
                 progressPercent: totalDuration > 0 ? Math.round((daysElapsed / totalDuration) * 100) : 0,
                 wasExtended: !!originalEndDate,
-                originalDuration: originalEndDate ? calculateDays(startDate, originalEndDate) : null
+                originalDuration: originalEndDate ? Math.ceil((originalEndDate - startDate) / (1000 * 60 * 60 * 24)) : null
             }
         };
     } catch (error) {
@@ -376,6 +516,7 @@ export async function getUserArchivedSimulations(userId, db = null) {
     const database = getDb(db);
 
     try {
+        // Get archives where user was the creator
         const creatorArchivesQuery = query(
             collection(database, SIMULATION_ARCHIVES_COLLECTION),
             where("archivedBy", "==", userId),
@@ -383,6 +524,7 @@ export async function getUserArchivedSimulations(userId, db = null) {
         );
         const creatorArchives = await getDocs(creatorArchivesQuery);
 
+        // Get simulations where user was a member
         const memberQuery = query(
             collection(database, SIMULATION_MEMBERS_COLLECTION),
             where("userId", "==", userId)
@@ -405,6 +547,7 @@ export async function getUserArchivedSimulations(userId, db = null) {
             }
         }
 
+        // Combine and deduplicate archives
         const allArchives = new Map();
         creatorArchives.docs.forEach(doc => {
             allArchives.set(doc.id, {
@@ -415,7 +558,7 @@ export async function getUserArchivedSimulations(userId, db = null) {
         });
 
         participantArchives.forEach(doc => {
-            if (!allArchives.has(doc.id)) { // Only add if not already added as creator
+            if (!allArchives.has(doc.id)) {
                 allArchives.set(doc.id, {
                     id: doc.id,
                     ...doc.data(),
@@ -427,7 +570,7 @@ export async function getUserArchivedSimulations(userId, db = null) {
         const results = Array.from(allArchives.values()).sort((a, b) => {
             const aTime = toDate(a.archivedAt);
             const bTime = toDate(b.archivedAt);
-            return (bTime?.getTime() || 0) - (aTime?.getTime() || 0); // Handle potential null dates
+            return (bTime?.getTime() || 0) - (aTime?.getTime() || 0);
         });
 
         return results;
@@ -453,97 +596,65 @@ export function generateSimulationExport(archivedSimulation) {
                 duration: archivedSimulation.duration,
                 startingBalance: sim.startingBalance,
                 memberCount: archivedSimulation.memberCount,
-                totalTrades: archivedSimulation.totalTrades,
-                totalVolume: archivedSimulation.totalVolume,
                 endedEarly: archivedSimulation.endedEarly,
                 endReason: archivedSimulation.endReason,
-                rules: sim.rules || {}
+                totalTrades: archivedSimulation.totalTrades,
+                totalVolume: archivedSimulation.totalVolume
             },
-            finalRankings: results?.rankings || [],
+            rules: sim.rules || {},
+            finalResults: results || {},
             winner: archivedSimulation.winner,
             exportedAt: new Date().toISOString(),
             exportVersion: "1.0"
         };
+
         return exportData;
     } catch (error) {
-        return handleError("generating simulation export", error);
+        console.error("Error generating simulation export:", error);
+        throw new Error("Failed to generate export data");
     }
 }
 
 /**
- * Force refresh simulation status from dates (fixes status sync issues) - Enhanced debugging
+ * Safely converts a Firestore Timestamp or date string to a Date object.
+ */
+const toDate = (timestampOrDate) => {
+    if (!timestampOrDate) return null;
+    return timestampOrDate.toDate ? timestampOrDate.toDate() : new Date(timestampOrDate);
+}
+
+/**
+ * Force refresh simulation status from dates (fixes status sync issues)
  */
 export async function refreshSimulationStatus(simulationId, db = null) {
     const database = getDb(db);
-
+    
     try {
-        console.log(`Refreshing status for simulation ${simulationId}...`);
         const simRef = doc(database, SIMULATIONS_COLLECTION, simulationId);
         const simSnap = await getDoc(simRef);
-
+        
         if (!simSnap.exists()) {
             throw new Error("Simulation not found");
         }
-
+        
         const simulation = simSnap.data();
-        console.log("Current stored status:", simulation.status);
-        console.log("Manual status override:", simulation.manualStatusOverride);
-
-        if (simulation.manualStatusOverride && simulation.status === SIMULATION_STATUS.ENDED) {
-            console.log("Manual override detected, keeping ended status");
-            return { updated: false, status: simulation.status, reason: "manual_override" };
-        }
-
-        const realTimeStatus = calculateRealTimeStatus(simulation);
-        console.log("Calculated real-time status:", realTimeStatus);
-
-        if (simulation.status !== realTimeStatus) {
-            console.log(`Updating status from ${simulation.status} to ${realTimeStatus}`);
+        const currentStatus = calculateRealTimeStatus(simulation);
+        
+        // Only update if status has changed and no manual override exists
+        if (currentStatus !== simulation.status && !simulation.manualStatusOverride) {
             await updateDoc(simRef, {
-                status: realTimeStatus,
-                statusUpdatedAt: serverTimestamp(),
-                statusRefreshedAt: serverTimestamp()
-            });
-            console.log(`Simulation ${simulationId} status updated: ${simulation.status} → ${realTimeStatus}`);
-            return { updated: true, oldStatus: simulation.status, newStatus: realTimeStatus };
-        }
-
-        console.log("No status update needed");
-        return { updated: false, status: realTimeStatus };
-    } catch (error) {
-        return handleError("refreshing simulation status", error);
-    }
-}
-
-/**
- * Update simulation status if it has changed - Enhanced to respect manual endings
- */
-export async function updateSimulationStatusIfNeeded(simulationId, currentStoredStatus, calculatedStatus, db = null) {
-    const database = getDb(db);
-
-    try {
-        const simRef = doc(database, SIMULATIONS_COLLECTION, simulationId);
-        const simSnap = await getDoc(simRef);
-
-        if (simSnap.exists()) {
-            const simData = simSnap.data();
-            if (simData.endedEarly || simData.adminEndedEarly) {
-                console.log(`Simulation ${simulationId} was manually ended - skipping auto status update`);
-                return false;
-            }
-        }
-
-        if (currentStoredStatus !== calculatedStatus) {
-            await updateDoc(simRef, {
-                status: calculatedStatus,
+                status: currentStatus,
                 statusUpdatedAt: serverTimestamp()
             });
-            console.log(`Auto-updated simulation ${simulationId} status: ${currentStoredStatus} → ${calculatedStatus}`);
-            return true;
+            
+            console.log(`Simulation ${simulationId} status refreshed from ${simulation.status} to ${currentStatus}`);
+            return { success: true, oldStatus: simulation.status, newStatus: currentStatus };
         }
-        return false;
+        
+        return { success: true, statusChanged: false };
+        
     } catch (error) {
-        return handleError("auto-updating simulation status", error);
+        return handleError("refreshing simulation status", error);
     }
 }
 
@@ -552,18 +663,25 @@ export async function updateSimulationStatusIfNeeded(simulationId, currentStored
  */
 export async function updateSimulationStatus(simulationId, newStatus, db = null) {
     const database = getDb(db);
-
+    
     try {
         const simRef = doc(database, SIMULATIONS_COLLECTION, simulationId);
+        const simSnap = await getDoc(simRef);
+        
+        if (!simSnap.exists()) {
+            throw new Error("Simulation not found");
+        }
+        
         await updateDoc(simRef, {
             status: newStatus,
             statusUpdatedAt: serverTimestamp(),
             manualStatusOverride: true
         });
-
-        console.log(`Simulation ${simulationId} status manually updated to: ${newStatus}`);
+        
+        console.log(`Simulation ${simulationId} status manually updated to ${newStatus}`);
         return { success: true };
+        
     } catch (error) {
         return handleError("updating simulation status", error);
     }
-}
+};

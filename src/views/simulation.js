@@ -6,6 +6,7 @@ import { SimulationService } from "../services/simulation.js";
 import { AuthService } from "../services/auth.js";
 import { ActivityService } from "../services/activity.js";
 import { LeaderboardService } from "../services/leaderboard.js";
+// import { permissionService } from "../services/auth/permission-service.js";
 
 // Components
 import { LeaderboardOverview } from "../components/simulation/LeaderboardOverview.js";
@@ -63,6 +64,7 @@ export default class SimulationView {
         this.leaderboardData = null;
         this.refreshInterval = null;
         this.leaderboardRefreshInterval = null;
+        this.isDestroyed = false; // Add this line
     }
 
     async render(container) {
@@ -148,6 +150,7 @@ export default class SimulationView {
             this.simulationService.initialize();
             this.activityService.initialize();
             this.leaderboardService.initialize();
+            this.initializeManagers();
             
             // Load simulation details with status refresh
             this.currentSimulation = await this.simulationService.getSimulation(this.simulationId);
@@ -326,9 +329,28 @@ export default class SimulationView {
     }
 
     startAutoRefresh() {
-        // Refresh member data and activities every 30 seconds
+        // FIXED: Clear any existing intervals first
+        this.stopAutoRefresh();
+
+        if (this.isDestroyed) {
+            console.log("View is destroyed, not starting auto-refresh");
+            return;
+        }
+
+        console.log("Starting auto-refresh with intervals:", {
+            simulationData: REFRESH_INTERVALS.SIMULATION_DATA,
+            leaderboard: REFRESH_INTERVALS.LEADERBOARD
+        });
+
+        // FIXED: Refresh member data and activities every 30 seconds (not 15)
         this.refreshInterval = setInterval(async () => {
+            if (this.isDestroyed) {
+                this.stopAutoRefresh();
+                return;
+            }
+
             try {
+                console.log("Auto-refreshing simulation data...");
                 await Promise.all([
                     this.loadSimulationMembers(),
                     this.loadSimulationActivities()
@@ -338,9 +360,15 @@ export default class SimulationView {
             }
         }, REFRESH_INTERVALS.SIMULATION_DATA);
 
-        // Refresh leaderboard every 2 minutes (less frequent since it's more expensive)
+        // FIXED: Refresh leaderboard every 2 minutes
         this.leaderboardRefreshInterval = setInterval(async () => {
+            if (this.isDestroyed) {
+                this.stopAutoRefresh();
+                return;
+            }
+
             try {
+                console.log("Auto-refreshing leaderboard...");
                 await this.loadLeaderboard();
                 
                 // Re-render if leaderboard tab is active
@@ -355,10 +383,12 @@ export default class SimulationView {
 
     stopAutoRefresh() {
         if (this.refreshInterval) {
+            console.log("Stopping simulation data auto-refresh");
             clearInterval(this.refreshInterval);
             this.refreshInterval = null;
         }
         if (this.leaderboardRefreshInterval) {
+            console.log("Stopping leaderboard auto-refresh");
             clearInterval(this.leaderboardRefreshInterval);
             this.leaderboardRefreshInterval = null;
         }
@@ -366,7 +396,29 @@ export default class SimulationView {
 
     // Clean up when view is destroyed
     destroy() {
+        console.log("Destroying simulation view");
+        this.isDestroyed = true;
         this.stopAutoRefresh();
+        
+        // Clean up managers
+        if (this.memberManager) {
+            this.memberManager = null;
+        }
+        if (this.activityManager) {
+            this.activityManager = null;
+        }
+        if (this.portfolioManager) {
+            this.portfolioManager = null;
+        }
+        if (this.adminManager) {
+            this.adminManager = null;
+        }
+        if (this.tabManager) {
+            this.tabManager = null;
+        }
+        if (this.displayManager) {
+            this.displayManager = null;
+        }
     }
 
     displayMembers() {
@@ -396,6 +448,21 @@ export default class SimulationView {
     }
 
     async handleMemberManagement() {
+        console.log("Member management button clicked");
+        console.log("=== DEBUG PERMISSION INFO ===");
+        console.log("Current user:", this.currentUser);
+        console.log("Current user UID:", this.currentUser?.uid);
+        console.log("Current simulation:", this.currentSimulation);
+        console.log("Simulation creator:", this.currentSimulation?.createdBy);
+        console.log("================================");
+        
+        // ENHANCED: Pre-check permissions on the client side
+        if (!this.memberManager || !this.memberManager.isCurrentUserCreator()) {
+            console.log("User is not creator, denying access");
+            this.showTemporaryMessage("Only the simulation creator or system administrators can manage members.", "error");
+            return;
+        }
+
         if (this.memberManager) {
             await this.memberManager.handleMemberManagement();
         }
@@ -538,6 +605,15 @@ export default class SimulationView {
     }
 
     async handleSimulationSettings() {
+        console.log("Simulation settings button clicked");
+        
+        // ENHANCED: Pre-check permissions on the client side
+        if (!this.memberManager || !this.memberManager.isCurrentUserCreator()) {
+            console.log("User is not creator, denying access to settings");
+            this.showTemporaryMessage("Only the simulation creator or system administrators can access settings.", "error");
+            return;
+        }
+
         if (this.adminManager) {
             await this.adminManager.handleSimulationSettings();
         }
@@ -702,4 +778,25 @@ export default class SimulationView {
             this.showTemporaryMessage("Warning: Some data may not have refreshed properly", "error");
         }
     }
+
+    initializeManagers() {
+        // Initialize member manager with simulation reference
+        this.memberManager = new SimulationMemberManager(this);
+        if (this.currentSimulation) {
+            this.memberManager.updateSimulationReference(this.currentSimulation);
+        }
+
+        // Initialize other managers
+        this.activityManager = new SimulationActivityManager(this);
+        this.activityManager.initialize(this.simulationId);
+
+        // FIX: Remove the initialize call for portfolioManager
+        this.portfolioManager = new SimulationPortfolioManager(this);
+        // this.portfolioManager.initialize(this.simulationId); // REMOVE THIS LINE
+
+        // FIX: Remove the initialize call for adminManager  
+        this.adminManager = new SimulationAdminManager(this);
+        // this.adminManager.initialize(this.simulationId, this.currentUser); // REMOVE THIS LINE
+    }
 }
+

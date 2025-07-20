@@ -32,7 +32,7 @@ According to `PaperTradingSim.md`, Session 13 should focus on:
 * **Frontend**: Vite + Vanilla JS + Tailwind CSS
 * **Backend**: Firebase (Auth, Firestore, Hosting)
 * **APIs**: Finnhub (quotes/news), Tiingo (historical data)
-* **Styling**: Tailwind utility classes, custom CSS in `style.css`
+* **Styling**: Tailwind utility classes, custom CSS in `main.css`
 
 ## 📱 **Current UI State**
 The app currently works well on desktop but needs:
@@ -43,7 +43,7 @@ The app currently works well on desktop but needs:
 5. **Performance optimization** - large tables and data could be optimized
 
 ## 🔧 **Key Files for UI Polish**
-* `src/style.css` - Global styles and custom CSS
+* `src/styles/main.css` - Global styles and custom CSS
 * `src/views/*.js` - All view components (dashboard, portfolio, trade, research, simulation)
 * `src/components/**/*.js` - Reusable UI components
 * `index.html` - Base template and meta tags
@@ -75,12 +75,12 @@ The app currently works well on desktop but needs:
 4. **Loading improvements** - Add skeleton screens and better loading states
 5. **Micro-interactions** - Enhance buttons, cards, and transitions
 
-## ⚠️ **CRITICAL: File Size Constraints**
+<!-- ## ⚠️ **CRITICAL: File Size Constraints**
 * Many files are 2000+ lines - Claude cannot effectively rewrite them
 * **Strategy**: Work with small, targeted additions instead of full file rewrites
 * **Approach**: CSS enhancements + small component extractions + utility methods
 * **Focus**: New small files rather than modifying large existing ones
-* **Method**: Provide complete, insertable code snippets with clear placement instructions
+* **Method**: Provide complete, insertable code snippets with clear placement instructions -->
 
 ## 🎯 **Success Criteria for Session 13**
 * App looks and feels professional on all devices
