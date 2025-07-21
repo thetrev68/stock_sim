@@ -6,6 +6,7 @@ import {
     formatCurrencyWithCommas,
     formatPrice
 } from "../../utils/currency-utils.js";
+import { formatSimpleDate } from "../../utils/date-utils.js"
 // import { getInitial } from "../../utils/string-utils.js";
 
 /**
@@ -34,7 +35,7 @@ export const getHoldingElementTemplate = (ticker, holding) => {
  */
 export const getTradeElementTemplate = (trade, tradeConfig) => {
     const tradeTypeClass = tradeConfig?.color || "text-gray-400";
-    const tradeTime = new Date(trade.timestamp).toLocaleDateString();
+    const tradeTime = formatSimpleDate(trade.timestamp);
     
     return `
         <div class="flex items-center justify-between py-3 border-b border-gray-600 last:border-b-0">

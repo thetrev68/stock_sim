@@ -2,6 +2,7 @@
 import { getFirestoreDb } from "./firebase";
 import { doc, getDoc, setDoc, updateDoc, runTransaction, collection, query, where, getDocs } from "firebase/firestore";
 import { TRADE_TYPES } from "../constants/trade-types.js";
+import { convertFirebaseDate } from "../utils/date-utils.js";
 
 const PORTFOLIOS_COLLECTION = "portfolios";
 const SIMULATIONS_COLLECTION = "simulations";
@@ -175,8 +176,8 @@ export async function getUserPortfolios(userId) {
             if (a.type === "solo" && b.type !== "solo") return -1;
             if (a.type !== "solo" && b.type === "solo") return 1;
             
-            const aTime = a.createdAt?.toDate?.() || new Date(a.createdAt);
-            const bTime = b.createdAt?.toDate?.() || new Date(b.createdAt);
+            const aTime = convertFirebaseDate(a.createdAt);
+            const bTime = convertFirebaseDate(b.createdAt);
             return bTime.getTime() - aTime.getTime();
         });
         
@@ -204,8 +205,8 @@ export async function validateSimulationTrade(tradeDetails, simulation, portfoli
         
         // Check simulation dates
         const now = new Date();
-        const _startDate = simulation.startDate.toDate ? simulation.startDate.toDate() : new Date(simulation.startDate);
-        const endDate = simulation.endDate.toDate ? simulation.endDate.toDate() : new Date(simulation.endDate);
+        const _startDate = convertFirebaseDate(simulation.startDate);
+        const endDate = convertFirebaseDate(simulation.endDate);
         
         if (now > endDate) {
             return { valid: false, error: "Simulation has ended" };

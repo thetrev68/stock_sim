@@ -16,6 +16,7 @@ import {
     calculateRealTimeStatus 
 } from "./simulation-core.js";
 import { addMemberToSimulation } from "./simulation-members.js";
+import { sortByCreatedDate } from "../../utils/date-utils.js";
 
 const SIMULATIONS_COLLECTION = "simulations";
 const SIMULATION_MEMBERS_COLLECTION = "simulationMembers";
@@ -161,11 +162,7 @@ export async function getUserSimulations(userId, db = null) {
         }
 
         // Sort by creation date (newest first)
-        simulations.sort((a, b) => {
-            const aTime = a.createdAt?.toDate?.() || new Date(a.createdAt);
-            const bTime = b.createdAt?.toDate?.() || new Date(b.createdAt);
-            return bTime.getTime() - aTime.getTime();
-        });
+        sortByCreatedDate(simulations);
 
         return simulations;
 

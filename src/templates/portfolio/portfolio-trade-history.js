@@ -7,6 +7,7 @@ import {
     formatNumberWithCommas,
     formatCurrencyWithCommas
 } from "../../utils/currency-utils.js";
+import { formatTradeDateTime } from "../../utils/date-utils.js";
 import { getInitial, toUpperCase } from "../../utils/string-utils.js";
 
 /** TFC Move
@@ -15,9 +16,7 @@ import { getInitial, toUpperCase } from "../../utils/string-utils.js";
  * @returns {string} HTML template string
  */
 export const getTradeHistoryRowTemplate = (trade) => {
-    const tradeDate = new Date(trade.timestamp);
-    const tradeDateStr = tradeDate.toLocaleDateString();
-    const tradeTimeStr = tradeDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    const { date: tradeDateStr, time: tradeTimeStr } = formatTradeDateTime(trade.timestamp);
     const tradeTypeClass = getTradeTypeColorClass(trade.type);
     const tradeIcon = trade.type === "buy" ? "↗" : "↘";
     

@@ -18,6 +18,7 @@ import {
 import { SIMULATION_STATUS } from "../../constants/simulation-status.js";
 import { calculateRealTimeStatus } from "./simulation-core.js";
 import { permissionService } from "../auth/permission-service.js";
+import { sortByArchivedDate } from "../../utils/date-utils.js";
 
 const SIMULATIONS_COLLECTION = "simulations";
 const SIMULATION_MEMBERS_COLLECTION = "simulationMembers";
@@ -606,11 +607,7 @@ export async function getUserArchivedSimulations(userId, db = null) {
             }
         });
 
-        const results = Array.from(allArchives.values()).sort((a, b) => {
-            const aTime = toDate(a.archivedAt);
-            const bTime = toDate(b.archivedAt);
-            return (bTime?.getTime() || 0) - (aTime?.getTime() || 0);
-        });
+        const results = sortByArchivedDate(Array.from(allArchives.values()));
 
         return results;
     } catch (error) {

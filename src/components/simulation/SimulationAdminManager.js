@@ -3,6 +3,7 @@
 
 import { getSimulationSettingsModalTemplate } from "../../templates/simulation/simulation-modals.js";
 import { SUCCESS_MESSAGES, INFO_MESSAGES } from "../../constants/ui-messages.js";
+import { formatSimpleDate } from "../../utils/date-utils.js";
 
 export class SimulationAdminManager {
     constructor(simulationView) {
@@ -165,7 +166,7 @@ export class SimulationAdminManager {
             return;
         }
 
-        const confirmMessage = `Extend simulation until ${new Date(newEndDate).toLocaleDateString()}?\n\nThis will:\n• Give participants more time to trade\n• Update the leaderboard timeline\n• Notify all members\n\nContinue?`;
+        const confirmMessage = `Extend simulation until ${formatSimpleDate(newEndDate)}?\n\nThis will:\n• Give participants more time to trade\n• Update the leaderboard timeline\n• Notify all members\n\nContinue?`;
         
         if (!confirm(confirmMessage)) {
             return;

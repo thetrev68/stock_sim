@@ -4,6 +4,7 @@ import {
     formatCurrencyWithCommas,
     formatPrice
 } from "../../utils/currency-utils.js";
+import { convertFirebaseDate, getTimeAgoCompact } from "../../utils/date-utils.js";
 
 export class LeaderboardOverview {
     constructor() {
@@ -276,25 +277,14 @@ export class LeaderboardOverview {
         return percentile;
     }
 
+    // Replace the getLastUpdatedText() method with this:
     getLastUpdatedText() {
         if (!this.leaderboardData || !this.leaderboardData.lastUpdated) {
             return "Never";
         }
 
-        const lastUpdated = this.leaderboardData.lastUpdated.toDate ? 
-            this.leaderboardData.lastUpdated.toDate() : 
-            new Date(this.leaderboardData.lastUpdated);
-        
-        const now = new Date();
-        const diffMinutes = Math.floor((now - lastUpdated) / (1000 * 60));
-        
-        if (diffMinutes < 1) return "Just now";
-        if (diffMinutes < 60) return `${diffMinutes}m ago`;
-        
-        const diffHours = Math.floor(diffMinutes / 60);
-        if (diffHours < 24) return `${diffHours}h ago`;
-        
-        return lastUpdated.toLocaleDateString();
+        const lastUpdated = convertFirebaseDate(this.leaderboardData.lastUpdated);
+        return getTimeAgoCompact(lastUpdated);
     }
 
     getLoadingState() {
