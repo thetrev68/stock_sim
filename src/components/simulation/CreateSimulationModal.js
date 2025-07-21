@@ -1,6 +1,11 @@
 // src/components/simulation/CreateSimulationModal.js
 import { SimulationService } from "../../services/simulation.js";
 import { AuthService } from "../../services/auth.js";
+import { 
+    validateSimulationName, 
+    validateDateRange, 
+    validateStartingBalance 
+} from "../../utils/validation-utils.js";
 
 export class CreateSimulationModal {
     constructor() {
@@ -314,36 +319,47 @@ export class CreateSimulationModal {
         const allowShortSelling = document.getElementById("sim-short-selling")?.checked;
         const tradingHours = document.querySelector("input[name=\"trading-hours\"]:checked")?.value;
 
-        if (!name) {
-            this.showError("Simulation name is required");
+        // Validate simulation name
+        const nameResult = validateSimulationName(name);
+        if (!nameResult.valid) {
+            this.showError(nameResult.message);
             return null;
         }
 
-        if (!startDate || !endDate) {
-            this.showError("Start and end dates are required");
+        // Validate date range
+        const dateResult = validateDateRange(startDate, endDate);
+        if (!dateResult.valid) {
+            this.showError(dateResult.message);
             return null;
         }
 
-        if (new Date(endDate) <= new Date(startDate)) {
-            this.showError("End date must be after start date");
+        // Validate starting balance
+        const balanceResult = validateStartingBalance(startingBalance);
+        if (!balanceResult.valid) {
+            this.showError(balanceResult.message);
             return null;
         }
 
-        if (!startingBalance || startingBalance < 1000) {
-            this.showError("Starting balance must be at least $1,000");
+        // Validate max members
+        if (!maxMembers || maxMembers < 2) {
+            this.showError("Maximum members must be at least 2");
+            return null;
+        }
+
+        if (maxMembers > 500) {
+            this.showError("Maximum members cannot exceed 500");
             return null;
         }
 
         return {
-            name,
+            name: nameResult.name,
             description,
-            startDate: new Date(startDate),
-            endDate: new Date(endDate),
-            startingBalance,
-            maxMembers: maxMembers || 20,
+            startDate: dateResult.startDate,
+            endDate: dateResult.endDate,
+            startingBalance: balanceResult.balance,
+            maxMembers,
             allowShortSelling,
-            tradingHours,
-            commissionPerTrade: 0
+            tradingHours: tradingHours || "market"
         };
     }
 

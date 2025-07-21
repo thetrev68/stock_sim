@@ -176,7 +176,7 @@ export default class PortfolioView {
 
                     const costBasis = calculateCostBasis(holding.quantity, holding.avgPrice);
                     const gainLossData = calculateGainLoss(marketValue, costBasis);
-                    const gainLossFormatted = formatGainLoss(gainLossData.amount, gainLossData.percentage);
+                    // const gainLossFormatted = formatGainLoss(gainLossData.amount, gainLossData.percentage);
 
                     // Update the row with real data
                     const updatedRow = getHoldingRowTemplate(ticker, holding, finalPrice);

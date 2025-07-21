@@ -337,6 +337,48 @@ export const validateInviteCode = (code, expectedLength = 6) => {
 };
 
 /**
+ * Validate complete simulation data
+ * @param {object} simulationData - Simulation data to validate
+ * @returns {object} Validation result
+ */
+export const validateSimulationData = (simulationData) => {
+    const results = {};
+    let allValid = true;
+    const errors = [];
+    
+    // Validate name
+    const nameResult = validateSimulationName(simulationData.name);
+    results.name = nameResult;
+    if (!nameResult.valid) {
+        allValid = false;
+        errors.push(nameResult.message);
+    }
+    
+    // Validate date range
+    const dateResult = validateDateRange(simulationData.startDate, simulationData.endDate);
+    results.dateRange = dateResult;
+    if (!dateResult.valid) {
+        allValid = false;
+        errors.push(dateResult.message);
+    }
+    
+    // Validate starting balance
+    const balanceResult = validateStartingBalance(simulationData.startingBalance);
+    results.balance = balanceResult;
+    if (!balanceResult.valid) {
+        allValid = false;
+        errors.push(balanceResult.message);
+    }
+    
+    return {
+        valid: allValid,
+        results,
+        errors,
+        message: allValid ? "All fields are valid" : errors.join("; ")
+    };
+};
+
+/**
  * Data Sanitization
  */
 
@@ -360,145 +402,4 @@ export const sanitizeString = (input, allowSpecialChars = true) => {
     sanitized = sanitized.replace(/\s+/g, " ");
     
     return sanitized;
-};
-
-/**
- * Sanitize and format ticker symbol
- * @param {string} ticker - Ticker to sanitize
- * @returns {string} Sanitized ticker in uppercase
- */
-export const sanitizeTicker = (ticker) => {
-    if (!ticker || typeof ticker !== "string") return "";
-    
-    return ticker
-        .trim()
-        .toUpperCase()
-        .replace(/[^A-Z0-9]/g, "")
-        .slice(0, 10); // Limit to 10 characters
-};
-
-/**
- * Sanitize numeric input
- * @param {any} input - Input to sanitize
- * @param {boolean} allowDecimals - Whether to allow decimal places (default: true)
- * @param {number} maxDecimals - Maximum decimal places (default: 2)
- * @returns {number|null} Sanitized number or null if invalid
- */
-export const sanitizeNumber = (input, allowDecimals = true, maxDecimals = 2) => {
-    if (input === null || input === undefined || input === "") return null;
-    
-    let str = String(input).trim();
-    
-    // Remove any non-numeric characters except decimal point and minus sign
-    str = str.replace(/[^0-9.-]/g, "");
-    
-    // Handle multiple decimal points (keep only the first one)
-    const parts = str.split(".");
-    if (parts.length > 2) {
-        str = parts[0] + "." + parts.slice(1).join("");
-    }
-    
-    // Convert to number
-    let num = parseFloat(str);
-    
-    if (isNaN(num)) return null;
-    
-    // Round to specified decimal places if needed
-    if (allowDecimals && maxDecimals >= 0) {
-        num = Math.round(num * Math.pow(10, maxDecimals)) / Math.pow(10, maxDecimals);
-    } else if (!allowDecimals) {
-        num = Math.round(num);
-    }
-    
-    return num;
-};
-
-/**
- * Comprehensive Validation Helpers
- */
-
-/**
- * Validate form data against a schema
- * @param {object} data - Form data to validate
- * @param {object} schema - Validation schema
- * @returns {object} Validation result with field-level details
- */
-export const validateFormData = (data, schema) => {
-    const results = {};
-    const errors = [];
-    let allValid = true;
-    
-    Object.keys(schema).forEach(field => {
-        const rules = schema[field];
-        const value = data[field];
-        let fieldValid = true;
-        let fieldMessage = "";
-        
-        // Check if required
-        if (rules.required && !isPresent(value)) {
-            fieldValid = false;
-            fieldMessage = `${field} is required`;
-        }
-        
-        // Check specific validation rules if value is present
-        if (fieldValid && isPresent(value)) {
-            if (rules.type === "email" && !isValidEmail(value)) {
-                fieldValid = false;
-                fieldMessage = "Please enter a valid email address";
-            } else if (rules.type === "ticker") {
-                const tickerResult = validateTicker(value);
-                fieldValid = tickerResult.valid;
-                fieldMessage = tickerResult.message;
-            } else if (rules.type === "number") {
-                const numResult = validatePrice(value, rules.min, rules.max);
-                fieldValid = numResult.valid;
-                fieldMessage = numResult.message;
-            } else if (rules.minLength && value.length < rules.minLength) {
-                fieldValid = false;
-                fieldMessage = `${field} must be at least ${rules.minLength} characters`;
-            } else if (rules.maxLength && value.length > rules.maxLength) {
-                fieldValid = false;
-                fieldMessage = `${field} cannot exceed ${rules.maxLength} characters`;
-            }
-        }
-        
-        results[field] = {
-            valid: fieldValid,
-            message: fieldMessage || "Valid"
-        };
-        
-        if (!fieldValid) {
-            allValid = false;
-            errors.push(fieldMessage);
-        }
-    });
-    
-    return {
-        valid: allValid,
-        results,
-        errors,
-        message: allValid ? "All fields are valid" : errors.join("; ")
-    };
-};
-
-/**
- * Get validation error message for Firebase auth errors
- * @param {string} errorCode - Firebase error code
- * @returns {string} User-friendly error message
- */
-export const getAuthErrorMessage = (errorCode) => {
-    const errorMessages = {
-        "auth/user-not-found": "No account found with this email address.",
-        "auth/wrong-password": "Incorrect password.",
-        "auth/email-already-in-use": "An account with this email already exists.",
-        "auth/weak-password": "Password should be at least 6 characters.",
-        "auth/invalid-email": "Please enter a valid email address.",
-        "auth/popup-closed-by-user": "Sign-in popup was closed.",
-        "auth/network-request-failed": "Network error. Please check your connection.",
-        "auth/too-many-requests": "Too many failed attempts. Please try again later.",
-        "auth/user-disabled": "This account has been disabled.",
-        "auth/invalid-credential": "Invalid login credentials."
-    };
-    
-    return errorMessages[errorCode] || "An authentication error occurred. Please try again.";
 };

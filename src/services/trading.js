@@ -3,6 +3,7 @@ import { getFirestoreDb } from "./firebase";
 import { doc, getDoc, setDoc, updateDoc, runTransaction, collection, query, where, getDocs } from "firebase/firestore";
 import { TRADE_TYPES } from "../constants/trade-types.js";
 import { convertFirebaseDate } from "../utils/date-utils.js";
+import { validateTradeDetails } from "../utils/validation-utils.js";
 
 const PORTFOLIOS_COLLECTION = "portfolios";
 const SIMULATIONS_COLLECTION = "simulations";
@@ -258,18 +259,10 @@ export async function executeTrade(userId, tradeDetails, simulationId = null) {
     const db = getFirestoreDb();
     const portfolioRef = getPortfolioRef(userId, simulationId);
 
-    // Validate trade details
-    if (!tradeDetails.ticker || !tradeDetails.quantity || !tradeDetails.price || !tradeDetails.type) {
-        throw new Error("Invalid trade details provided. Missing ticker, quantity, price, or type.");
-    }
-    if (typeof tradeDetails.quantity !== "number" || tradeDetails.quantity <= 0) {
-        throw new Error("Quantity must be a positive number.");
-    }
-    if (typeof tradeDetails.price !== "number" || tradeDetails.price <= 0) {
-        throw new Error("Price must be a positive number.");
-    }
-    if (!Object.values(TRADE_TYPES).includes(tradeDetails.type)) {
-        throw new Error(`Trade type must be "${TRADE_TYPES.BUY}" or "${TRADE_TYPES.SELL}".`);
+    // Validate trade details using validation utils
+    const validationResult = validateTradeDetails(tradeDetails);
+    if (!validationResult.valid) {
+        throw new Error(validationResult.message);
     }
 
     const { ticker, quantity, price, type } = tradeDetails;

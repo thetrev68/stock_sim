@@ -19,6 +19,7 @@ import {
     addClass,
     removeClass
 } from "../../utils/dom-utils.js";
+import { isValidEmail } from "../../utils/validation-utils.js";
 
 export class EmailInviteModal {
     constructor() {
@@ -292,13 +293,12 @@ export class EmailInviteModal {
             .map(email => email.trim())
             .filter(email => email.length > 0);
         
-        // Basic email validation
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        // Use validation utility for email validation
         const validEmails = [];
         const invalidEmails = [];
-        
+
         emails.forEach(email => {
-            if (emailRegex.test(email)) {
+            if (isValidEmail(email)) {
                 validEmails.push(email);
             } else {
                 invalidEmails.push(email);

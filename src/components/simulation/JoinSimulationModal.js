@@ -2,6 +2,7 @@
 import { SimulationService } from "../../services/simulation.js";
 import { AuthService } from "../../services/auth.js";
 import { capitalize } from "../../utils/string-utils.js";
+import { validateInviteCode } from "../../utils/validation-utils.js";
 
 export class JoinSimulationModal {
     constructor() {
@@ -191,12 +192,20 @@ export class JoinSimulationModal {
         });
     }
 
-    async previewSimulation(inviteCode) {
+    async previewSimulation(inviteCodeValue) {
+        const codeResult = validateInviteCode(inviteCodeValue);
+        if (!codeResult.valid) {
+            this.hidePreview();
+            this.disableJoinButton();
+            this.showError(codeResult.message);
+            return;
+        }
+
         try {
             this.simulationService.initialize();
             
             // Find simulation by invite code (we'll need a preview method that doesn't join)
-            const simQuery = await this.simulationService.findSimulationByCode(inviteCode);
+            const simQuery = await this.simulationService.findSimulationByCode(codeResult.code);
             
             if (simQuery) {
                 this.showPreview(simQuery);
@@ -270,12 +279,15 @@ export class JoinSimulationModal {
     }
 
     async handleJoinSimulation() {
-        const inviteCode = document.getElementById("invite-code")?.value.trim();
-        
-        if (!inviteCode || inviteCode.length !== 6) {
-            this.showError("Please enter a valid 6-character invite code");
+        const inviteCodeValue = document.getElementById("invite-code")?.value.trim();
+
+        const codeResult = validateInviteCode(inviteCodeValue);
+        if (!codeResult.valid) {
+            this.showError(codeResult.message);
             return;
         }
+
+        const inviteCode = codeResult.code; // Use the cleaned/validated code
 
         this.setLoading(true);
         this.hideError();

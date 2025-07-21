@@ -85,6 +85,18 @@ export default [
       // "no-unused-expressions": "off", // Example
     },
   },
+  
+  // {
+  // "overrides": [
+  //   {
+  //     "files": ["*.config.js", "vite.config.js", "postcss.config.js"],
+  //     "rules": {
+  //       "import/no-unresolved": "off",
+  //       "import/namespace": "off"
+  //     }
+  //   }
+  // ]
+  // }
   // If you were using "google" config, you'll need to find its flat config equivalent.
   // Often, this means manually adding its rules or checking if `eslint-config-google`
   // has a flat config export (it might not directly, yet).

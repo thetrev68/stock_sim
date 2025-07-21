@@ -15,18 +15,18 @@ import {
 import { 
     getArchivePageLayoutTemplate, 
     getArchiveErrorTemplate 
-} from '../templates/archive/archive-layout.js';
+} from "../templates/archive/archive-layout.js";
 
 import { 
     getRankingRowTemplate, 
     getRankDisplayTemplate 
-} from '../templates/archive/archive-leaderboard.js';
+} from "../templates/archive/archive-leaderboard.js";
 
 import { 
     getTemporaryMessageTemplate,
     getExportButtonLoadingTemplate, 
     getExportButtonDefaultTemplate
-} from '../templates/archive/archive-export.js';
+} from "../templates/archive/archive-export.js";
 
 export default class SimulationArchiveView {
     constructor() {
@@ -161,11 +161,11 @@ export default class SimulationArchiveView {
 
         rankings.forEach((ranking, index) => {
             const isWinner = index === 0;
-            const rankDisplay = this.getRankDisplay(ranking.rank || (index + 1), isWinner);
+            const _rankDisplay = this.getRankDisplay(ranking.rank || (index + 1), isWinner);
             
             const totalReturn = ranking.totalReturn || 0;
-            const totalReturnPercent = ranking.totalReturnPercent || 0;
-            const returnClass = totalReturn >= 0 ? "text-green-400" : "text-red-400";
+            const _totalReturnPercent = ranking.totalReturnPercent || 0;
+            const _returnClass = totalReturn >= 0 ? "text-green-400" : "text-red-400";
             const _returnIcon = totalReturn >= 0 ? "↗" : "↘";
 
             const row = getRankingRowTemplate(ranking, index, isWinner);
@@ -267,7 +267,7 @@ export default class SimulationArchiveView {
     }
 
     showTemporaryMessage(message, type = "info") {
-        const colorClasses = {
+        const _colorClasses = {
             success: "bg-green-900/20 border-green-500 text-green-400",
             error: "bg-red-900/20 border-red-500 text-red-400",
             info: "bg-blue-900/20 border-blue-500 text-blue-400"

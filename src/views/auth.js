@@ -12,6 +12,7 @@ import {
     setElementValue
 } from "../utils/dom-utils.js";
 import { AuthService } from "../services/auth.js";
+import { isValidEmail, validatePassword, isNotEmpty } from "../utils/validation-utils.js";
 
 export default class AuthView {
     constructor() {
@@ -143,8 +144,21 @@ export default class AuthView {
         const password = document.getElementById("password").value;
         const displayName = document.getElementById("display-name").value;
         
+        // Validate email format
+        if (!isValidEmail(email)) {
+            this.showError("Please enter a valid email address");
+            return;
+        }
+        
+        // Validate password
+        const passwordResult = validatePassword(password);
+        if (!passwordResult.valid) {
+            this.showError(passwordResult.message);
+            return;
+        }
+        
         // Validate display name for signup
-        if (this.isSignUp && !displayName.trim()) {
+        if (this.isSignUp && !isNotEmpty(displayName)) {
             this.showError("Please enter a display name");
             return;
         }
