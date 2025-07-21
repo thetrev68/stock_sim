@@ -205,27 +205,28 @@ export class LeaderboardOverview {
     }
 
     getTopPerformerCard(performer, position) {
-        const medalEmoji = position === 1 ? "🏆" : position === 2 ? "🥈" : "🥉";
-        const medalColor = position === 1 ? "text-yellow-400" : position === 2 ? "text-gray-400" : "text-orange-400";
-        const bgColor = position === 1 ? "bg-yellow-500/10" : position === 2 ? "bg-gray-400/10" : "bg-orange-500/10";
+        // Gold/Silver/Bronze colors for top 3, remove medal emojis
+        const rankColors = {
+            1: { text: "text-yellow-400", bg: "bg-yellow-500/10", border: "border-yellow-500/30" },
+            2: { text: "text-gray-300", bg: "bg-gray-400/10", border: "border-gray-400/30" },
+            3: { text: "text-orange-400", bg: "bg-orange-500/10", border: "border-orange-400/30" }
+        };
         
-        // Access performance metrics from nested performance object
+        const colors = rankColors[position];
         const totalReturn = performer.performance?.totalReturn || 0;
         const totalReturnPercent = performer.performance?.totalReturnPercent || 0;
         const totalTrades = performer.performance?.totalTrades || 0;
-
         const returnClass = totalReturn >= 0 ? "text-green-400" : "text-red-400";
-        const returnIcon = totalReturn >= 0 ? "↗" : "↘";
 
         return `
-            <div class="bg-gray-700 p-4 rounded-lg ${bgColor} border border-gray-600">
-                <div class="flex items-center gap-3 mb-3">
-                    <div class="text-2xl">${medalEmoji}</div>
-                    <div>
-                        <h4 class="${medalColor} font-bold text-lg">#${position}</h4>
-                        <p class="text-white font-medium">${performer.displayName}</p>
-                    </div>
+            <div class="bg-gray-700 p-4 rounded-lg ${colors.bg} border ${colors.border}">
+                <!-- CENTERED RANK - No icons/medals -->
+                <div class="text-center mb-4">
+                    <div class="${colors.text} font-bold text-2xl mb-1">#${position}</div>
+                    <p class="text-white font-medium text-lg truncate">${performer.displayName}</p>
+                    <p class="text-gray-400 text-sm truncate">${performer.email}</p>
                 </div>
+                
                 <div class="space-y-2 text-sm">
                     <div class="flex justify-between">
                         <span class="text-gray-400">Portfolio:</span>
@@ -234,7 +235,7 @@ export class LeaderboardOverview {
                     <div class="flex justify-between">
                         <span class="text-gray-400">Return:</span>
                         <span class="${returnClass} font-semibold">
-                            ${returnIcon} ${totalReturnPercent >= 0 ? "+" : ""}${totalReturnPercent.toFixed(2)}%
+                            ${totalReturnPercent >= 0 ? "+" : ""}${totalReturnPercent.toFixed(2)}%
                         </span>
                     </div>
                     <div class="flex justify-between">

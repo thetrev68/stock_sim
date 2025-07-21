@@ -78,7 +78,7 @@ export const getTabNavigationAndContentTemplate = () => {
                                     </button>
                                 </div>
                                 
-                                <div id="sim-holdings-list" class="space-y-3 hidden">
+                                <div id="sim-holdings-list" class="space-y-0 hidden">
                                     </div>
                             </div>
                         </div>
@@ -99,7 +99,7 @@ export const getTabNavigationAndContentTemplate = () => {
                                     <p class="text-gray-400">Your trading history will appear here</p>
                                 </div>
                                 
-                                <div id="sim-trades-list" class="space-y-3 hidden">
+                                <div id="sim-trades-list" class="space-y-0 hidden">
                                     </div>
                             </div>
                         </div>
@@ -128,7 +128,7 @@ export const getTabNavigationAndContentTemplate = () => {
                                 </svg>
                                 Manage Members
                             </button>
-                            <button id="simulation-settings-btn" class="bg-purple-600 hover:bg-purple-500 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 flex items-center gap-2">
+                            <button id="simulation-settings-btn" class="hidden bg-purple-600 hover:bg-purple-500 text-white font-medium py-2.5 px-5 rounded-lg transition-colors duration-200 items-center justify-center gap-2">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
@@ -168,43 +168,60 @@ export const getTabNavigationAndContentTemplate = () => {
 // Add these new template functions to simulation-layout.js (remove old above once confirmed working)
 
 /**
- * Generate the clean header section
+ * Generate the clean header section with manage members moved to top
  * @returns {string} HTML template string
  */
 export const getCleanHeaderSectionTemplate = () => {
     return `
-        <section class="simulation-header bg-gray-800 p-6 rounded-lg shadow-lg border border-gray-700 mb-8">
+        <div class="bg-gray-800 p-6 rounded-lg shadow-lg border border-gray-700 mb-8">
             <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-                <div class="flex-1">
-                    <h1 id="sim-name" class="text-3xl font-bold text-white mb-2">Simulation Name</h1>
-                    <p id="sim-description" class="text-gray-400 mb-4">Simulation description will appear here</p>
+                <div>
+                    <div class="flex items-center gap-3 mb-2">
+                        <h1 id="sim-name" class="text-3xl font-bold text-white">Loading...</h1>
+                        <span id="sim-status-badge" class="px-3 py-1 rounded-full text-sm font-medium bg-gray-600 text-gray-300">
+                            Loading...
+                        </span>
+                    </div>
+                    <p id="sim-description" class="text-gray-400 mb-4">Loading simulation details...</p>
                     
-                    <div class="flex flex-wrap items-center gap-4">
-                        <span id="sim-status" class="px-3 py-1 rounded-full text-sm font-semibold bg-green-600 text-white">Active</span>
-                        <span id="sim-participants" class="text-gray-300 text-sm">0/20 participants</span>
-                        <span id="sim-duration" class="text-gray-300 text-sm">Duration info</span>
-
-                        <!-- ADD THIS INVITE CODE SECTION -->
-                        <div class="flex items-center gap-2 bg-gray-700 px-3 py-1 rounded-lg">
-                            <span class="text-gray-400 text-sm">Invite Code:</span>
-                            <code id="sim-invite-code" class="text-cyan-400 font-mono text-sm font-bold">ABC123</code>
-                            <button id="copy-invite-code-btn" class="text-gray-400 hover:text-white transition-colors" title="Copy invite code">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
-                                </svg>
-                            </button>
+                    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
+                        <div>
+                            <span class="text-gray-400">Duration</span>
+                            <p id="sim-duration" class="text-white font-medium">Loading...</p>
+                        </div>
+                        <div>
+                            <span class="text-gray-400">Participants</span>
+                            <p id="sim-participants" class="text-white font-medium">Loading...</p>
+                        </div>
+                        <div>
+                            <span class="text-gray-400">Starting Balance</span>
+                            <p id="sim-starting-balance" class="text-white font-medium">Loading...</p>
+                        </div>
+                        <div>
+                            <span class="text-gray-400">Your Rank</span>
+                            <p id="sim-your-rank" class="text-white font-medium">Loading...</p>
                         </div>
                     </div>
                 </div>
                 
-                <div class="flex flex-col sm:flex-row gap-3">
-                    <!-- Simulation Dropdown -->
-                    <select id="simulation-dropdown" class="bg-gray-700 text-white rounded-lg px-4 py-2 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-cyan-500">
-                        <option value="">Switch Simulation...</option>
-                    </select>
+                <!-- MOVED: Action buttons including Manage Members -->
+                <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                    <button id="trade-in-sim-btn" class="bg-cyan-600 hover:bg-cyan-500 text-white font-semibold py-2.5 px-5 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                        </svg>
+                        Trade Now
+                    </button>
                     
-                    <!-- Settings Button -->
-                    <button id="simulation-settings-btn" class="bg-purple-600 hover:bg-purple-500 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200 flex items-center gap-2">
+                    <!-- Manage Members Button - only show if user has permissions -->
+                    <button id="manage-members-btn" class="hidden bg-red-600 hover:bg-red-500 text-white font-medium py-2.5 px-5 rounded-lg transition-colors duration-200 items-center justify-center gap-2 shadow-sm">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
+                        </svg>
+                        Manage Members
+                    </button>
+                    
+                    <button id="simulation-settings-btn" class="bg-purple-600 hover:bg-purple-500 text-white font-medium py-2.5 px-5 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
@@ -213,7 +230,7 @@ export const getCleanHeaderSectionTemplate = () => {
                     </button>
                 </div>
             </div>
-        </section>
+        </div>
     `;
 };
 
@@ -270,24 +287,16 @@ export const getCleanStatsCardsTemplate = () => {
 };
 
 /**
- * Generate the portfolio section
+ * Generate the portfolio section - REMOVE duplicate Trade Now button
  * @returns {string} HTML template string
  */
 export const getPortfolioSectionTemplate = () => {
     return `
         <section class="portfolio-section bg-gray-800 rounded-lg shadow-lg border border-gray-700 mb-8">
             <div class="p-6 border-b border-gray-700">
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                    <div>
-                        <h2 class="text-xl font-semibold text-white">Your Portfolio</h2>
-                        <p class="text-sm text-gray-400 mt-1">Current holdings and recent trades</p>
-                    </div>
-                    <button id="trade-now-btn" class="bg-green-600 hover:bg-green-500 text-white font-semibold py-2 px-6 rounded-lg transition-colors duration-200 flex items-center gap-2">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
-                        </svg>
-                        Trade Now
-                    </button>
+                <div>
+                    <h2 class="text-xl font-semibold text-white">Your Portfolio</h2>
+                    <p class="text-sm text-gray-400 mt-1">Current holdings and recent trades</p>
                 </div>
             </div>
             
@@ -307,14 +316,11 @@ export const getPortfolioSectionTemplate = () => {
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
                                 </svg>
                                 <h4 class="text-lg font-semibold text-gray-300 mb-2">No Holdings Yet</h4>
-                                <p class="text-gray-400 mb-4">Start trading to build your portfolio</p>
-                                <button id="start-trading-btn" class="bg-green-600 hover:bg-green-500 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200">
-                                    Start Trading
-                                </button>
+                                <p class="text-gray-400">Start trading to build your portfolio</p>
                             </div>
                             
                             <div id="sim-holdings-list" class="space-y-3 hidden">
-                                <!-- Holdings list will be populated here -->
+                                <!-- Holdings will be populated here -->
                             </div>
                         </div>
                     </div>
@@ -330,14 +336,14 @@ export const getPortfolioSectionTemplate = () => {
                             
                             <div id="sim-trades-empty" class="text-center py-8">
                                 <svg class="w-12 h-12 mx-auto mb-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
                                 </svg>
                                 <h4 class="text-lg font-semibold text-gray-300 mb-2">No Trades Yet</h4>
                                 <p class="text-gray-400">Your trading history will appear here</p>
                             </div>
                             
                             <div id="sim-trades-list" class="space-y-3 hidden">
-                                <!-- Trades list will be populated here -->
+                                <!-- Trades will be populated here -->
                             </div>
                         </div>
                     </div>
@@ -348,24 +354,16 @@ export const getPortfolioSectionTemplate = () => {
 };
 
 /**
- * Generate the leaderboard section
+ * Generate the leaderboard section - REMOVE duplicate refresh button
  * @returns {string} HTML template string
  */
 export const getLeaderboardSectionTemplate = () => {
     return `
         <section class="leaderboard-section bg-gray-800 rounded-lg shadow-lg border border-gray-700 mb-8">
             <div class="p-6 border-b border-gray-700">
-                <div class="flex justify-between items-center">
-                    <div>
-                        <h2 class="text-xl font-semibold text-white">Leaderboard</h2>
-                        <p class="text-sm text-gray-400 mt-1">All participants ranked by portfolio value</p>
-                    </div>
-                    <button id="refresh-leaderboard-btn" class="bg-cyan-600 hover:bg-cyan-500 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200 flex items-center gap-2">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-                        </svg>
-                        Refresh
-                    </button>
+                <div>
+                    <h2 class="text-xl font-semibold text-white">Leaderboard</h2>
+                    <p class="text-sm text-gray-400 mt-1">All participants ranked by portfolio value</p>
                 </div>
             </div>
             
@@ -383,60 +381,28 @@ export const getLeaderboardSectionTemplate = () => {
 };
 
 /**
- * Generate the activity section
+ * Generate the activity section - REMOVE manage members button
  * @returns {string} HTML template string
  */
 export const getActivitySectionTemplate = () => {
     return `
         <section class="activity-section bg-gray-800 rounded-lg shadow-lg border border-gray-700 mb-8">
             <div class="p-6 border-b border-gray-700">
-                <div class="flex justify-between items-center">
-                    <div>
-                        <h2 class="text-xl font-semibold text-white">Recent Activity</h2>
-                        <p class="text-sm text-gray-400 mt-1">Latest trades and member activity</p>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <span class="text-gray-400 text-sm">Members</span>
-                        <button id="manage-members-btn" class="bg-red-600 hover:bg-red-500 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 flex items-center gap-2">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
-                            </svg>
-                            Manage Members
-                        </button>
-                    </div>
+                <div>
+                    <h2 class="text-xl font-semibold text-white">Recent Activity</h2>
+                    <p class="text-sm text-gray-400 mt-1">Latest trades and member activity</p>
                 </div>
             </div>
             
             <div class="p-6">
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    <!-- Simulation Members -->
-                    <div>
-                        <h3 class="text-lg font-semibold text-white mb-4">Simulation Members</h3>
-                        <div id="members-container">
-                            <div id="members-loading" class="text-center py-4">
-                                <div class="w-6 h-6 border-2 border-cyan-400 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
-                                <p class="text-gray-400 text-sm">Loading members...</p>
-                            </div>
-                            
-                            <div id="members-list" class="space-y-3 hidden">
-                                <!-- Members list will be populated here -->
-                            </div>
-                        </div>
+                <div id="activity-feed-container">
+                    <div id="activity-loading" class="text-center py-8">
+                        <div class="w-6 h-6 border-2 border-cyan-400 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+                        <p class="text-gray-400 text-sm">Loading activity...</p>
                     </div>
-
-                    <!-- Recent Activity -->
-                    <div>
-                        <h3 class="text-lg font-semibold text-white mb-4">Activity Feed</h3>
-                        <div id="activity-feed-container">
-                            <div id="activity-loading" class="text-center py-4">
-                                <div class="w-6 h-6 border-2 border-cyan-400 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
-                                <p class="text-gray-400 text-sm">Loading activity...</p>
-                            </div>
-                            
-                            <div id="activity-feed" class="space-y-3">
-                                <!-- Activity feed will be populated here -->
-                            </div>
-                        </div>
+                    
+                    <div id="activity-feed" class="space-y-3">
+                        <!-- Activity feed will be populated here -->
                     </div>
                 </div>
             </div>

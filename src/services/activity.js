@@ -116,17 +116,32 @@ export class ActivityService {
         this.db = this.db || getFirestoreDb();
         
         try {
+            // Build data object, excluding undefined values
+            const data = {
+                milestone: achievementData.milestone,
+                value: achievementData.value
+            };
+
+            // Only add rank if it's defined
+            if (achievementData.rank !== undefined && achievementData.rank !== null) {
+                data.rank = achievementData.rank;
+            }
+
+            // Add any other optional fields that might exist
+            if (achievementData.reason !== undefined) {
+                data.reason = achievementData.reason;
+            }
+            if (achievementData.endedByRole !== undefined) {
+                data.endedByRole = achievementData.endedByRole;
+            }
+
             const activity = {
                 simulationId,
                 userId,
                 userDisplayName,
                 type: "achievement",
                 action: "reached_milestone",
-                data: {
-                    milestone: achievementData.milestone,
-                    value: achievementData.value,
-                    rank: achievementData.rank
-                },
+                data,
                 timestamp: serverTimestamp(),
                 isVisible: true
             };

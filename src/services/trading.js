@@ -75,7 +75,15 @@ export async function initializePortfolio(userId, initialBalance = 10000, simula
                 activityService.initialize();
                 
                 // Get user display name from current auth user
-                const currentUser = this.authService?.getCurrentUser(); // if you have access to authService
+                let currentUser = null;
+                try {
+                    // Try to get auth service if available globally
+                    if (typeof window !== "undefined" && window.app && window.app.authService) {
+                        currentUser = window.app.authService.getCurrentUser();
+                    }
+                } catch (error) {
+                    console.log("AuthService not available for logging:", error.message);
+                }
                 const userDisplayName = currentUser?.displayName || currentUser?.email?.split("@")[0] || "Anonymous User";
                 await activityService.logJoinActivity(simulationId, userId, userDisplayName);
             } catch (error) {

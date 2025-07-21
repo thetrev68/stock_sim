@@ -25,6 +25,18 @@ export default class AuthView {
 
                     <!-- Auth Form -->
                     <form id="auth-form" class="space-y-6">
+                        <!-- Display Name Field (only visible during signup) -->
+                        <div id="display-name-field" class="hidden">
+                            <label for="display-name" class="block text-sm font-medium text-gray-300 mb-2">Display Name</label>
+                            <input 
+                                type="text" 
+                                id="display-name" 
+                                autocomplete="name"
+                                class="w-full bg-gray-700 text-white rounded-lg px-4 py-3 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-cyan-500 transition"
+                                placeholder="Enter your display name"
+                            >
+                        </div>
+
                         <div>
                             <label for="email" class="block text-sm font-medium text-gray-300 mb-2">Email</label>
                             <input 
@@ -118,13 +130,20 @@ export default class AuthView {
         
         const email = document.getElementById("email").value;
         const password = document.getElementById("password").value;
+        const displayName = document.getElementById("display-name").value;
+        
+        // Validate display name for signup
+        if (this.isSignUp && !displayName.trim()) {
+            this.showError("Please enter a display name");
+            return;
+        }
         
         this.setLoading(true);
         this.hideError();
 
         try {
             if (this.isSignUp) {
-                await this.authService.createAccount(email, password);
+                await this.authService.createAccount(email, password, displayName.trim());
             } else {
                 await this.authService.signInWithEmail(email, password);
             }
@@ -155,13 +174,20 @@ export default class AuthView {
         
         const submitText = document.getElementById("auth-submit-text");
         const toggleText = document.getElementById("toggle-text");
+        const displayNameField = document.getElementById("display-name-field");
+        const displayNameInput = document.getElementById("display-name");
         
         if (this.isSignUp) {
             submitText.textContent = "Create Account";
             toggleText.textContent = "Already have an account? Sign in";
+            displayNameField.classList.remove("hidden");
+            displayNameInput.required = true;
         } else {
             submitText.textContent = "Sign In";
             toggleText.textContent = "Don't have an account? Sign up";
+            displayNameField.classList.add("hidden");
+            displayNameInput.required = false;
+            displayNameInput.value = ""; // Clear the field
         }
         
         this.hideError();

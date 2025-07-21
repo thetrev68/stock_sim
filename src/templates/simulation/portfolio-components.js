@@ -6,60 +6,47 @@ import {
     formatCurrencyWithCommas,
     formatPrice
 } from "../../utils/currency-utils.js";
-import { getInitial } from "../../utils/string-utils.js";
+// import { getInitial } from "../../utils/string-utils.js";
 
-/** TFC Moved
- * Generate the holding element template (individual holding display) - EXTRACTED FROM simulation.js
- * @param {string} ticker - Stock ticker symbol
- * @param {Object} holding - Holding data object with quantity and avgPrice
- * @returns {string} HTML template string
+/**
+ * Ultra clean holding template - no backgrounds, just typography
  */
 export const getHoldingElementTemplate = (ticker, holding) => {
     const currentValue = holding.quantity * holding.avgPrice;    
     return `
-        <div class="flex items-center gap-3">
-            <div class="w-10 h-10 bg-cyan-500/20 rounded-lg flex items-center justify-center">
-                <span class="text-sm font-bold text-cyan-400">${getInitial(ticker)}</span>
+        <div class="flex items-center justify-between py-3 border-b border-gray-600 last:border-b-0">
+            <div class="flex items-baseline gap-4">
+                <span class="text-white font-bold text-2xl">${ticker.toUpperCase()}</span>
+                <span class="text-gray-400">${holding.quantity} shares</span>
             </div>
-            <div>
-                <h4 class="font-semibold text-white">${ticker.toUpperCase()}</h4>
-                <p class="text-sm text-gray-400">${holding.quantity} shares</p>
+            <div class="text-right">
+                <div class="text-white font-bold text-2xl">${formatCurrencyWithCommas(currentValue)}</div>
+                <div class="text-gray-500 text-sm">avg ${formatPrice(holding.avgPrice)}</div>
             </div>
-        </div>
-        <div class="text-right">
-            <p class="font-semibold text-white">${formatCurrencyWithCommas(currentValue)}</p>
-            <p class="text-sm text-gray-400">@${formatPrice(holding.avgPrice)}</p>
         </div>
     `;
 };
 
-/** TFC Moved
-* Generate the trade element template (individual trade display) - EXTRACTED FROM simulation.js
- * @param {Object} trade - Trade data object
- * @param {Object} tradeConfig - Trade type configuration from TRADE_TYPE_CONFIG
- * @returns {string} HTML template string
+
+
+/**
+ * Ultra clean trade template - no backgrounds, just typography
  */
 export const getTradeElementTemplate = (trade, tradeConfig) => {
     const tradeTypeClass = tradeConfig?.color || "text-gray-400";
-    const tradeIcon = tradeConfig?.icon || "•";
     const tradeTime = new Date(trade.timestamp).toLocaleDateString();
     
     return `
-        <div class="flex items-center gap-3">
-            <div class="w-10 h-10 bg-cyan-500/20 rounded-lg flex items-center justify-center">
-                <span class="text-sm font-bold text-cyan-400">${getInitial(trade.ticker)}</span>
+        <div class="flex items-center justify-between py-3 border-b border-gray-600 last:border-b-0">
+            <div class="flex items-baseline gap-4">
+                <span class="${tradeTypeClass} font-bold text-sm">${trade.type.toUpperCase()}</span>
+                <span class="text-white font-bold text-2xl">${trade.ticker.toUpperCase()}</span>
+                <span class="text-gray-400">${trade.quantity} shares</span>
             </div>
-            <div>
-                <h4 class="font-semibold text-white">
-                    <span class="${tradeTypeClass}">${tradeIcon} ${trade.type.toUpperCase()}</span>
-                    ${trade.ticker.toUpperCase()}
-                </h4>
-                <p class="text-sm text-gray-400">${trade.quantity} shares • ${tradeTime}</p>
+            <div class="text-right">
+                <div class="text-white font-bold text-2xl">${formatCurrencyWithCommas(trade.tradeCost)}</div>
+                <div class="text-gray-500 text-sm">${tradeTime} at ${formatPrice(trade.price)}</div>
             </div>
-        </div>
-        <div class="text-right">
-            <p class="font-semibold text-white">${formatCurrencyWithCommas(trade.tradeCost)}</p>
-            <p class="text-sm text-gray-400">@${formatPrice(trade.price)}</p>
         </div>
     `;
 };

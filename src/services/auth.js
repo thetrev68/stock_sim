@@ -6,10 +6,14 @@ import {
     signInWithPopup,
     GoogleAuthProvider,
     signOut,
-    onAuthStateChanged 
+    onAuthStateChanged,
+    updateProfile
 } from "firebase/auth";
-import { getFirebaseAuth } from "./firebase.js";
+import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
+import { getFirebaseAuth, getFirestoreDb } from "./firebase.js";
 import { ERROR_MESSAGES } from "../constants/ui-messages.js";
+
+const USERS_COLLECTION = "Users";
 
 export class AuthService {
     constructor() {
@@ -35,27 +39,87 @@ export class AuthService {
         }
     }
 
-    // Create account with email and password
-    async createAccount(email, password) {
+    // Create account with email and password - NOW WITH DISPLAY NAME
+    async createAccount(email, password, displayName) {
         try {
             this.auth = this.auth || getFirebaseAuth();
             const userCredential = await createUserWithEmailAndPassword(this.auth, email, password);
-            return userCredential.user;
+            const user = userCredential.user;
+
+            // Update Firebase Auth profile with display name
+            await updateProfile(user, {
+                displayName: displayName
+            });
+
+            // Create user document in Firestore
+            await this.createUserDocument(user, displayName);
+
+            return user;
         } catch (error) {
             console.error("Account creation error:", error);
             throw this.formatAuthError(error);
         }
     }
 
-    // Sign in with Google
+    // Sign in with Google - NOW WITH USER DOCUMENT CREATION
     async signInWithGoogle() {
         try {
             this.auth = this.auth || getFirebaseAuth();
             const result = await signInWithPopup(this.auth, this.googleProvider);
-            return result.user;
+            const user = result.user;
+
+            // Check if user document exists, create if not
+            await this.ensureUserDocument(user);
+
+            return user;
         } catch (error) {
             console.error("Google sign in error:", error);
             throw this.formatAuthError(error);
+        }
+    }
+
+    // Create user document in Firestore Users collection
+    async createUserDocument(user, displayName = null) {
+        try {
+            const db = getFirestoreDb();
+            const userRef = doc(db, USERS_COLLECTION, user.uid);
+
+            const userData = {
+                uid: user.uid,
+                email: user.email,
+                displayName: displayName || user.displayName || user.email?.split("@")[0] || "Anonymous User",
+                systemRole: "user", // Default role
+                createdAt: serverTimestamp(),
+                updatedAt: serverTimestamp()
+            };
+
+            await setDoc(userRef, userData);
+            console.log("User document created successfully:", user.uid);
+            
+        } catch (error) {
+            console.error("Error creating user document:", error);
+            throw error;
+        }
+    }
+
+    // Ensure user document exists (for Google sign-in and existing users)
+    async ensureUserDocument(user) {
+        try {
+            const db = getFirestoreDb();
+            const userRef = doc(db, USERS_COLLECTION, user.uid);
+            const userSnap = await getDoc(userRef);
+
+            // If user document doesn't exist, create it
+            if (!userSnap.exists()) {
+                await this.createUserDocument(user);
+            } else {
+                // Optionally update the last login time
+                // await updateDoc(userRef, { lastLoginAt: serverTimestamp() });
+            }
+            
+        } catch (error) {
+            console.error("Error ensuring user document:", error);
+            // Don't throw error here - auth should still work even if Firestore fails
         }
     }
 

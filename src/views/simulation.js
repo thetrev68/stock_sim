@@ -278,9 +278,12 @@ export default class SimulationView {
             if (this.currentSimulation.status === SIMULATION_STATUS.ENDED && !this.currentSimulation.archived) {
                 this.showArchivePrompt();
             }
+
+            // UPDATE: Add this call at the end of loadData
+            this.updateManageMembersButtonVisibility();
             
         } catch (error) {
-            console.error("Error loading simulation:", error);
+            console.error("❌ Error loading simulation:", error);
             this.showError();
         }
 
@@ -338,6 +341,38 @@ export default class SimulationView {
         } catch (error) {
             console.error("Error refreshing leaderboard:", error);
             throw error; // Re-throw so UI can handle error state
+        }
+    }
+    
+    /**
+     * Show/hide manage members and settings buttons based on permissions
+     */
+    updateManageMembersButtonVisibility() {
+        const manageMembersBtn = document.getElementById("manage-members-btn");
+        const settingsBtn = document.getElementById("simulation-settings-btn");
+        
+        const canManage = this.currentUser && this.currentSimulation && (
+            this.currentSimulation.createdBy === this.currentUser.uid || 
+            this.currentUser.systemRole === "admin" || 
+            this.currentUser.systemRole === "super_admin"
+        );
+        
+        // Show/hide manage members button
+        if (manageMembersBtn) {
+            if (canManage) {
+                manageMembersBtn.classList.remove("hidden");
+            } else {
+                manageMembersBtn.classList.add("hidden");
+            }
+        }
+        
+        // Show/hide settings button
+        if (settingsBtn) {
+            if (canManage) {
+                settingsBtn.classList.remove("hidden");
+            } else {
+                settingsBtn.classList.add("hidden");
+            }
         }
     }
 
@@ -542,12 +577,6 @@ export default class SimulationView {
 
     async handleMemberManagement() {
         console.log("Member management button clicked");
-        console.log("=== DEBUG PERMISSION INFO ===");
-        console.log("Current user:", this.currentUser);
-        console.log("Current user UID:", this.currentUser?.uid);
-        console.log("Current simulation:", this.currentSimulation);
-        console.log("Simulation creator:", this.currentSimulation?.createdBy);
-        console.log("================================");
         
         // ENHANCED: Pre-check permissions on the client side
         if (!this.memberManager || !this.memberManager.isCurrentUserCreator()) {
@@ -619,17 +648,55 @@ export default class SimulationView {
     }
 
     displaySimulation() {
+        
         // Show content and hide loading
         const loadingEl = document.getElementById("simulation-loading");
         const contentEl = document.getElementById("simulation-content");
         
-        if (loadingEl) loadingEl.classList.add("hidden");
-        if (contentEl) contentEl.classList.remove("hidden");  // <- This is crucial!
+        if (loadingEl) {
+            loadingEl.classList.add("hidden");
+        }
+        if (contentEl) {
+            contentEl.classList.remove("hidden");
+        }
         
         // Your existing displayManager code...
         if (this.displayManager) {
+            
             this.displayManager.updateReferences(this.currentSimulation, this.currentUser, this.leaderboardData);
             this.displayManager.displaySimulation();
+        } 
+
+        // Update status badge - THIS WAS MISSING
+        const statusBadge = document.getElementById("sim-status-badge");
+        if (statusBadge && this.currentSimulation) {
+            const status = this.currentSimulation.status || "Active";
+            statusBadge.textContent = status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
+            
+            // Update colors based on status
+            if (status === "active") {
+                statusBadge.className = "px-3 py-1 rounded-full text-sm font-medium bg-green-600 text-green-300";
+            } else if (status === "ended") {
+                statusBadge.className = "px-3 py-1 rounded-full text-sm font-medium bg-red-600 text-red-300";
+            } else if (status === "pending") {
+                statusBadge.className = "px-3 py-1 rounded-full text-sm font-medium bg-yellow-600 text-yellow-300";
+            } else {
+                statusBadge.className = "px-3 py-1 rounded-full text-sm font-medium bg-gray-600 text-gray-300";
+            }
+            
+        }
+        
+        // Update participants count
+        const participantsEl = document.getElementById("sim-participants");
+        if (participantsEl && this.simulationMembers) {
+            participantsEl.textContent = `${this.simulationMembers.length}/5 participants`;
+        }
+        
+        // Update your rank
+        const rankEl = document.getElementById("sim-your-rank");
+        if (rankEl && this.leaderboardData && this.leaderboardData.rankings) {
+            const userRanking = this.leaderboardData.rankings.find(r => r.userId === this.currentUser.uid);
+            rankEl.textContent = userRanking ? `#${userRanking.rank}` : "Unranked";
         }
         
         // Add this to render leaderboard components
@@ -1010,7 +1077,7 @@ export default class SimulationView {
             this.showTemporaryMessage("Invite code copied to clipboard!", "success");
         } catch (error) {
             // Fallback for older browsers
-            alert(`Invite Code: ${this.currentSimulation.inviteCode}`);
+            alert(`Invite Code: ${this.currentSimulation.inviteCode}`, error.message);
         }
     }
 }

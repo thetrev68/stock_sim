@@ -69,46 +69,44 @@ export class LeaderboardTable {
 
     getRankingRow(ranking) {
         const isCurrentUser = ranking.userId === this.currentUserId;
-        const rowClass = isCurrentUser 
-            ? "bg-cyan-900/30 hover:bg-cyan-900/50 border-l-4 border-cyan-400" 
-            : "hover:bg-gray-700/50";
-
-        const rankDisplay = this.getRankDisplay(ranking.rank);
-        
-        // Access performance metrics from nested performance object
         const totalReturn = ranking.performance?.totalReturn || 0;
         const totalReturnPercent = ranking.performance?.totalReturnPercent || 0;
         const totalTrades = ranking.performance?.totalTrades || 0;
         const totalVolume = ranking.performance?.totalVolume || 0;
         const holdingsCount = ranking.performance?.holdingsCount || 0;
         const winRate = ranking.performance?.winRate || 0;
-
+        
         const returnClass = totalReturn >= 0 ? "text-green-400" : "text-red-400";
-        const returnIcon = totalReturn >= 0 ? "↗" : "↘";
+        const rowClass = isCurrentUser ? "bg-cyan-900/30 border-l-4 border-cyan-400" : "hover:bg-gray-700/50";
+        
+        // UPDATED RANK STYLING - Gold/Silver/Bronze for top 3, white for rest, NO ICONS
+        let rankDisplay;
+        if (ranking.rank === 1) {
+            rankDisplay = `<div class="text-center"><span class="text-yellow-400 font-bold text-lg">#1</span></div>`;
+        } else if (ranking.rank === 2) {
+            rankDisplay = `<div class="text-center"><span class="text-gray-300 font-bold text-lg">#2</span></div>`;
+        } else if (ranking.rank === 3) {
+            rankDisplay = `<div class="text-center"><span class="text-orange-400 font-bold text-lg">#3</span></div>`;
+        } else {
+            rankDisplay = `<div class="text-center"><span class="text-white font-medium">#${ranking.rank}</span></div>`;
+        }
 
         return `
             <tr class="${rowClass} transition-colors cursor-pointer ranking-row" 
                 data-user-id="${ranking.userId}" 
                 data-user-name="${ranking.displayName}">
-                <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="flex items-center">
-                        ${rankDisplay}
-                        ${isCurrentUser ? "<div class=\"w-2 h-2 bg-cyan-400 rounded-full ml-2\"></div>" : ""}
-                    </div>
+                <td class="px-6 py-4 whitespace-nowrap w-20">
+                    ${rankDisplay}
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="flex items-center">
-                        <div class="w-10 h-10 bg-gradient-to-br from-cyan-500 to-purple-500 rounded-full flex items-center justify-center mr-3">
-                            <span class="text-white font-bold text-sm">${ranking.displayName.charAt(0).toUpperCase()}</span>
+                <!-- MAX SPACE FOR NAME/EMAIL - Removed avatar icons completely -->
+                <td class="px-6 py-4">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <p class="text-white font-medium truncate">${ranking.displayName}</p>
+                            ${isCurrentUser ? "<span class=\"text-cyan-400 text-xs font-medium whitespace-nowrap\">(You)</span>" : ""}
+                            ${ranking.role === "creator" ? "<span class=\"text-yellow-400 text-xs font-medium whitespace-nowrap\">(Creator)</span>" : ""}
                         </div>
-                        <div>
-                            <div class="flex items-center gap-2">
-                                <p class="text-white font-medium">${ranking.displayName}</p>
-                                ${isCurrentUser ? "<span class=\"text-cyan-400 text-xs font-medium\">(You)</span>" : ""}
-                                ${ranking.role === "creator" ? "<span class=\"text-yellow-400 text-xs font-medium\">(Creator)</span>" : ""}
-                            </div>
-                            <p class="text-gray-400 text-sm">${this.formatEmail(ranking.email)}</p>
-                        </div>
+                        <p class="text-gray-400 text-sm truncate">${this.formatEmail(ranking.email)}</p>
                     </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-right">
@@ -120,7 +118,7 @@ export class LeaderboardTable {
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-right">
                     <span class="${returnClass} font-semibold">
-                        ${returnIcon} ${formatPrice(Math.abs(totalReturn))}
+                        ${formatPrice(Math.abs(totalReturn))}
                     </span>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-right">
