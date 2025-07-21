@@ -5,6 +5,7 @@ import {
     formatPrice
 } from "../../utils/currency-utils.js";
 import { convertFirebaseDate, getTimeAgoCompact } from "../../utils/date-utils.js";
+import { sumByProperty } from "../../utils/math-utils.js";
 
 export class LeaderboardOverview {
     constructor() {
@@ -259,7 +260,7 @@ export class LeaderboardOverview {
         }
 
         const rankings = this.leaderboardData.rankings;
-        const totalVolume = rankings.reduce((sum, r) => sum + (r.totalVolume || 0), 0);
+        const totalVolume = sumByProperty(rankings, "totalVolume");
         const highestPortfolio = rankings.length > 0 ? rankings[0].portfolioValue : 0;
 
         return {

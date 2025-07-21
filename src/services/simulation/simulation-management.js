@@ -19,6 +19,12 @@ import { SIMULATION_STATUS } from "../../constants/simulation-status.js";
 import { calculateRealTimeStatus } from "./simulation-core.js";
 import { permissionService } from "../auth/permission-service.js";
 import { sortByArchivedDate } from "../../utils/date-utils.js";
+import { 
+    calculateUtilizationPercent,
+    calculateAvgTradesPerMember,
+    calculateProgressPercent,
+    sumByProperty
+} from "../../utils/math-utils.js";
 
 const SIMULATIONS_COLLECTION = "simulations";
 const SIMULATION_MEMBERS_COLLECTION = "simulationMembers";
@@ -448,18 +454,18 @@ export async function getSimulationManagementStats(simulationId, adminUserId, db
                 active: activeMembers,
                 removed: removedMembers,
                 totalJoined: totalJoined,
-                utilizationPercent: simulation.maxMembers > 0 ? Math.round((activeMembers / simulation.maxMembers) * 100) : 0
+                utilizationPercent: calculateUtilizationPercent(activeMembers, simulation.maxMembers)
             },
             activity: {
                 totalTrades,
                 totalVolume,
-                avgTradesPerMember: activeMembers > 0 ? Math.round(totalTrades / activeMembers) : 0
+                avgTradesPerMember: calculateAvgTradesPerMember(totalTrades, activeMembers)
             },
             timeline: {
                 totalDuration,
                 daysElapsed,
                 daysRemaining,
-                progressPercent: totalDuration > 0 ? Math.round((daysElapsed / totalDuration) * 100) : 0,
+                progressPercent: calculateProgressPercent(daysElapsed, totalDuration),
                 wasExtended: !!simulation.originalEndDate,
                 originalDuration
             }
@@ -503,12 +509,10 @@ export async function archiveSimulation(simulationId, adminUserId, finalLeaderbo
             archivedAt: serverTimestamp(),
             archivedBy: adminUserId,
             memberCount: simulation.memberCount,
-            totalTrades: finalLeaderboard?.rankings?.reduce((sum, r) => sum + (r.totalTrades || 0), 0) || 0,
-            totalVolume: finalLeaderboard?.rankings?.reduce((sum, r) => sum + (r.totalVolume || 0), 0) || 0,
+            totalTrades: sumByProperty(finalLeaderboard?.rankings || [], "totalTrades"),
+            totalVolume: sumByProperty(finalLeaderboard?.rankings || [], "totalVolume"),
             winner: finalLeaderboard?.rankings?.[0] || null,
-            duration: (startDate && endDate) ? Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) : 0,
-            endedEarly: simulation.endedEarly || false,
-            endReason: simulation.endReason || null
+            duration: (startDate && endDate) ? Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) : null
         };
 
         const archiveRef = await addDoc(collection(database, SIMULATION_ARCHIVES_COLLECTION), archiveData);

@@ -12,6 +12,13 @@ import {
     where,
     serverTimestamp 
 } from "firebase/firestore";
+import { 
+    calculateReturnPercentage, 
+    calculateTradeVolume, 
+    calculateAverage, 
+    calculateWinRateFromHoldings,
+    calculatePercentile
+} from "../utils/math-utils.js";
 
 const LEADERBOARDS_COLLECTION = "simulationLeaderboards";
 const SIMULATION_MEMBERS_COLLECTION = "simulationMembers";
@@ -175,7 +182,7 @@ export class LeaderboardService {
      */
     calculatePerformanceMetrics(portfolioValue, portfolio, startingBalance) {
         const totalReturn = portfolioValue.totalValue - startingBalance;
-        const totalReturnPercent = (totalReturn / startingBalance) * 100;
+        const totalReturnPercent = calculateReturnPercentage(portfolioValue.totalValue, startingBalance);
         
         // Calculate trading stats
         const trades = portfolio.trades || [];
@@ -183,7 +190,7 @@ export class LeaderboardService {
         const sellTrades = trades.filter(t => t.type === "sell");
         
         // Calculate total volume traded
-        const totalVolume = trades.reduce((sum, trade) => sum + trade.tradeCost, 0);
+        const totalVolume = calculateTradeVolume(trades);
         
         // Simple win rate calculation (gains from holdings)
         const holdingsWithGains = Object.values(portfolioValue.holdings || {})
@@ -203,9 +210,7 @@ export class LeaderboardService {
             holdingsCount: Object.keys(portfolioValue.holdings || {}).length,
             winningPositions: holdingsWithGains.length,
             losingPositions: holdingsWithLosses.length,
-            winRate: holdingsWithGains.length + holdingsWithLosses.length > 0 
-                ? (holdingsWithGains.length / (holdingsWithGains.length + holdingsWithLosses.length)) * 100 
-                : 0,
+            winRate: calculateWinRateFromHoldings(portfolioValue.holdings),
             lastUpdated: new Date()
         };
     }
@@ -305,7 +310,7 @@ export class LeaderboardService {
 
             // Calculate summary statistics
             const totalParticipants = rankings.length;
-            const averageReturn = rankings.reduce((sum, r) => sum + r.performance.totalReturnPercent, 0) / totalParticipants;
+            const averageReturn = calculateAverage(rankings.map(r => r.performance.totalReturnPercent));
             const topPerformer = rankings[0] || null;
             const worstPerformer = rankings[rankings.length - 1] || null;
 
@@ -470,7 +475,7 @@ export class LeaderboardService {
                 portfolioValue: userRanking.portfolioValue,
                 totalReturn: userRanking.totalReturn,
                 totalReturnPercent: userRanking.totalReturnPercent,
-                percentile: Math.round((1 - (userRanking.rank - 1) / leaderboard.totalParticipants) * 100)
+                percentile: calculatePercentile(userRanking.rank, leaderboard.totalParticipants)
             };
 
         } catch (error) {
