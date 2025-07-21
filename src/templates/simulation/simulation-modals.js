@@ -16,79 +16,104 @@
  * @param {Object} currentUser - Current user object with uid property
  * @returns {string} HTML template string
  */
+/**
+ * Generate the member management modal template - IMPROVED VERSION
+ * @param {Array} memberStats - Array of member statistics
+ * @param {number} activeMemberCount - Count of active members
+ * @param {number} removedMemberCount - Count of removed members
+ * @param {Object} currentUser - Current user object with uid property
+ * @returns {string} HTML template string
+ */
 export const getMemberManagementModalTemplate = (memberStats, activeMemberCount, removedMemberCount, currentUser) => {
+    const activeMembers = memberStats.filter(m => m.status === "active");
+    const removedMembers = memberStats.filter(m => m.status === "removed");
+    
+    // Check if current user is creator
+    const isCurrentUserCreator = activeMembers.some(m => m.userId === currentUser.uid && m.role === "creator");
+
     return `
-        <div id="member-management-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div class="bg-gray-800 rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden border border-gray-700">
-                <div class="flex justify-between items-center p-6 border-b border-gray-700">
+        <div id="member-management-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-3 sm:p-4">
+            <div class="bg-gray-800 rounded-xl shadow-2xl w-full max-w-5xl max-h-[95vh] sm:max-h-[90vh] overflow-hidden border border-gray-700">
+                <!-- Modal Header -->
+                <div class="flex justify-between items-center p-4 sm:p-6 border-b border-gray-700">
                     <div>
-                        <h2 class="text-2xl font-bold text-white">Member Management</h2>
-                        <p class="text-gray-400 mt-1">${activeMemberCount} active • ${removedMemberCount} removed</p>
+                        <h2 class="text-xl sm:text-2xl font-bold text-white">Member Management</h2>
+                        <p class="text-gray-400 mt-1 text-sm sm:text-base">${activeMemberCount} active • ${removedMemberCount} removed</p>
                     </div>
-                    <button id="close-management-modal" class="text-gray-400 hover:text-white transition-colors">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <button id="close-management-modal" class="text-gray-400 hover:text-white transition-colors p-1">
+                        <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                         </svg>
                     </button>
                 </div>
 
-                <div class="p-6 overflow-y-auto max-h-[calc(90vh-200px)]">
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        <!-- Active Members -->
-                        <div>
-                            <h3 class="text-lg font-semibold text-white mb-4">Active Members (${activeMemberCount})</h3>
-                            <div class="space-y-3">
-                                ${memberStats.filter(m => m.status === "active").map(member => `
-                                    <div class="bg-gray-700 p-4 rounded-lg">
-                                        <div class="flex justify-between items-start">
-                                            <div class="flex items-center gap-3">
-                                                <div class="w-10 h-10 bg-gradient-to-br from-cyan-500 to-purple-500 rounded-full flex items-center justify-center">
-                                                    <span class="text-white font-bold text-sm">${member.displayName.charAt(0).toUpperCase()}</span>
-                                                </div>
-                                                <div>
-                                                    <h4 class="text-white font-medium">${member.displayName}</h4>
-                                                    <p class="text-gray-400 text-sm">${member.role}</p>
-                                                </div>
-                                            </div>
-                                            ${member.userId !== currentUser.uid ? `
-                                                <button class="text-red-400 hover:text-red-300 text-xs font-medium px-2 py-1 rounded border border-red-500 hover:bg-red-500/10 transition" onclick="window.app.router.currentView.handleKickMember('${member.userId}', '${member.displayName}')">
-                                                    Remove
-                                                </button>
-                                            ` : "<span class=\"text-cyan-400 text-xs font-medium\">You</span>"}
-                                        </div>
-                                        <div class="grid grid-cols-3 gap-2 mt-3 text-xs">
-                                            <div>
-                                                <span class="text-gray-500">Portfolio</span>
-                                                <p class="text-white font-medium">${member.portfolioValue ? `$${member.portfolioValue.toLocaleString()}` : "$10,000"}</p>
-                                            </div>
-                                            <div>
-                                                <span class="text-gray-500">Trades</span>
-                                                <p class="text-white font-medium">${member.totalTrades || 0}</p>
-                                            </div>
-                                            <div>
-                                                <span class="text-gray-500">Holdings</span>
-                                                <p class="text-white font-medium">${member.holdingsCount || 0}</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                `).join("")}
-                            </div>
-                        </div>
-
-                        <!-- Removed Members -->
-                        <div>
-                            <h3 class="text-lg font-semibold text-white mb-4">Removed Members (${removedMemberCount})</h3>
-                            ${removedMemberCount > 0 ? `
+                <!-- Modal Content -->
+                <div class="p-4 sm:p-6 overflow-y-auto max-h-[calc(95vh-180px)] sm:max-h-[calc(90vh-200px)]">
+                    <!-- Mobile: Stacked Layout, Desktop: Two Columns -->
+                    <div class="space-y-6 lg:grid lg:grid-cols-2 lg:gap-8 lg:space-y-0">
+                        
+                        <!-- Active Members Section -->
+                        <div class="order-1">
+                            <h3 class="text-lg font-semibold text-white mb-3 sm:mb-4 flex items-center gap-2">
+                                <span class="w-2 h-2 bg-green-400 rounded-full"></span>
+                                Active Members (${activeMemberCount})
+                            </h3>
+                            
+                            ${activeMembers.length > 0 ? `
                                 <div class="space-y-3">
-                                    ${memberStats.filter(m => m.status === "removed").map(member => `
-                                        <div class="bg-gray-700/50 p-4 rounded-lg border border-gray-600">
-                                            <div class="flex items-center gap-3">
-                                                <div class="w-10 h-10 bg-gray-600 rounded-full flex items-center justify-center">
-                                                    <span class="text-gray-400 font-bold text-sm">${member.displayName.charAt(0).toUpperCase()}</span>
+                                    ${activeMembers.map(member => `
+                                        <div class="bg-gray-750 rounded-lg p-4 border border-gray-600 hover:border-gray-500 transition-colors">
+                                            <!-- Member Header -->
+                                            <div class="flex justify-between items-start mb-3">
+                                                <div class="flex-1 min-w-0">
+                                                    <h4 class="text-white font-medium truncate text-sm sm:text-base">
+                                                        ${member.displayName || "Unknown User"}
+                                                    </h4>
+                                                    <div class="flex items-center gap-2 mt-1">
+                                                        ${member.role === "creator" ? `
+                                                            <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-yellow-500/20 text-yellow-400 border border-yellow-500/30">
+                                                                <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                                    <path fill-rule="evenodd" d="M9.664 1.319a.75.75 0 01.672 0 41.059 41.059 0 018.198 5.424.75.75 0 01-.254 1.285 31.372 31.372 0 00-7.86 3.83.75.75 0 01-.84 0 31.508 31.508 0 00-2.08-1.287V9.394c0-.244.116-.463.302-.592a35.504 35.504 0 013.305-2.033.75.75 0 00-.714-1.319 37 37 0 00-3.446 2.12A2.216 2.216 0 006 9.393v.38a31.293 31.293 0 00-4.28-1.746.75.75 0 01-.254-1.285 41.059 41.059 0 018.198-5.424zM6 11.459a29.848 29.848 0 00-2.455-1.158 41.029 41.029 0 00-.39 3.114.75.75 0 00.419.74c.528.256 1.046.53 1.554.82-.21-.899-.385-1.79-.518-2.516zM21.852 14.442a.75.75 0 00-.41-.740A47.911 47.911 0 0010 18.849 47.911 47.911 0 00-1.402 13.702a.75.75 0 00-.41.74 29.054 29.054 0 00.6 5.511.75.75 0 00.477.365c.981.396 1.983.72 3.021.997a.75.75 0 00.783-.309A32.69 32.69 0 0010 15.847a32.69 32.69 0 006.931 5.159.75.75 0 00.783.309c1.038-.277 2.04-.601 3.021-.997a.75.75 0 00.477-.365 29.054 29.054 0 00.6-5.511z" clip-rule="evenodd" />
+                                                                </svg>
+                                                                Creator
+                                                            </span>
+                                                        ` : `
+                                                            <span class="text-xs text-gray-500">Member</span>
+                                                        `}
+                                                        ${member.userId === currentUser.uid ? `
+                                                            <span class="text-xs text-cyan-400 font-medium">(You)</span>
+                                                        ` : ""}
+                                                    </div>
                                                 </div>
-                                                <div>
-                                                    <h4 class="text-gray-300 font-medium">${member.displayName}</h4>
-                                                    <p class="text-gray-500 text-sm">Removed ${member.removedAt ? new Date(member.removedAt.toDate()).toLocaleDateString() : "recently"}</p>
+                                                
+                                                ${isCurrentUserCreator && member.userId !== currentUser.uid ? `
+                                                    <button class="kick-member-btn ml-3 px-3 py-1 text-xs font-medium text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-md transition-colors" 
+                                                            data-user-id="${member.userId}" 
+                                                            data-user-name="${member.displayName}">
+                                                        Remove
+                                                    </button>
+                                                ` : ""}
+                                            </div>
+                                            
+                                            <!-- Member Stats Grid -->
+                                            <div class="grid grid-cols-3 gap-3 text-center">
+                                                <div class="bg-gray-700/50 rounded-md p-2">
+                                                    <div class="text-xs text-gray-400 mb-1">Portfolio</div>
+                                                    <div class="text-sm font-medium text-white">
+                                                        $${member.portfolioValue ? member.portfolioValue.toLocaleString() : "10,000"}
+                                                    </div>
+                                                </div>
+                                                <div class="bg-gray-700/50 rounded-md p-2">
+                                                    <div class="text-xs text-gray-400 mb-1">Trades</div>
+                                                    <div class="text-sm font-medium text-white">
+                                                        ${member.tradesCount || 0}
+                                                    </div>
+                                                </div>
+                                                <div class="bg-gray-700/50 rounded-md p-2">
+                                                    <div class="text-xs text-gray-400 mb-1">Holdings</div>
+                                                    <div class="text-sm font-medium text-white">
+                                                        ${member.holdingsCount || 0}
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -99,19 +124,59 @@ export const getMemberManagementModalTemplate = (memberStats, activeMemberCount,
                                     <svg class="w-12 h-12 mx-auto mb-3 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
                                     </svg>
-                                    <p>No removed members</p>
+                                    <p class="text-sm">No active members</p>
+                                </div>
+                            `}
+                        </div>
+
+                        <!-- Removed Members Section -->
+                        <div class="order-2">
+                            <h3 class="text-lg font-semibold text-white mb-3 sm:mb-4 flex items-center gap-2">
+                                <span class="w-2 h-2 bg-red-400 rounded-full"></span>
+                                Removed Members (${removedMemberCount})
+                            </h3>
+                            
+                            ${removedMembers.length > 0 ? `
+                                <div class="space-y-3">
+                                    ${removedMembers.map(member => `
+                                        <div class="bg-gray-750/50 rounded-lg p-4 border border-gray-600/50">
+                                            <div class="flex justify-between items-start">
+                                                <div class="flex-1 min-w-0">
+                                                    <h4 class="text-gray-300 font-medium truncate text-sm sm:text-base">
+                                                        ${member.displayName || "Unknown User"}
+                                                    </h4>
+                                                    <p class="text-xs text-gray-500 mt-1">
+                                                        Removed ${member.removedAt ? 
+                                                            new Date(member.removedAt.toDate()).toLocaleDateString() : "recently"}
+                                                    </p>
+                                                </div>
+                                                <span class="text-xs text-red-400 font-medium ml-3">Removed</span>
+                                            </div>
+                                        </div>
+                                    `).join("")}
+                                </div>
+                            ` : `
+                                <div class="text-center py-8 text-gray-500">
+                                    <svg class="w-12 h-12 mx-auto mb-3 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    <p class="text-sm">No removed members</p>
                                 </div>
                             `}
                         </div>
                     </div>
                 </div>
 
-                <div class="p-6 border-t border-gray-700">
-                    <div class="flex justify-between items-center">
-                        <div class="text-sm text-gray-400">
-                            <p>💡 Removed members preserve their trading history but can't rejoin</p>
+                <!-- Modal Footer -->
+                <div class="p-4 sm:p-6 border-t border-gray-700 bg-gray-800/50">
+                    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+                        <div class="text-xs sm:text-sm text-gray-400 flex items-start gap-2">
+                            <svg class="w-4 h-4 text-yellow-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                            </svg>
+                            <span>Removed members preserve their trading history but can't rejoin</span>
                         </div>
-                        <button id="close-management-modal-btn" class="bg-gray-600 hover:bg-gray-500 text-white font-medium py-2 px-4 rounded-lg transition-colors">
+                        <button id="close-management-modal-btn" class="bg-gray-600 hover:bg-gray-500 text-white font-medium py-2 px-4 rounded-lg transition-colors text-sm sm:text-base whitespace-nowrap">
                             Close
                         </button>
                     </div>
