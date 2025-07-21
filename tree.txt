@@ -25,6 +25,8 @@
 ├── refactoring_roadmap.md
 ├── src
 │   ├── components
+│   │   ├── admin
+│   │   │   └── UserRoleManager.js
 │   │   ├── layout
 │   │   │   ├── Header.js
 │   │   │   └── Navigation.js
@@ -43,19 +45,18 @@
 │   │       ├── SimulationAdminManager.js
 │   │       ├── SimulationDisplayManager.js
 │   │       ├── SimulationMemberManager.js
-│   │       ├── SimulationPortfolioManager.js
-│   │       └── SimulationTabManager.js
+│   │       └── SimulationPortfolioManager.js
 │   ├── constants
 │   │   ├── app-config.js
 │   │   ├── simulation-status.js
 │   │   ├── trade-types.js
 │   │   └── ui-messages.js
-│   ├── counter.js
 │   ├── javascript.svg
 │   ├── main.js
-│   ├── mobile-responsive.css.backup
 │   ├── services
 │   │   ├── activity.js
+│   │   ├── auth
+│   │   │   └── permission-service.js
 │   │   ├── auth.js
 │   │   ├── firebase.js
 │   │   ├── leaderboard.js
@@ -72,7 +73,6 @@
 │   │   │   └── stock-quotes.js
 │   │   ├── stocks.js
 │   │   └── trading.js
-│   ├── style.css.backup
 │   ├── styles
 │   │   ├── animations
 │   │   │   ├── micro.css
@@ -98,8 +98,7 @@
 │   │   │   ├── mobile-tables.css
 │   │   │   └── mobile-views.css
 │   │   └── views
-│   │       ├── dashboard.css
-│   │       └── simulation.css
+│   │       └── dashboard.css
 │   ├── templates
 │   │   ├── archive
 │   │   │   ├── archive-export.js
@@ -125,7 +124,6 @@
 │   │   │   ├── portfolio-components.js
 │   │   │   ├── simulation-layout.js
 │   │   │   ├── simulation-modals.js
-│   │   │   ├── simulation-sidebar.js
 │   │   │   └── ui-messages.js
 │   │   └── trade
 │   │       ├── trade-confirmation.js

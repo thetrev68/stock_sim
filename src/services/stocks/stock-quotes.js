@@ -5,6 +5,8 @@
  * Extracted from services/stocks.js
  */
 
+import { roundToDecimals } from "../../utils/currency-utils";
+
 export class StockQuotesService {
     constructor(apiService, cacheService) {
         this.apiService = apiService;
@@ -65,7 +67,7 @@ export class StockQuotesService {
             previousClose,
             dayHigh: mockPrice * 1.02,
             dayLow: mockPrice * 0.98,
-            priceChange: parseFloat(priceChange.toFixed(2)),
+            priceChange: Math.round(priceChange * 100) / 100,
             priceChangePercent: parseFloat((priceChange / previousClose * 100).toFixed(2)),
             openPrice: previousClose,
             volume: Math.floor(Math.random() * 10000000),
@@ -191,7 +193,7 @@ export class StockQuotesService {
                     dayHigh: mockPrice * 1.02,
                     dayLow: mockPrice * 0.98,
                     openPrice: previousClose,
-                    priceChange: parseFloat(priceChange.toFixed(2)),
+                    priceChange: Math.round(priceChange * 100) / 100,
                     priceChangePercent: parseFloat((priceChange / previousClose * 100).toFixed(2)),
                     volume: Math.floor(Math.random() * 10000000)
                 };
@@ -228,8 +230,8 @@ export class StockQuotesService {
                     dayHigh,
                     dayLow,
                     openPrice,
-                    priceChange: parseFloat(priceChange.toFixed(2)),
-                    priceChangePercent: parseFloat(priceChangePercent.toFixed(2)),
+                    priceChange: Math.round(priceChange * 100) / 100,
+                    priceChangePercent: Math.round(priceChangePercent * 100) / 100,
                     volume: data.v || 0
                 };
             }
@@ -250,7 +252,7 @@ export class StockQuotesService {
                     dayHigh: mockPrice * 1.02,
                     dayLow: mockPrice * 0.98,
                     openPrice: previousClose,
-                    priceChange: parseFloat(priceChange.toFixed(2)),
+                    priceChange: Math.round(priceChange * 100) / 100,
                     priceChangePercent: parseFloat((priceChange / previousClose * 100).toFixed(2)),
                     volume: Math.floor(Math.random() * 10000000)
                 };
@@ -479,10 +481,10 @@ export class StockQuotesService {
             const volume = Math.floor(Math.random() * 10000000);
             
             timestamps.push(timestamp);
-            opens.push(parseFloat(open.toFixed(2)));
-            closes.push(parseFloat(close.toFixed(2)));
-            highs.push(parseFloat(high.toFixed(2)));
-            lows.push(parseFloat(low.toFixed(2)));
+            opens.push(roundToDecimals(open));
+            closes.push(roundToDecimals(close));
+            highs.push(roundToDecimals(high));
+            lows.push(roundToDecimals(low));
             volumes.push(volume);
             
             price = close;

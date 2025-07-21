@@ -1,5 +1,21 @@
 [
   {
+    "file": "components/admin/UserRoleManager.js",
+    "lines": 320,
+    "imports": [
+      "../../services/auth/permission-service.js",
+      "../../services/firebase.js"
+    ],
+    "exports": [
+      "export class UserRoleManager {"
+    ],
+    "functions": [
+      "userIndex",
+      "originalRole"
+    ],
+    "classes": []
+  },
+  {
     "file": "components/layout/Header.js",
     "lines": 82,
     "imports": [],
@@ -22,8 +38,60 @@
     "classes": []
   },
   {
+    "file": "components/research/ChartManager.js",
+    "lines": 232,
+    "imports": [
+      "../../templates/research/research-errors.js"
+    ],
+    "exports": [
+      "export class ChartManager {"
+    ],
+    "functions": [
+      "labels"
+    ],
+    "classes": []
+  },
+  {
+    "file": "components/research/NewsManager.js",
+    "lines": 221,
+    "imports": [
+      "../../utils/date-utils.js",
+      "../../templates/research/research-news.js",
+      "../../templates/research/research-stock-display.js"
+    ],
+    "exports": [
+      "export class NewsManager {"
+    ],
+    "functions": [],
+    "classes": []
+  },
+  {
+    "file": "components/research/SearchManager.js",
+    "lines": 98,
+    "imports": [
+      "../../constants/app-config.js"
+    ],
+    "exports": [
+      "export class SearchManager {"
+    ],
+    "functions": [],
+    "classes": []
+  },
+  {
+    "file": "components/research/StockDataManager.js",
+    "lines": 136,
+    "imports": [
+      "../../utils/string-utils.js"
+    ],
+    "exports": [
+      "export class StockDataManager {"
+    ],
+    "functions": [],
+    "classes": []
+  },
+  {
     "file": "components/simulation/CreateSimulationModal.js",
-    "lines": 390,
+    "lines": 392,
     "imports": [
       "../../services/simulation.js",
       "../../services/auth.js"
@@ -52,7 +120,8 @@
     "lines": 362,
     "imports": [
       "../../services/simulation.js",
-      "../../services/auth.js"
+      "../../services/auth.js",
+      "../../utils/string-utils.js"
     ],
     "exports": [
       "export class JoinSimulationModal {"
@@ -62,7 +131,7 @@
   },
   {
     "file": "components/simulation/LeaderboardOverview.js",
-    "lines": 345,
+    "lines": 352,
     "imports": [],
     "exports": [
       "export class LeaderboardOverview {"
@@ -74,7 +143,7 @@
   },
   {
     "file": "components/simulation/LeaderboardTable.js",
-    "lines": 252,
+    "lines": 256,
     "imports": [],
     "exports": [
       "export class LeaderboardTable {"
@@ -85,15 +154,147 @@
     "classes": []
   },
   {
-    "file": "counter.js",
-    "lines": 10,
-    "imports": [],
+    "file": "components/simulation/SimulationActivityManager.js",
+    "lines": 86,
+    "imports": [
+      "../../templates/simulation/error-states.js"
+    ],
     "exports": [
-      "export function setupCounter(element) {"
+      "export class SimulationActivityManager {"
+    ],
+    "functions": [],
+    "classes": []
+  },
+  {
+    "file": "components/simulation/SimulationAdminManager.js",
+    "lines": 359,
+    "imports": [
+      "../../templates/simulation/simulation-modals.js",
+      "../../constants/ui-messages.js"
+    ],
+    "exports": [
+      "export class SimulationAdminManager {"
+    ],
+    "functions": [],
+    "classes": []
+  },
+  {
+    "file": "components/simulation/SimulationDisplayManager.js",
+    "lines": 190,
+    "imports": [
+      "../../constants/simulation-status.js",
+      "../../utils/date-utils.js",
+      "../../utils/currency-utils.js",
+      "../../utils/string-utils.js"
+    ],
+    "exports": [
+      "export class SimulationDisplayManager {"
     ],
     "functions": [
-      "setCounter"
+      "userRanking"
     ],
+    "classes": []
+  },
+  {
+    "file": "components/simulation/SimulationMemberManager.js",
+    "lines": 274,
+    "imports": [
+      "../../constants/simulation-status.js",
+      "../../templates/simulation/member-components.js",
+      "../../templates/simulation/simulation-modals.js",
+      "../../templates/simulation/error-states.js"
+    ],
+    "exports": [
+      "export class SimulationMemberManager {"
+    ],
+    "functions": [
+      "activeMemberCount",
+      "removedMemberCount"
+    ],
+    "classes": []
+  },
+  {
+    "file": "components/simulation/SimulationPortfolioManager.js",
+    "lines": 208,
+    "imports": [
+      "../../services/trading.js",
+      "../../constants/trade-types.js",
+      "../../utils/currency-utils.js",
+      "../../templates/simulation/error-states.js"
+    ],
+    "exports": [
+      "export class SimulationPortfolioManager {"
+    ],
+    "functions": [],
+    "classes": []
+  },
+  {
+    "file": "constants/app-config.js",
+    "lines": 112,
+    "imports": [],
+    "exports": [
+      "export const REFRESH_INTERVALS = {",
+      "export const TIMEOUTS = {",
+      "export const TIME_UNITS = {",
+      "export const API_LIMITS = {",
+      "export const API_ERROR_CONFIG = {",
+      "export const CACHE_CONFIG = {",
+      "export const UI_TIMING = {",
+      "export const DATA_LIMITS = {",
+      "export const CHART_CONFIG = {",
+      "export const VALIDATION_LIMITS = {",
+      "export const NETWORK_CONFIG = {",
+      "export const DEBUG_CONFIG = {"
+    ],
+    "functions": [],
+    "classes": []
+  },
+  {
+    "file": "constants/simulation-status.js",
+    "lines": 69,
+    "imports": [],
+    "exports": [
+      "export const SIMULATION_STATUS = {",
+      "export const MEMBER_STATUS = {",
+      "export const STATUS_CONFIG = {",
+      "export const PENDING_STATES = {",
+      "export const USER_ROLES = {",
+      "export const ROLE_CONFIG = {"
+    ],
+    "functions": [],
+    "classes": []
+  },
+  {
+    "file": "constants/trade-types.js",
+    "lines": 54,
+    "imports": [],
+    "exports": [
+      "export const TRADE_TYPES = {",
+      "export const TRADE_TYPE_CONFIG = {",
+      "export const PORTFOLIO_TYPES = {",
+      "export const TRADE_VALIDATION = {",
+      "export const TRADING_HOURS = {",
+      "export const MARKET_HOURS_UTC = {"
+    ],
+    "functions": [],
+    "classes": []
+  },
+  {
+    "file": "constants/ui-messages.js",
+    "lines": 147,
+    "imports": [],
+    "exports": [
+      "export const LOADING_MESSAGES = {",
+      "export const ERROR_MESSAGES = {",
+      "export const SUCCESS_MESSAGES = {",
+      "export const INFO_MESSAGES = {",
+      "export const EMPTY_STATE_MESSAGES = {",
+      "export const CONFIRMATION_MESSAGES = {",
+      "export const BUTTON_TEXT = {",
+      "export const PAGE_TITLES = {",
+      "export const STATUS_TEXT = {"
+    ],
+    "functions": [],
     "classes": []
   },
   {
@@ -129,9 +330,10 @@
   },
   {
     "file": "services/activity.js",
-    "lines": 478,
+    "lines": 485,
     "imports": [
-      "./firebase.js"
+      "./firebase.js",
+      "../utils/date-utils.js"
     ],
     "exports": [
       "export class ActivityService {"
@@ -145,10 +347,28 @@
     "classes": []
   },
   {
-    "file": "services/auth.js",
-    "lines": 98,
+    "file": "services/auth/permission-service.js",
+    "lines": 202,
     "imports": [
-      "./firebase.js"
+      "../firebase.js",
+      "firebase/firestore"
+    ],
+    "exports": [
+      "export const SYSTEM_ROLES = {",
+      "export const SIMULATION_ROLES = {",
+      "export class PermissionService {",
+      "export const permissionService = new PermissionService();"
+    ],
+    "functions": [],
+    "classes": []
+  },
+  {
+    "file": "services/auth.js",
+    "lines": 163,
+    "imports": [
+      "firebase/firestore",
+      "./firebase.js",
+      "../constants/ui-messages.js"
     ],
     "exports": [
       "export class AuthService {"
@@ -175,7 +395,7 @@
   },
   {
     "file": "services/leaderboard.js",
-    "lines": 504,
+    "lines": 502,
     "imports": [
       "./firebase.js",
       "./trading.js",
@@ -195,51 +415,189 @@
     "classes": []
   },
   {
-    "file": "services/simulation.js",
-    "lines": 1245,
+    "file": "services/simulation/simulation-core.js",
+    "lines": 255,
     "imports": [
-      "./firebase.js"
+      "../firebase.js",
+      "../../constants/simulation-status.js",
+      "../../utils/string-utils.js"
     ],
     "exports": [
-      "export class SimulationService {"
+      "export async function getCurrentUserInfo(userId) {",
+      "export function calculateRealTimeStatus(simulation) {",
+      "export function generateSimulationInviteCode() {",
+      "export async function getSimulation(simulationId, db = null) {",
+      "export async function createSimulation(creatorUserId, simulationData, db = null) {",
+      "export async function findSimulationByCode(inviteCode, db = null) {"
+    ],
+    "functions": [],
+    "classes": []
+  },
+  {
+    "file": "services/simulation/simulation-management.js",
+    "lines": 726,
+    "imports": [
+      "../firebase.js",
+      "../../constants/simulation-status.js",
+      "./simulation-core.js",
+      "../auth/permission-service.js"
+    ],
+    "exports": [
+      "export async function getMemberStatistics(simulationId, userId, db = null) {",
+      "export async function updateSimulationSettings(simulationId, userId, settings, db = null) {",
+      "export async function endSimulationEarly(simulationId, userId, reason = \"\", db = null) {",
+      "export async function removeMemberFromSimulation(simulationId, targetUserId, adminUserId, db = null) {",
+      "export async function canUserManageSimulation(userId, simulationId, db = null) {",
+      "export async function extendSimulation(simulationId, adminUserId, newEndDate, reason = \"\", db = null) {",
+      "export async function getSimulationManagementStats(simulationId, adminUserId, db = null) {",
+      "export async function archiveSimulation(simulationId, adminUserId, finalLeaderboard = null, db = null) {",
+      "export async function getArchivedSimulation(archiveId, db = null) {",
+      "export async function getUserArchivedSimulations(userId, db = null) {",
+      "export function generateSimulationExport(archivedSimulation) {",
+      "export async function refreshSimulationStatus(simulationId, db = null) {",
+      "export async function updateSimulationStatus(simulationId, newStatus, db = null) {"
     ],
     "functions": [
+      "getDb",
+      "handleError",
+      "changes",
       "activeMembers",
       "removedMembers",
       "tradeActivities",
       "memberSimulationIds",
       "results",
+      "toDate"
+    ],
+    "classes": []
+  },
+  {
+    "file": "services/simulation/simulation-members.js",
+    "lines": 297,
+    "imports": [
+      "../firebase.js",
+      "../../constants/simulation-status.js"
+    ],
+    "exports": [
+      "export async function addMemberToSimulation(simulationId, userId, role = \"member\", userInfo = null, db = null) {",
+      "export async function getSimulationMembers(simulationId, db = null) {",
+      "export async function isUserMemberOfSimulation(simulationId, userId, db = null) {",
+      "export async function removeMemberFromSimulation(simulationId, userId, adminUserId, db = null) {",
+      "export function calculateHoldingsValue(holdings) {",
+      "export async function getMemberStatistics(simulationId, adminUserId, db = null) {"
+    ],
+    "functions": [],
+    "classes": []
+  },
+  {
+    "file": "services/simulation/simulation-user-operations.js",
+    "lines": 176,
+    "imports": [
+      "../firebase.js",
+      "../../constants/simulation-status.js",
+      "./simulation-members.js"
+    ],
+    "exports": [
+      "export async function joinSimulationByCode(inviteCode, userId, userInfo, db = null) {",
+      "export async function getUserSimulations(userId, db = null) {"
+    ],
+    "functions": [
       "simulationIds",
       "memberData"
     ],
     "classes": []
   },
   {
-    "file": "services/stocks.js",
-    "lines": 967,
-    "imports": [],
+    "file": "services/simulation.js",
+    "lines": 222,
+    "imports": [
+      "./firebase.js"
+    ],
     "exports": [
-      "export class StockService {"
+      "export class SimulationService {"
+    ],
+    "functions": [],
+    "classes": []
+  },
+  {
+    "file": "services/stocks/stock-api.js",
+    "lines": 97,
+    "imports": [
+      "../../constants/app-config.js"
+    ],
+    "exports": [
+      "export class StockApiService {"
+    ],
+    "functions": [],
+    "classes": []
+  },
+  {
+    "file": "services/stocks/stock-cache.js",
+    "lines": 93,
+    "imports": [
+      "../../constants/app-config.js"
+    ],
+    "exports": [
+      "export class StockCacheService {"
     ],
     "functions": [
-      "filteredNews",
-      "timestamps",
-      "closes",
-      "opens",
-      "highs",
-      "lows",
-      "volumes",
       "cacheInfo",
       "entries"
     ],
     "classes": []
   },
   {
+    "file": "services/stocks/stock-news.js",
+    "lines": 311,
+    "imports": [
+      "../../constants/app-config.js",
+      "../../utils/date-utils.js",
+      "../../utils/string-utils.js"
+    ],
+    "exports": [
+      "export class StockNewsService {"
+    ],
+    "functions": [],
+    "classes": []
+  },
+  {
+    "file": "services/stocks/stock-quotes.js",
+    "lines": 503,
+    "imports": [],
+    "exports": [
+      "export class StockQuotesService {"
+    ],
+    "functions": [
+      "timestamps",
+      "closes",
+      "opens",
+      "highs",
+      "lows",
+      "volumes"
+    ],
+    "classes": []
+  },
+  {
+    "file": "services/stocks.js",
+    "lines": 177,
+    "imports": [
+      "./stocks/stock-news.js",
+      "./stocks/stock-cache.js",
+      "./stocks/stock-api.js",
+      "./stocks/stock-quotes.js"
+    ],
+    "exports": [
+      "export class StockService {"
+    ],
+    "functions": [],
+    "classes": []
+  },
+  {
     "file": "services/trading.js",
-    "lines": 445,
+    "lines": 455,
     "imports": [
       "./firebase",
-      "firebase/firestore"
+      "firebase/firestore",
+      "../constants/trade-types.js"
     ],
     "exports": [
       "export function getPortfolioRef(userId, simulationId = null) {",
@@ -256,6 +614,458 @@
     "classes": []
   },
   {
+    "file": "templates/archive/archive-export.js",
+    "lines": 54,
+    "imports": [],
+    "exports": [
+      "export const getTemporaryMessageTemplate = (message, type = \"info\") => {",
+      "export const getExportButtonLoadingTemplate = () => {",
+      "export const getExportButtonDefaultTemplate = () => {"
+    ],
+    "functions": [],
+    "classes": []
+  },
+  {
+    "file": "templates/archive/archive-layout.js",
+    "lines": 229,
+    "imports": [
+      "../../utils/currency-utils"
+    ],
+    "exports": [
+      "export const getArchivePageLayoutTemplate = () => {",
+      "export const getArchiveErrorTemplate = () => {"
+    ],
+    "functions": [],
+    "classes": []
+  },
+  {
+    "file": "templates/archive/archive-leaderboard.js",
+    "lines": 95,
+    "imports": [
+      "../../utils/currency-utils"
+    ],
+    "exports": [
+      "export const getRankingRowTemplate = (ranking, index, isWinner) => {",
+      "export const getRankDisplayTemplate = (rank, isWinner) => {"
+    ],
+    "functions": [],
+    "classes": []
+  },
+  {
+    "file": "templates/portfolio/portfolio-errors.js",
+    "lines": 34,
+    "imports": [],
+    "exports": [
+      "export const getPortfolioLoadingTemplate = () => {",
+      "export const getPortfolioErrorTemplate = () => {"
+    ],
+    "functions": [],
+    "classes": []
+  },
+  {
+    "file": "templates/portfolio/portfolio-holdings.js",
+    "lines": 119,
+    "imports": [
+      "../../utils/string-utils.js"
+    ],
+    "exports": [
+      "export const getHoldingLoadingRowTemplate = (ticker, holding) => {",
+      "export const getHoldingRowTemplate = (ticker, holding, currentPrice) => {",
+      "export const getHoldingErrorRowTemplate = (ticker, holding) => {"
+    ],
+    "functions": [],
+    "classes": []
+  },
+  {
+    "file": "templates/portfolio/portfolio-main-layout.js",
+    "lines": 241,
+    "imports": [
+      "../../utils/currency-utils.js"
+    ],
+    "exports": [
+      "export const getMainPortfolioLayoutTemplate = () => {"
+    ],
+    "functions": [],
+    "classes": []
+  },
+  {
+    "file": "templates/portfolio/portfolio-trade-history.js",
+    "lines": 48,
+    "imports": [
+      "../../utils/string-utils.js"
+    ],
+    "exports": [
+      "export const getTradeHistoryRowTemplate = (trade) => {"
+    ],
+    "functions": [],
+    "classes": []
+  },
+  {
+    "file": "templates/research/research-charts.js",
+    "lines": 230,
+    "imports": [],
+    "exports": [
+      "export const getChartLoadingTemplate = () => {",
+      "export const getChartContainerTemplate = () => {",
+      "export const getChartErrorTemplate = () => {",
+      "export const getAlternativeChartLoadingTemplate = () => {",
+      "export const getAlternativeChartContainerTemplate = () => {",
+      "export const getAlternativeChartErrorTemplate = () => {",
+      "export const getChartPeriodButtonsTemplate = () => {",
+      "export const getChartRefreshButtonTemplate = () => {",
+      "export const getChartHeaderTemplate = () => {",
+      "export const getSimpleChartHeaderTemplate = () => {",
+      "export const getChartSectionTemplate = () => {",
+      "export const getAlternativeChartSectionTemplate = () => {",
+      "export const getCompleteChartCardTemplate = () => {",
+      "export const getSimpleChartCardTemplate = () => {"
+    ],
+    "functions": [],
+    "classes": []
+  },
+  {
+    "file": "templates/research/research-errors.js",
+    "lines": 22,
+    "imports": [],
+    "exports": [
+      "export const getChartUnavailableTemplate = (message = \"Chart temporarily unavailable\") => {"
+    ],
+    "functions": [],
+    "classes": []
+  },
+  {
+    "file": "templates/research/research-main-layout.js",
+    "lines": 353,
+    "imports": [],
+    "exports": [
+      "export const getMainResearchLayoutTemplate = () => {"
+    ],
+    "functions": [],
+    "classes": []
+  },
+  {
+    "file": "templates/research/research-news.js",
+    "lines": 57,
+    "imports": [],
+    "exports": [
+      "export const getNewsArticleCardTemplate = (article, formattedDate) => {"
+    ],
+    "functions": [],
+    "classes": []
+  },
+  {
+    "file": "templates/research/research-search.js",
+    "lines": 42,
+    "imports": [],
+    "exports": [
+      "export const getSearchResultItemTemplate = (stock) => {",
+      "export const getSearchEmptyStateTemplate = () => {"
+    ],
+    "functions": [],
+    "classes": []
+  },
+  {
+    "file": "templates/research/research-stock-display.js",
+    "lines": 22,
+    "imports": [],
+    "exports": [
+      "export const getRefreshNewsButtonTemplate = (isLoading = false) => {"
+    ],
+    "functions": [],
+    "classes": []
+  },
+  {
+    "file": "templates/simulation/activity-components.js",
+    "lines": 36,
+    "imports": [],
+    "exports": [
+      "export const getActivityElementTemplate = (formattedActivity) => {",
+      "export const getEmptyActivityFeedTemplate = () => {"
+    ],
+    "functions": [],
+    "classes": []
+  },
+  {
+    "file": "templates/simulation/error-states.js",
+    "lines": 96,
+    "imports": [],
+    "exports": [
+      "export const getSimulationNotFoundTemplate = () => {",
+      "export const getSimulationLoadingErrorTemplate = () => {",
+      "export const getMembersErrorTemplate = () => {",
+      "export const getActivitiesErrorTemplate = () => {",
+      "export const getPortfolioErrorTemplate = () => {"
+    ],
+    "functions": [],
+    "classes": []
+  },
+  {
+    "file": "templates/simulation/member-components.js",
+    "lines": 82,
+    "imports": [
+      "../../utils/date-utils.js",
+      "../../utils/string-utils.js"
+    ],
+    "exports": [
+      "export const getMemberCardTemplate = (member, currentUser, isCurrentUserCreator) => {",
+      "export const getMembersErrorTemplate = () => {"
+    ],
+    "functions": [],
+    "classes": []
+  },
+  {
+    "file": "templates/simulation/notification-components.js",
+    "lines": 101,
+    "imports": [],
+    "exports": [
+      "export const getArchivePromptBannerTemplate = () => {",
+      "export const getArchiveSuccessInfoBannerTemplate = (archiveId) => {",
+      "export const getShowTemporaryMessageTemplate = (message, type = \"info\") => {"
+    ],
+    "functions": [],
+    "classes": []
+  },
+  {
+    "file": "templates/simulation/portfolio-components.js",
+    "lines": 52,
+    "imports": [],
+    "exports": [
+      "export const getHoldingElementTemplate = (ticker, holding) => {",
+      "export const getTradeElementTemplate = (trade, tradeConfig) => {"
+    ],
+    "functions": [],
+    "classes": []
+  },
+  {
+    "file": "templates/simulation/simulation-layout.js",
+    "lines": 411,
+    "imports": [],
+    "exports": [
+      "export const getSimulationRulesSectionTemplate = () => {",
+      "export const getTabNavigationAndContentTemplate = () => {",
+      "export const getCleanHeaderSectionTemplate = () => {",
+      "export const getCleanStatsCardsTemplate = () => {",
+      "export const getPortfolioSectionTemplate = () => {",
+      "export const getLeaderboardSectionTemplate = () => {",
+      "export const getActivitySectionTemplate = () => {"
+    ],
+    "functions": [],
+    "classes": []
+  },
+  {
+    "file": "templates/simulation/simulation-modals.js",
+    "lines": 444,
+    "imports": [],
+    "exports": [
+      "export const getMemberManagementModalTemplate = (memberStats, activeMemberCount, removedMemberCount, currentUser) => {",
+      "export const getSimulationSettingsModalTemplate = (stats) => {"
+    ],
+    "functions": [],
+    "classes": []
+  },
+  {
+    "file": "templates/simulation/ui-messages.js",
+    "lines": 182,
+    "imports": [],
+    "exports": [
+      "export const SIMULATION_LOADING_MESSAGES = {",
+      "export const getSimulationLoadingTemplate = () => {"
+    ],
+    "functions": [],
+    "classes": []
+  },
+  {
+    "file": "templates/trade/trade-confirmation.js",
+    "lines": 124,
+    "imports": [],
+    "exports": [],
+    "functions": [],
+    "classes": []
+  },
+  {
+    "file": "templates/trade/trade-errors.js",
+    "lines": 132,
+    "imports": [],
+    "exports": [],
+    "functions": [],
+    "classes": []
+  },
+  {
+    "file": "templates/trade/trade-main-layout.js",
+    "lines": 140,
+    "imports": [],
+    "exports": [
+      "export const getMainTradeLayoutTemplate = () => {"
+    ],
+    "functions": [],
+    "classes": []
+  },
+  {
+    "file": "templates/trade/trade-order-form.js",
+    "lines": 129,
+    "imports": [],
+    "exports": [],
+    "functions": [],
+    "classes": []
+  },
+  {
+    "file": "templates/trade/trade-portfolio-selector.js",
+    "lines": 209,
+    "imports": [],
+    "exports": [],
+    "functions": [],
+    "classes": []
+  },
+  {
+    "file": "templates/trade/trade-recent-trades.js",
+    "lines": 32,
+    "imports": [],
+    "exports": [
+      "export const getNoRecentTradesTemplate = () => {",
+      "export const getTradeItemTemplate = (trade, tradeTypeClass, tradeTime) => {"
+    ],
+    "functions": [],
+    "classes": []
+  },
+  {
+    "file": "templates/trade/trade-stock-lookup.js",
+    "lines": 193,
+    "imports": [],
+    "exports": [],
+    "functions": [],
+    "classes": []
+  },
+  {
+    "file": "utils/currency-utils.js",
+    "lines": 194,
+    "imports": [],
+    "exports": [
+      "export const formatCurrency = (amount, includeDollarSign = true) => {",
+      "export const formatCurrencyWithCommas = (amount, includeDollarSign = true) => {",
+      "export const formatNumberWithCommas = (number) => {",
+      "export const formatPercentage = (value, decimals = 2) => {",
+      "export const formatPriceChange = (change, changePercent, includeIcon = true) => {",
+      "export const formatGainLoss = (gainLoss, gainLossPercent, includeIcon = true) => {",
+      "export const calculateGainLoss = (currentValue, originalValue) => {",
+      "export const calculateMarketValue = (quantity, price) => {",
+      "export const calculateCostBasis = (quantity, avgPrice) => {",
+      "export const formatPortfolioChange = (change, changePercent) => {",
+      "export const formatPrice = (price, includeDollarSign = true) => {",
+      "export const getGainLossColorClass = (value) => {",
+      "export const getTradeTypeColorClass = (tradeType) => {",
+      "export const formatCashPercentage = (cash, totalValue, decimals = 1) => {"
+    ],
+    "functions": [],
+    "classes": []
+  },
+  {
+    "file": "utils/date-utils.js",
+    "lines": 183,
+    "imports": [],
+    "exports": [
+      "export const convertFirebaseDate = (timestamp) => {",
+      "export const formatDateRange = (startDate, endDate) => {",
+      "export const calculateDaysRemaining = (endDate) => {",
+      "export const calculateDaysUntilStart = (startDate) => {",
+      "export const calculateDaysElapsed = (startDate) => {",
+      "export const calculateTotalDuration = (startDate, endDate) => {",
+      "export const calculateDaysAgo = (date) => {",
+      "export const getTimeAgo = (date) => {",
+      "export const getTimeAgoCompact = (date) => {",
+      "export const formatNewsDate = (timestamp) => {",
+      "export const filterByDateRange = (items, daysBack = 7) => {",
+      "export const sortByDateDesc = (items) => {"
+    ],
+    "functions": [],
+    "classes": []
+  },
+  {
+    "file": "utils/dom-utils.js",
+    "lines": 514,
+    "imports": [],
+    "exports": [
+      "export const getElement = (id) => {",
+      "export const updateElementText = (id, text) => {",
+      "export const updateElementHTML = (id, html) => {",
+      "export const addClass = (id, className) => {",
+      "export const removeClass = (id, className) => {",
+      "export const toggleClass = (id, className) => {",
+      "export const hasClass = (id, className) => {",
+      "export const showElement = (id) => {",
+      "export const hideElement = (id) => {",
+      "export const toggleElement = (id) => {",
+      "export const isElementVisible = (id) => {",
+      "export const showLoadingState = (contentId, loadingId) => {",
+      "export const hideLoadingState = (contentId, loadingId) => {",
+      "export const createElement = (tagName, className = null, content = null, useInnerHTML = false) => {",
+      "export const createDiv = (className = null, content = null, useInnerHTML = false) => {",
+      "export const appendChild = (parentId, childElement) => {",
+      "export const clearElement = (id) => {",
+      "export const removeElement = (id) => {",
+      "export const insertAtBodyEnd = (html) => {",
+      "export const showTemporaryMessage = (message, type = \"info\", duration = 5000, containerId = null) => {",
+      "export const showLoading = (loadingId, contentId, errorId) => {",
+      "export const showContent = (loadingId, contentId, errorId) => {",
+      "export const showError = (loadingId, contentId, errorId, errorMessage = null) => {",
+      "export const showEmpty = (loadingId, contentId, errorId, emptyId) => {",
+      "export const setDisabled = (id, disabled) => {",
+      "export const enableElement = (id) => {",
+      "export const disableElement = (id) => {",
+      "export const getElementValue = (id) => {",
+      "export const setElementValue = (id, value) => {",
+      "export const focusElement = (id, delay = 0) => {",
+      "export const addEventListenerById = (id, event, handler) => {",
+      "export const removeEventListenerById = (id, event, handler) => {",
+      "export const elementExists = (id) => {",
+      "export const getElements = (ids) => {"
+    ],
+    "functions": [],
+    "classes": []
+  },
+  {
+    "file": "utils/math-utils.js",
+    "lines": 379,
+    "imports": [],
+    "exports": [
+      "export const safeRound = (value, decimals = 0) => {",
+      "export const safeMax = (a, b) => {",
+      "export const safeMin = (a, b) => {",
+      "export const calculateTotalPortfolioValue = (cash, holdings) => {",
+      "export const calculateTotalHoldingsValue = (holdings) => {",
+      "export const calculateTradeVolume = (trades) => {",
+      "export const calculateReturnPercentage = (currentValue, originalValue) => {",
+      "export const calculateUtilizationPercent = (used, total) => {",
+      "export const calculateProgressPercent = (current, total) => {",
+      "export const calculateAverage = (numbers) => {",
+      "export const calculateMedian = (numbers) => {",
+      "export const calculateSum = (numbers) => {",
+      "export const sumByProperty = (objects, property) => {",
+      "export const averageByProperty = (objects, property) => {",
+      "export const countByCondition = (objects, condition) => {",
+      "export const calculateWinRate = (wins, total) => {",
+      "export const calculateWinRateFromHoldings = (holdings) => {",
+      "export const calculateAvgTradesPerMember = (totalTrades, activeMembers) => {",
+      "export const calculatePercentile = (rank, total) => {",
+      "export const assignRanks = (sortedArray, valueProperty) => {",
+      "export const randomInRange = (min, max) => {",
+      "export const randomIntInRange = (min, max) => {",
+      "export const generateRandomPriceChange = (basePrice, volatility = 0.05) => {",
+      "export const calculateCompoundGrowthRate = (initialValue, finalValue, periods) => {",
+      "export const calculateStandardDeviation = (numbers) => {",
+      "export const clamp = (value, min, max) => {",
+      "export const isInRange = (value, min, max) => {",
+      "export const toSafeNumber = (value, fallback = 0) => {"
+    ],
+    "functions": [
+      "validNumbers",
+      "validNumbers",
+      "sorted",
+      "wins",
+      "squaredDifferences"
+    ],
+    "classes": []
+  },
+  {
     "file": "utils/router.js",
     "lines": 60,
     "imports": [],
@@ -266,8 +1076,67 @@
     "classes": []
   },
   {
+    "file": "utils/string-utils.js",
+    "lines": 310,
+    "imports": [],
+    "exports": [
+      "export const capitalize = (str) => {",
+      "export const toUpperCase = (str) => {",
+      "export const toLowerCase = (str) => {",
+      "export const getInitial = (str) => {",
+      "export const getInitials = (name, maxInitials = 2) => {",
+      "export const truncateText = (text, maxLength, suffix = \"...\") => {",
+      "export const truncateEmail = (email, maxLength = 20) => {",
+      "export const generateSummaryFromHeadline = (headline, maxLength = 100) => {",
+      "export const formatInviteCode = (input, maxLength = 6) => {",
+      "export const generateRandomString = (length, chars = \"ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\") => {",
+      "export const generateInviteCode = () => {",
+      "export const generateUniqueId = (prefix = \"id\", length = 9) => {",
+      "export const containsText = (text, searchTerm) => {",
+      "export const filterBySearch = (items, searchTerm, fields) => {",
+      "export const createSlug = (text) => {",
+      "export const cleanTextInput = (input, maxLength = 1000, allowSpecialChars = true) => {",
+      "export const extractTicker = (text) => {",
+      "export const formatDisplayName = (name, maxLength = 20) => {",
+      "export const escapeHtml = (text) => {",
+      "export const normalizeWhitespace = (text) => {",
+      "export const isEmpty = (text) => {",
+      "export const getSafeText = (value, fallback = \"\") => {"
+    ],
+    "functions": [],
+    "classes": []
+  },
+  {
+    "file": "utils/validation-utils.js",
+    "lines": 504,
+    "imports": [],
+    "exports": [
+      "export const isPresent = (value) => {",
+      "export const isNotEmpty = (str) => {",
+      "export const isValidEmail = (email) => {",
+      "export const validatePassword = (password, minLength = 6) => {",
+      "export const validateRequiredFields = (data, requiredFields) => {",
+      "export const validateTicker = (ticker) => {",
+      "export const validateQuantity = (quantity, maxQuantity = null) => {",
+      "export const validatePrice = (price, minPrice = 0.01, maxPrice = null) => {",
+      "export const validateTradeType = (type, allowedTypes = [\"buy\", \"sell\"]) => {",
+      "export const validateTradeDetails = (tradeDetails) => {",
+      "export const validateSimulationName = (name, minLength = 3, maxLength = 50) => {",
+      "export const validateDateRange = (startDate, endDate) => {",
+      "export const validateStartingBalance = (balance, minBalance = 1000, maxBalance = 1000000) => {",
+      "export const validateInviteCode = (code, expectedLength = 6) => {",
+      "export const sanitizeString = (input, allowSpecialChars = true) => {",
+      "export const sanitizeTicker = (ticker) => {",
+      "export const sanitizeNumber = (input, allowDecimals = true, maxDecimals = 2) => {",
+      "export const validateFormData = (data, schema) => {",
+      "export const getAuthErrorMessage = (errorCode) => {"
+    ],
+    "functions": [],
+    "classes": []
+  },
+  {
     "file": "views/auth.js",
-    "lines": 221,
+    "lines": 247,
     "imports": [
       "../services/auth.js"
     ],
@@ -279,13 +1148,14 @@
   },
   {
     "file": "views/dashboard.js",
-    "lines": 485,
+    "lines": 503,
     "imports": [
       "../services/simulation.js",
       "../services/auth.js",
       "../components/simulation/CreateSimulationModal.js",
       "../components/simulation/JoinSimulationModal.js",
-      "../components/simulation/EmailInviteModal.js"
+      "../components/simulation/EmailInviteModal.js",
+      "../constants/simulation-status.js"
     ],
     "exports": [
       "export default class DashboardView {"
@@ -297,11 +1167,14 @@
   },
   {
     "file": "views/portfolio.js",
-    "lines": 716,
+    "lines": 405,
     "imports": [
       "../services/trading.js",
       "../services/auth.js",
-      "../services/stocks.js"
+      "../services/stocks.js",
+      "../templates/portfolio/portfolio-main-layout.js",
+      "../templates/portfolio/portfolio-trade-history.js",
+      "../templates/portfolio/portfolio-errors.js"
     ],
     "exports": [
       "export default class PortfolioView {"
@@ -313,24 +1186,31 @@
   },
   {
     "file": "views/research.js",
-    "lines": 1312,
+    "lines": 337,
     "imports": [
-      "../services/stocks.js"
+      "../services/stocks.js",
+      "../constants/app-config.js",
+      "../constants/ui-messages.js",
+      "../utils/string-utils.js",
+      "../components/research/NewsManager.js",
+      "../components/research/ChartManager.js",
+      "../components/research/SearchManager.js",
+      "../components/research/StockDataManager.js",
+      "../templates/research/research-main-layout.js"
     ],
     "exports": [
       "export default class ResearchView {"
     ],
-    "functions": [
-      "labels"
-    ],
+    "functions": [],
     "classes": []
   },
   {
     "file": "views/simulation-archive.js",
-    "lines": 544,
+    "lines": 289,
     "imports": [
       "../services/simulation.js",
-      "../services/auth.js"
+      "../services/auth.js",
+      "../constants/app-config.js"
     ],
     "exports": [
       "export default class SimulationArchiveView {"
@@ -340,7 +1220,7 @@
   },
   {
     "file": "views/simulation.js",
-    "lines": 2235,
+    "lines": 1085,
     "imports": [
       "../services/simulation.js",
       "../services/auth.js",
@@ -348,28 +1228,36 @@
       "../services/leaderboard.js",
       "../components/simulation/LeaderboardOverview.js",
       "../components/simulation/LeaderboardTable.js",
-      "../services/trading.js"
+      "../components/simulation/SimulationAdminManager.js",
+      "../components/simulation/SimulationPortfolioManager.js",
+      "../components/simulation/SimulationMemberManager.js",
+      "../components/simulation/SimulationActivityManager.js",
+      "../components/simulation/SimulationDisplayManager.js",
+      "../constants/app-config.js",
+      "../constants/simulation-status.js",
+      "../templates/simulation/ui-messages.js"
     ],
     "exports": [
       "export default class SimulationView {"
     ],
     "functions": [
       "userRanking",
-      "isCreator",
-      "activeMemberCount",
-      "removedMemberCount",
       "isCreator"
     ],
     "classes": []
   },
   {
     "file": "views/trade.js",
-    "lines": 647,
+    "lines": 528,
     "imports": [
       "../services/stocks.js",
       "../services/trading.js",
       "../services/simulation.js",
-      "../services/auth.js"
+      "../services/auth.js",
+      "../constants/trade-types.js",
+      "../constants/ui-messages.js",
+      "../utils/string-utils.js",
+      "../templates/trade/trade-main-layout.js"
     ],
     "exports": [
       "export default class TradeView {"

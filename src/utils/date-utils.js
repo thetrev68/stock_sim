@@ -181,3 +181,68 @@ export const filterByDateRange = (items, daysBack = 7) => {
 export const sortByDateDesc = (items) => {
     return [...items].sort((a, b) => b.datetime - a.datetime);
 };
+
+// Add these new utilities to your date-utils.js file:
+
+/**
+ * Format trade date for detailed display (date + time)
+ * Used in trade history tables and detailed views
+ * @param {*} timestamp - Timestamp (Firebase Timestamp, Date, or number)
+ * @returns {object} Object with formatted date and time strings
+ */
+export const formatTradeDateTime = (timestamp) => {
+    const date = convertFirebaseDate(timestamp);
+    return {
+        date: date.toLocaleDateString(),
+        time: date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        full: `${date.toLocaleDateString()} ${date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`
+    };
+};
+
+/**
+ * Format date for simple display (date only)
+ * Used in portfolio components and simple trade lists
+ * @param {*} timestamp - Timestamp (Firebase Timestamp, Date, or number)
+ * @returns {string} Formatted date string
+ */
+export const formatSimpleDate = (timestamp) => {
+    const date = convertFirebaseDate(timestamp);
+    return date.toLocaleDateString();
+};
+
+/**
+ * Get minimum date for HTML date inputs (tomorrow)
+ * Used for simulation extension forms and date pickers
+ * @returns {string} ISO date string for tomorrow
+ */
+export const getTomorrowISO = () => {
+    return new Date(Date.now() + 24*60*60*1000).toISOString().split("T")[0];
+};
+
+/**
+ * Sort array by creation date (newest first)
+ * Handles Firebase timestamps automatically
+ * @param {Array} items - Array of items with createdAt property
+ * @returns {Array} Sorted items
+ */
+export const sortByCreatedDate = (items) => {
+    return [...items].sort((a, b) => {
+        const aTime = convertFirebaseDate(a.createdAt);
+        const bTime = convertFirebaseDate(b.createdAt);
+        return bTime.getTime() - aTime.getTime();
+    });
+};
+
+/**
+ * Sort array by archived date (newest first)
+ * Handles Firebase timestamps automatically
+ * @param {Array} items - Array of items with archivedAt property
+ * @returns {Array} Sorted items
+ */
+export const sortByArchivedDate = (items) => {
+    return [...items].sort((a, b) => {
+        const aTime = convertFirebaseDate(a.archivedAt);
+        const bTime = convertFirebaseDate(b.archivedAt);
+        return (bTime?.getTime() || 0) - (aTime?.getTime() || 0);
+    });
+};

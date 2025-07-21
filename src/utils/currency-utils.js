@@ -192,3 +192,8 @@ export const formatCashPercentage = (cash, totalValue, decimals = 1) => {
     const percentage = (cash / totalValue) * 100;
     return `${percentage.toFixed(decimals)}%`;
 };
+
+// Add to math-utils.js or currency-utils.js
+export const roundToDecimals = (num, decimals = 2) => {
+    return Math.round(num * Math.pow(10, decimals)) / Math.pow(10, decimals);
+};

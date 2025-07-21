@@ -2,6 +2,8 @@
 // Recent trades display templates for trade view
 // Focused module: Recent trades list exactly as it exists
 
+import { formatPrice } from "../../utils/currency-utils.js";
+
 /** TFC Moved
  * Generate no recent trades placeholder template
  * @returns {string} HTML template string
@@ -24,7 +26,7 @@ export const getTradeItemTemplate = (trade, tradeTypeClass, tradeTime) => {
                 <span class="font-semibold ${tradeTypeClass}">${trade.type.toUpperCase()}</span> 
                 <span class="text-white">${trade.quantity}</span> shares of 
                 <span class="font-bold uppercase text-cyan-300">${trade.ticker}</span> 
-                at <span class="text-white">$${trade.price.toFixed(2)}</span>
+                at <span class="text-white">${formatPrice(trade.price)}</span>
             </div>
             <div class="text-gray-500 text-xs">${tradeTime}</div>
         </div>

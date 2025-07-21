@@ -3,7 +3,7 @@
 
 import { getPortfolio, initializePortfolio, getRecentTrades } from "../../services/trading.js";
 import { TRADE_TYPE_CONFIG } from "../../constants/trade-types.js";
-import { formatCurrencyWithCommas } from "../../utils/currency-utils.js";
+import { formatCurrencyWithCommas, formatPortfolioChange } from "../../utils/currency-utils.js";
 import { 
     getHoldingElementTemplate, 
     getTradeElementTemplate 
@@ -168,7 +168,9 @@ export class SimulationPortfolioManager {
                 
                 const changeClass = change >= 0 ? "text-green-400" : "text-red-400";
                 portfolioChangeEl.className = `text-sm font-medium ${changeClass}`;
-                portfolioChangeEl.textContent = `${change >= 0 ? "+" : ""}${change.toFixed(2)} (${changePercent >= 0 ? "+" : ""}${changePercent.toFixed(2)}%)`;
+                const formatted = formatPortfolioChange(change, changePercent);
+                portfolioChangeEl.textContent = formatted.display;
+                portfolioChangeEl.className = `text-sm font-medium ${formatted.colorClass}`;
             }
         }
     }

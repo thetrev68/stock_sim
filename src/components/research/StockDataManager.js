@@ -82,7 +82,7 @@ export class StockDataManager {
         const profile = stockData.companyProfile;
 
         this.updateElement("market-cap", profile.marketCapitalization ? this.formatMillionsBillions(profile.marketCapitalization) : "--");
-        this.updateElement("shares-outstanding", profile.shareOutstanding ? profile.shareOutstanding.toLocaleString() : "--");
+        this.updateElement("shares-outstanding", profile.shareOutstanding ? formatNumberWithCommas(profile.shareOutstanding): "--");
         this.updateElement("ipo-date", profile.ipo ? new Date(profile.ipo).toLocaleDateString() : "--");
         this.updateElement("company-country", profile.country || "--");
 
