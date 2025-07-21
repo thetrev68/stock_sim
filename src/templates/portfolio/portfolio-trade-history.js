@@ -8,7 +8,7 @@ import {
     formatCurrencyWithCommas
 } from "../../utils/currency-utils.js";
 import { formatTradeDateTime } from "../../utils/date-utils.js";
-import { getInitial, toUpperCase } from "../../utils/string-utils.js";
+import { getInitial } from "../../utils/string-utils.js";
 
 /** TFC Move
  * Generate trade history row template for the table
@@ -28,7 +28,7 @@ export const getTradeHistoryRowTemplate = (trade) => {
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-center">
                 <span class="${tradeTypeClass} px-3 py-1 rounded-full text-sm font-semibold">
-                    ${tradeIcon} ${toUpperCase(trade.type)}
+                    ${tradeIcon} ${trade.type.toUpperCase()}
                 </span>
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
@@ -36,7 +36,7 @@ export const getTradeHistoryRowTemplate = (trade) => {
                     <div class="w-8 h-8 bg-cyan-500/20 rounded-lg flex items-center justify-center mr-3">
                         <span class="text-xs font-bold text-cyan-400">${getInitial(trade.ticker)}</span>
                     </div>
-                    <span class="font-semibold text-white">${toUpperCase(trade.ticker)}</span>
+                    <span class="font-semibold text-white">${trade.ticker.toUpperCase()}</span>
                 </div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-right text-white">${formatNumberWithCommas(trade.quantity)}</td>

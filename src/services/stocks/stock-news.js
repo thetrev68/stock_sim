@@ -7,7 +7,7 @@
 
 import { CACHE_CONFIG } from "../../constants/app-config.js";
 import { filterByDateRange, sortByDateDesc } from "../../utils/date-utils.js";
-import { generateSummaryFromHeadline, generateUniqueId, filterBySearch } from "../../utils/string-utils.js";
+import { filterBySearch, generateSimpleId } from "../../utils/string-utils.js";
 
 export class StockNewsService {
     constructor(apiService, cacheService) {
@@ -195,7 +195,7 @@ export class StockNewsService {
             }
 
             return {
-                id: rawArticle.id || generateUniqueId("news"),
+                id: rawArticle.id || generateSimpleId("news"),
                 headline: rawArticle.headline,
                 summary: rawArticle.summary || this.generateSummaryFromHeadline(rawArticle.headline),
                 source: rawArticle.source || "Unknown Source",
@@ -217,9 +217,13 @@ export class StockNewsService {
      * @returns {string} Generated summary
      */
     generateSummaryFromHeadline(headline) {
-        return generateSummaryFromHeadline(headline);
+        if (!headline || typeof headline !== "string") return "";
+        
+        if (headline.length > 100) {
+            return headline.substring(0, 97) + "...";
+        }
+        return `${headline} - Read the full article for more details.`;
     }
-
     /**
      * Get default placeholder image for news articles
      * @returns {string} Default image URL

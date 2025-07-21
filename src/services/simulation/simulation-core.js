@@ -16,13 +16,6 @@ import {
     serverTimestamp 
 } from "firebase/firestore";
 import { SIMULATION_STATUS } from "../../constants/simulation-status.js";
-// import { 
-//     convertFirebaseDate, 
-//     calculateDaysRemaining,
-//     calculateDaysElapsed,
-//     calculateTotalDuration
-// } from "../../utils/date-utils.js";
-import { generateInviteCode } from "../../utils/string-utils.js";
 
 const SIMULATIONS_COLLECTION = "simulations";
 const SIMULATION_MEMBERS_COLLECTION = "simulationMembers";
@@ -89,7 +82,13 @@ export function calculateRealTimeStatus(simulation) {
  * EXACT COPY from your services/simulation.js
  */
 export function generateSimulationInviteCode() {
-    return generateInviteCode();
+    // Generate 6-character alphanumeric invite code
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    let result = "";
+    for (let i = 0; i < 6; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
 }
 
 /**

@@ -12,7 +12,7 @@ import {
     formatNumberWithCommas,
     formatPercentage
 } from "../../utils/currency-utils.js";
-import { getInitial, toUpperCase } from "../../utils/string-utils.js";
+import { getInitial } from "../../utils/string-utils.js";
 
 /** TFC Move
  * Generate holdings table row template (loading state)
@@ -28,7 +28,7 @@ export const getHoldingLoadingRowTemplate = (ticker, holding) => {
                     <div class="w-8 h-8 bg-cyan-500/20 rounded-lg flex items-center justify-center mr-3">
                         <span class="text-xs font-bold text-cyan-400">${getInitial(ticker)}</span>
                     </div>
-                    <span class="font-semibold text-white">${toUpperCase(ticker)}</span>
+                    <span class="font-semibold text-white">${ticker.toUpperCase()}</span>
                 </div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-right text-white">${formatNumberWithCommas(holding.quantity)}</td>
@@ -64,7 +64,7 @@ export const getHoldingRowTemplate = (ticker, holding, currentPrice) => {
                     <div class="w-8 h-8 bg-cyan-500/20 rounded-lg flex items-center justify-center mr-3">
                         <span class="text-xs font-bold text-cyan-400">${getInitial(ticker)}</span>
                     </div>
-                    <span class="font-semibold text-white">${toUpperCase(ticker)}</span>
+                    <span class="font-semibold text-white">${ticker.toUpperCase()}</span>
                 </div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-right text-white">${formatNumberWithCommas(holding.quantity)}</td>
@@ -102,7 +102,7 @@ export const getHoldingErrorRowTemplate = (ticker, holding) => {
                     <div class="w-8 h-8 bg-cyan-500/20 rounded-lg flex items-center justify-center mr-3">
                         <span class="text-xs font-bold text-cyan-400">${getInitial(ticker)}</span>
                     </div>
-                    <span class="font-semibold text-white">${toUpperCase(ticker)}</span>
+                    <span class="font-semibold text-white">${ticker.toUpperCase()}</span>
                 </div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-right text-white">${formatNumberWithCommas(holding.quantity)}</td>

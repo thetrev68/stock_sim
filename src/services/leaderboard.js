@@ -17,7 +17,7 @@ import {
     calculateTradeVolume, 
     calculateAverage, 
     calculateWinRateFromHoldings,
-    calculatePercentile
+    calculatePercentile 
 } from "../utils/math-utils.js";
 
 const LEADERBOARDS_COLLECTION = "simulationLeaderboards";

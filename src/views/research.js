@@ -7,7 +7,7 @@ import { TIMEOUTS } from "../constants/app-config.js";
 import { ERROR_MESSAGES } from "../constants/ui-messages.js";
 
 // Utility functions
-import { toUpperCase } from "../utils/string-utils.js";
+// import { toUpperCase } from "../utils/string-utils.js";
 
 // Component managers
 import { NewsManager } from "../components/research/NewsManager.js";
@@ -47,7 +47,7 @@ export default class ResearchView {
             // Set the input value
             const tickerInput = document.getElementById("research-ticker-input");
             if (tickerInput) {
-                tickerInput.value = toUpperCase(prefilledTicker);
+                tickerInput.value = prefilledTicker.toUpperCase();
             }
             // Automatically research the stock
             setTimeout(() => {
@@ -195,7 +195,7 @@ export default class ResearchView {
     }
 
     async researchStock(ticker) {
-        const upperTicker = toUpperCase(ticker);
+        const upperTicker = ticker.toUpperCase();
         
         // Update input field
         const tickerInput = document.getElementById("research-ticker-input");

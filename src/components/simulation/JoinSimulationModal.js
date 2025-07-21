@@ -1,7 +1,7 @@
 // src/components/simulation/JoinSimulationModal.js
 import { SimulationService } from "../../services/simulation.js";
 import { AuthService } from "../../services/auth.js";
-import { formatInviteCode, capitalize } from "../../utils/string-utils.js";
+import { capitalize } from "../../utils/string-utils.js";
 
 export class JoinSimulationModal {
     constructor() {
@@ -166,7 +166,7 @@ export class JoinSimulationModal {
 
         // Auto-format invite code input
         inviteCodeInput?.addEventListener("input", (e) => {
-            let value = formatInviteCode(e.target.value);
+            let value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6);
             e.target.value = value;
             
             // Preview simulation when code is 6 characters
@@ -182,7 +182,7 @@ export class JoinSimulationModal {
         inviteCodeInput?.addEventListener("paste", (e) => {
             e.preventDefault();
             const paste = (e.clipboardData || window.clipboardData).getData("text");
-            const cleaned = formatInviteCode(paste);
+            const cleaned = paste.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6);
             e.target.value = cleaned;
             
             if (cleaned.length === 6) {
