@@ -5,15 +5,24 @@ import { CreateSimulationModal } from "../components/simulation/CreateSimulation
 import { JoinSimulationModal } from "../components/simulation/JoinSimulationModal.js";
 import { EmailInviteModal } from "../components/simulation/EmailInviteModal.js";
 import { SIMULATION_STATUS, STATUS_CONFIG, PENDING_STATES, USER_ROLES, ROLE_CONFIG } from "../constants/simulation-status.js";
+import { formatCurrencyWithCommas } from "../utils/currency-utils.js";
 import { 
     convertFirebaseDate, 
     calculateDaysUntilStart,
     calculateDaysRemaining,
     calculateDaysAgo
 } from "../utils/date-utils.js";
-import { 
-    formatCurrencyWithCommas
-} from "../utils/currency-utils.js";
+import {
+    updateElementText,
+    updateElementHTML,
+    hideElement,
+    showElement,
+    clearElement,
+    appendChild,
+    copyToClipboard,
+    showTemporaryMessage
+} from "../utils/dom-utils.js";
+
 
 export default class DashboardView {
     constructor() {
@@ -198,35 +207,23 @@ export default class DashboardView {
 
     updateSimulationStats() {
         const activeSimCount = this.userSimulations.filter(sim => sim.status === SIMULATION_STATUS.ACTIVE).length;
-        const activeSimCountEl = document.getElementById("active-sim-count");
-        if (activeSimCountEl) {
-            activeSimCountEl.textContent = activeSimCount;
-        }
+        updateElementText("active-sim-count", activeSimCount);
     }
 
     renderSimulations() {
-        const loadingEl = document.getElementById("simulations-loading");
-        const emptyEl = document.getElementById("simulations-empty");
-        const containerEl = document.getElementById("simulations-container");
-
-        // Hide loading
-        if (loadingEl) loadingEl.classList.add("hidden");
+        hideElement("simulations-loading");
 
         if (this.userSimulations.length === 0) {
-            // Show empty state
-            if (emptyEl) emptyEl.classList.remove("hidden");
-            if (containerEl) containerEl.innerHTML = "";
+            showElement("simulations-empty");
+            clearElement("simulations-container");
         } else {
-            // Show simulations
-            if (emptyEl) emptyEl.classList.add("hidden");
-            if (containerEl) {
-                containerEl.innerHTML = "";
-                
-                this.userSimulations.forEach(simulation => {
-                    const simCard = this.createSimulationCard(simulation);
-                    containerEl.appendChild(simCard);
-                });
-            }
+            hideElement("simulations-empty");
+            clearElement("simulations-container");
+            
+            this.userSimulations.forEach(simulation => {
+                const simCard = this.createSimulationCard(simulation);
+                appendChild("simulations-container", simCard);
+            });
         }
     }
 
@@ -373,10 +370,12 @@ export default class DashboardView {
         if (inviteBtn) {
             inviteBtn.addEventListener("click", async (e) => {
                 const inviteCode = e.currentTarget.dataset.inviteCode;
-                try {
-                    await navigator.clipboard.writeText(inviteCode);
+                const success = await copyToClipboard(inviteCode);
+
+                if (success) {
+                    showTemporaryMessage("Invite code copied!", "success", 2000);
                     
-                    // Visual feedback
+                    // Visual feedback on button
                     const originalText = inviteBtn.innerHTML;
                     inviteBtn.innerHTML = `
                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -390,11 +389,8 @@ export default class DashboardView {
                         inviteBtn.innerHTML = originalText;
                         inviteBtn.className = "invite-code-btn bg-gray-700 hover:bg-gray-600 text-white text-xs font-medium py-1.5 px-3 rounded-md transition-colors duration-200 flex items-center gap-1.5";
                     }, 2000);
-                    
-                } catch (err) {
-                    console.error("Failed to copy invite code:", err);
-                    // Fallback: show the code in an alert
-                    alert(`Invite Code: ${inviteCode}`);
+                } else {
+                    showTemporaryMessage("Failed to copy invite code", "error", 3000);
                 }
             });
         }
@@ -433,25 +429,17 @@ export default class DashboardView {
     }
 
     showSimulationsError() {
-        const loadingEl = document.getElementById("simulations-loading");
-        const containerEl = document.getElementById("simulations-container");
+        hideElement("simulations-loading");
         
-        if (loadingEl) loadingEl.classList.add("hidden");
-        
-        if (containerEl) {
-            containerEl.innerHTML = `
-                <div class="bg-red-900/20 border border-red-500 rounded-lg p-6 text-center">
-                    <svg class="w-12 h-12 mx-auto mb-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                    <h3 class="text-lg font-semibold text-red-400 mb-2">Error Loading Simulations</h3>
-                    <p class="text-gray-300 mb-4">Unable to load your simulations. Please try again.</p>
-                    <button onclick="window.location.reload()" class="bg-red-600 hover:bg-red-500 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-300">
-                        Retry
-                    </button>
-                </div>
-            `;
-        }
+        updateElementHTML("simulations-container", `
+            <div class="bg-red-900/20 border border-red-500 rounded-lg p-6 text-center">
+                <svg class="w-12 h-12 mx-auto mb-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <h3 class="text-lg font-semibold text-red-400 mb-2">Error Loading Simulations</h3>
+                <p class="text-gray-300 mb-4">Unable to load your simulations. Please try again.</p>
+            </div>
+        `);
     }
 
     handleCreateSimulation() {

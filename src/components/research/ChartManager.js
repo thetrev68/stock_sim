@@ -4,6 +4,7 @@
 // Handles all chart-related operations for research view
 
 import { getChartUnavailableTemplate } from "../../templates/research/research-errors.js";
+import { setUIState, updateElementHTML } from "../../utils/dom-utils.js";
 
 export class ChartManager {
     constructor(stockService) {
@@ -199,34 +200,36 @@ export class ChartManager {
 
     // Chart UI State Management
     showChartLoading() {
-        document.getElementById("chart-loading")?.classList.remove("hidden");
-        document.getElementById("chart-container")?.classList.add("hidden");
-        document.getElementById("chart-error")?.classList.add("hidden");
+        setUIState({
+            loadingId: "chart-loading",
+            contentId: "chart-container", 
+            errorId: "chart-error"
+        }, "loading");
     }
 
     showChart() {
-        document.getElementById("chart-loading")?.classList.add("hidden");
-        document.getElementById("chart-container")?.classList.remove("hidden");
-        document.getElementById("chart-error")?.classList.add("hidden");
+        setUIState({
+            loadingId: "chart-loading",
+            contentId: "chart-container", 
+            errorId: "chart-error"
+        }, "content");
     }
 
     showChartError() {
-        document.getElementById("chart-loading")?.classList.add("hidden");
-        document.getElementById("chart-container")?.classList.add("hidden");
-        document.getElementById("chart-error")?.classList.remove("hidden");
+        setUIState({
+            loadingId: "chart-loading",
+            contentId: "chart-container", 
+            errorId: "chart-error"
+        }, "error");
     }
 
     showChartUnavailable(message = "Chart temporarily unavailable") {
-        const chartContainer = document.getElementById("chart-container");
-        const chartLoading = document.getElementById("chart-loading");
-        const chartError = document.getElementById("chart-error");
+        setUIState({
+            loadingId: "chart-loading",
+            contentId: "chart-container", 
+            errorId: "chart-error"
+        }, "error");
         
-        if (chartLoading) chartLoading.classList.add("hidden");
-        if (chartContainer) chartContainer.classList.add("hidden");
-        
-        if (chartError) {
-            chartError.innerHTML = getChartUnavailableTemplate(message);
-            chartError.classList.remove("hidden");
-        }
+        updateElementHTML("chart-error", getChartUnavailableTemplate(message));
     }
 }

@@ -4,6 +4,14 @@
 import { getPortfolio, initializePortfolio, getRecentTrades } from "../../services/trading.js";
 import { TRADE_TYPE_CONFIG } from "../../constants/trade-types.js";
 import { formatCurrencyWithCommas, formatPortfolioChange } from "../../utils/currency-utils.js";
+import {
+    setUIState,
+    createElement,
+    clearElement,
+    appendChild,
+    hideElement,
+    updateElementHTML
+} from "../../utils/dom-utils.js";
 import { 
     getHoldingElementTemplate, 
     getTradeElementTemplate 
@@ -45,88 +53,93 @@ export class SimulationPortfolioManager {
     }
 
     async loadHoldings() {
-        const holdingsLoading = document.getElementById("sim-holdings-loading");
-        const holdingsEmpty = document.getElementById("sim-holdings-empty");
-        const holdingsList = document.getElementById("sim-holdings-list");
-
         if (!this.simulationPortfolio || !this.simulationPortfolio.holdings) {
-            if (holdingsLoading) holdingsLoading.classList.add("hidden");
-            if (holdingsEmpty) holdingsEmpty.classList.remove("hidden");
-            if (holdingsList) holdingsList.classList.add("hidden");
+            setUIState({
+                loadingId: "sim-holdings-loading",
+                contentId: "sim-holdings-list",
+                emptyId: "sim-holdings-empty"
+            }, "empty");
             return;
         }
 
         const holdings = this.simulationPortfolio.holdings;
         
         if (Object.keys(holdings).length === 0) {
-            if (holdingsLoading) holdingsLoading.classList.add("hidden");
-            if (holdingsEmpty) holdingsEmpty.classList.remove("hidden");
-            if (holdingsList) holdingsList.classList.add("hidden");
+            setUIState({
+                loadingId: "sim-holdings-loading",
+                contentId: "sim-holdings-list",
+                emptyId: "sim-holdings-empty"
+            }, "empty");
         } else {
-            if (holdingsLoading) holdingsLoading.classList.add("hidden");
-            if (holdingsEmpty) holdingsEmpty.classList.add("hidden");
-            if (holdingsList) {
-                holdingsList.classList.remove("hidden");
-                holdingsList.innerHTML = "";
-
-                for (const ticker in holdings) {
-                    const holding = holdings[ticker];
-                    const holdingElement = this.createHoldingElement(ticker, holding);
-                    holdingsList.appendChild(holdingElement);
-                }
+            setUIState({
+                loadingId: "sim-holdings-loading",
+                contentId: "sim-holdings-list",
+                emptyId: "sim-holdings-empty"
+            }, "content");
+            
+            clearElement("sim-holdings-list");
+            
+            for (const ticker in holdings) {
+                const holding = holdings[ticker];
+                const holdingElement = this.createHoldingElement(ticker, holding);
+                appendChild("sim-holdings-list", holdingElement);
             }
         }
     }
 
     createHoldingElement(ticker, holding) {
-        const element = document.createElement("div");
-        element.className = "bg-gray-700 p-4 rounded-lg flex justify-between items-center";
-        
-        element.innerHTML = getHoldingElementTemplate(ticker, holding);
-        
-        return element;
+        return createElement(
+            "div", 
+            "bg-gray-700 p-4 rounded-lg flex justify-between items-center",
+            getHoldingElementTemplate(ticker, holding),
+            true // useInnerHTML
+        );
     }
 
     async loadRecentTrades() {
-        const tradesLoading = document.getElementById("sim-trades-loading");
-        const tradesEmpty = document.getElementById("sim-trades-empty");
-        const tradesList = document.getElementById("sim-trades-list");
-
         try {
             const trades = await getRecentTrades(this.view.currentUser.uid, 5, this.view.simulationId);
             
-            if (tradesLoading) tradesLoading.classList.add("hidden");
+            hideElement("sim-trades-loading");
             
             if (trades.length === 0) {
-                if (tradesEmpty) tradesEmpty.classList.remove("hidden");
-                if (tradesList) tradesList.classList.add("hidden");
+                setUIState({
+                    loadingId: "sim-trades-loading",
+                    contentId: "sim-trades-list",
+                    emptyId: "sim-trades-empty"
+                }, "empty");
             } else {
-                if (tradesEmpty) tradesEmpty.classList.add("hidden");
-                if (tradesList) {
-                    tradesList.classList.remove("hidden");
-                    tradesList.innerHTML = "";
-
-                    trades.forEach(trade => {
-                        const tradeElement = this.createTradeElement(trade);
-                        tradesList.appendChild(tradeElement);
-                    });
-                }
+                setUIState({
+                    loadingId: "sim-trades-loading",
+                    contentId: "sim-trades-list",
+                    emptyId: "sim-trades-empty"
+                }, "content");
+                
+                clearElement("sim-trades-list");
+                
+                trades.forEach(trade => {
+                    const tradeElement = this.createTradeElement(trade);
+                    appendChild("sim-trades-list", tradeElement);
+                });
             }
         } catch (error) {
             console.error("Error loading recent trades:", error);
-            if (tradesLoading) tradesLoading.classList.add("hidden");
-            if (tradesEmpty) tradesEmpty.classList.remove("hidden");
+            setUIState({
+                loadingId: "sim-trades-loading",
+                contentId: "sim-trades-list",
+                emptyId: "sim-trades-empty"
+            }, "empty");
         }
     }
 
     createTradeElement(trade) {
-        const element = document.createElement("div");
-        element.className = "bg-gray-700 p-4 rounded-lg flex justify-between items-center";
-        
         const tradeConfig = TRADE_TYPE_CONFIG[trade.type];
-        element.innerHTML = getTradeElementTemplate(trade, tradeConfig);
-        
-        return element;
+        return createElement(
+            "div", 
+            "bg-gray-700 p-4 rounded-lg flex justify-between items-center",
+            getTradeElementTemplate(trade, tradeConfig),
+            true // useInnerHTML
+        );
     }
 
     updatePortfolioStats() {
@@ -176,13 +189,9 @@ export class SimulationPortfolioManager {
     }
 
     showPortfolioError() {
-        const holdingsContainer = document.getElementById("sim-holdings-container");
-        const tradesContainer = document.getElementById("sim-trades-container");
-        
         const errorContent = getPortfolioErrorTemplate();
-        
-        if (holdingsContainer) holdingsContainer.innerHTML = errorContent;
-        if (tradesContainer) tradesContainer.innerHTML = errorContent;
+        updateElementHTML("sim-holdings-container", errorContent);
+        updateElementHTML("sim-trades-container", errorContent);
     }
 
     // Method to refresh portfolio data

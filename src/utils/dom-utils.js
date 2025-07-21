@@ -512,3 +512,437 @@ export const getElements = (ids) => {
     });
     return elements;
 };
+
+// ============================================================================
+// NEW UTILITIES - Added based on codebase audit
+// ============================================================================
+
+/**
+ * Button Loading State Management
+ */
+
+/**
+ * Set button loading state with text and spinner management
+ * @param {string} buttonId - Button element ID
+ * @param {boolean} loading - Loading state
+ * @param {string} textId - Text element ID (optional)
+ * @param {string} spinnerId - Spinner element ID (optional)
+ * @returns {boolean} True if button was found and updated
+ */
+export const setButtonLoading = (buttonId, loading, textId = null, spinnerId = null) => {
+    const button = getElement(buttonId);
+    if (!button) return false;
+
+    button.disabled = loading;
+
+    if (textId) {
+        if (loading) {
+            hideElement(textId);
+        } else {
+            showElement(textId);
+        }
+    }
+
+    if (spinnerId) {
+        if (loading) {
+            showElement(spinnerId);
+        } else {
+            hideElement(spinnerId);
+        }
+    }
+
+    return true;
+};
+
+/**
+ * Set button loading state with HTML content replacement
+ * @param {string} buttonId - Button element ID
+ * @param {boolean} loading - Loading state
+ * @param {string} loadingHTML - HTML to show when loading
+ * @param {string} normalHTML - HTML to show when not loading
+ * @returns {boolean} True if button was found and updated
+ */
+export const setButtonLoadingHTML = (buttonId, loading, loadingHTML, normalHTML) => {
+    const button = getElement(buttonId);
+    if (!button) return false;
+
+    button.disabled = loading;
+    button.innerHTML = loading ? loadingHTML : normalHTML;
+
+    return true;
+};
+
+/**
+ * Enable button
+ * @param {string} buttonId - Button element ID
+ * @returns {boolean} True if button was found and enabled
+ */
+export const enableButton = (buttonId) => {
+    return enableElement(buttonId);
+};
+
+/**
+ * Disable button
+ * @param {string} buttonId - Button element ID
+ * @returns {boolean} True if button was found and disabled
+ */
+export const disableButton = (buttonId) => {
+    return disableElement(buttonId);
+};
+
+/**
+ * Bulk Element Operations
+ */
+
+/**
+ * Update multiple elements' text content
+ * @param {Object} updates - Object with element ID as key and text as value
+ * @returns {Object} Object with element ID as key and success boolean as value
+ */
+export const updateMultipleElementsText = (updates) => {
+    const results = {};
+    Object.entries(updates).forEach(([id, text]) => {
+        results[id] = updateElementText(id, text);
+    });
+    return results;
+};
+
+/**
+ * Update multiple elements' HTML content
+ * @param {Object} updates - Object with element ID as key and HTML as value
+ * @returns {Object} Object with element ID as key and success boolean as value
+ */
+export const updateMultipleElementsHTML = (updates) => {
+    const results = {};
+    Object.entries(updates).forEach(([id, html]) => {
+        results[id] = updateElementHTML(id, html);
+    });
+    return results;
+};
+
+/**
+ * Show multiple elements
+ * @param {Array<string>} ids - Array of element IDs to show
+ * @returns {Object} Object with element ID as key and success boolean as value
+ */
+export const showMultipleElements = (ids) => {
+    const results = {};
+    ids.forEach(id => {
+        results[id] = showElement(id);
+    });
+    return results;
+};
+
+/**
+ * Hide multiple elements
+ * @param {Array<string>} ids - Array of element IDs to hide
+ * @returns {Object} Object with element ID as key and success boolean as value
+ */
+export const hideMultipleElements = (ids) => {
+    const results = {};
+    ids.forEach(id => {
+        results[id] = hideElement(id);
+    });
+    return results;
+};
+
+/**
+ * Enable multiple elements
+ * @param {Array<string>} ids - Array of element IDs to enable
+ * @returns {Object} Object with element ID as key and success boolean as value
+ */
+export const enableMultipleElements = (ids) => {
+    const results = {};
+    ids.forEach(id => {
+        results[id] = enableElement(id);
+    });
+    return results;
+};
+
+/**
+ * Disable multiple elements
+ * @param {Array<string>} ids - Array of element IDs to disable
+ * @returns {Object} Object with element ID as key and success boolean as value
+ */
+export const disableMultipleElements = (ids) => {
+    const results = {};
+    ids.forEach(id => {
+        results[id] = disableElement(id);
+    });
+    return results;
+};
+
+/**
+ * Modal Management Utilities
+ */
+
+/**
+ * Show modal by ID
+ * @param {string} modalId - Modal element ID
+ * @returns {boolean} True if modal was found and shown
+ */
+export const showModal = (modalId) => {
+    return showElement(modalId);
+};
+
+/**
+ * Hide modal by ID
+ * @param {string} modalId - Modal element ID
+ * @returns {boolean} True if modal was found and hidden
+ */
+export const hideModal = (modalId) => {
+    return hideElement(modalId);
+};
+
+/**
+ * Remove modal from DOM
+ * @param {string} modalId - Modal element ID
+ * @returns {boolean} True if modal was found and removed
+ */
+export const removeModal = (modalId) => {
+    return removeElement(modalId);
+};
+
+/**
+ * Check if modal is visible
+ * @param {string} modalId - Modal element ID
+ * @returns {boolean} True if modal is visible
+ */
+export const isModalVisible = (modalId) => {
+    return isElementVisible(modalId);
+};
+
+/**
+ * Form State Management
+ */
+
+/**
+ * Reset form by ID
+ * @param {string} formId - Form element ID
+ * @returns {boolean} True if form was found and reset
+ */
+export const resetForm = (formId) => {
+    const form = getElement(formId);
+    if (form && form.reset) {
+        form.reset();
+        return true;
+    }
+    return false;
+};
+
+/**
+ * Set form loading state (disable all form controls)
+ * @param {string} formId - Form element ID
+ * @param {boolean} loading - Loading state
+ * @returns {boolean} True if form was found and updated
+ */
+export const setFormLoading = (formId, loading) => {
+    const form = getElement(formId);
+    if (!form) return false;
+
+    const controls = form.querySelectorAll("input, button, select, textarea");
+    controls.forEach(control => {
+        control.disabled = loading;
+    });
+
+    return true;
+};
+
+/**
+ * Get form data as object
+ * @param {string} formId - Form element ID
+ * @returns {Object|null} Form data object or null if form not found
+ */
+export const getFormData = (formId) => {
+    const form = getElement(formId);
+    if (!form) return null;
+
+    const formData = new FormData(form);
+    const data = {};
+    
+    for (const [key, value] of formData.entries()) {
+        data[key] = value;
+    }
+    
+    return data;
+};
+
+/**
+ * Set form data from object
+ * @param {string} formId - Form element ID
+ * @param {Object} data - Data object with field names as keys
+ * @returns {boolean} True if form was found and updated
+ */
+export const setFormData = (formId, data) => {
+    const form = getElement(formId);
+    if (!form) return false;
+
+    Object.entries(data).forEach(([name, value]) => {
+        const field = form.querySelector(`[name="${name}"]`);
+        if (field) {
+            if (field.type === "checkbox" || field.type === "radio") {
+                field.checked = value;
+            } else {
+                field.value = value;
+            }
+        }
+    });
+
+    return true;
+};
+
+/**
+ * Message and Notification Utilities
+ */
+
+/**
+ * Show error message in designated error container
+ * @param {string} errorContainerId - Error container element ID
+ * @param {string} message - Error message
+ * @param {string} textElementId - Optional specific text element ID within container
+ * @returns {boolean} True if container was found and updated
+ */
+export const showErrorMessage = (errorContainerId, message, textElementId = null) => {
+    const container = getElement(errorContainerId);
+    if (!container) return false;
+
+    if (textElementId) {
+        updateElementText(textElementId, message);
+    } else {
+        const textElement = container.querySelector("p");
+        if (textElement) {
+            textElement.textContent = message;
+        } else {
+            container.textContent = message;
+        }
+    }
+
+    return showElement(errorContainerId);
+};
+
+/**
+ * Show success message in designated success container
+ * @param {string} successContainerId - Success container element ID
+ * @param {string} message - Success message
+ * @param {string} textElementId - Optional specific text element ID within container
+ * @returns {boolean} True if container was found and updated
+ */
+export const showSuccessMessage = (successContainerId, message, textElementId = null) => {
+    const container = getElement(successContainerId);
+    if (!container) return false;
+
+    if (textElementId) {
+        updateElementText(textElementId, message);
+    } else {
+        const textElement = container.querySelector("p");
+        if (textElement) {
+            textElement.textContent = message;
+        } else {
+            container.textContent = message;
+        }
+    }
+
+    return showElement(successContainerId);
+};
+
+/**
+ * Hide error message container
+ * @param {string} errorContainerId - Error container element ID
+ * @returns {boolean} True if container was found and hidden
+ */
+export const hideErrorMessage = (errorContainerId) => {
+    return hideElement(errorContainerId);
+};
+
+/**
+ * Hide success message container
+ * @param {string} successContainerId - Success container element ID
+ * @returns {boolean} True if container was found and hidden
+ */
+export const hideSuccessMessage = (successContainerId) => {
+    return hideElement(successContainerId);
+};
+
+/**
+ * Advanced State Management Patterns
+ */
+
+/**
+ * Complete state management for common loading/content/error/empty pattern
+ * @param {Object} config - Configuration object
+ * @param {string} config.loadingId - Loading element ID
+ * @param {string} config.contentId - Content element ID
+ * @param {string} config.errorId - Error element ID
+ * @param {string} config.emptyId - Empty state element ID (optional)
+ * @param {string} state - State to show ('loading', 'content', 'error', 'empty')
+ * @param {string} message - Optional message for error/empty states
+ * @returns {boolean} True if state was successfully set
+ */
+export const setUIState = (config, state, message = null) => {
+    const { loadingId, contentId, errorId, emptyId } = config;
+
+    // Hide all states first
+    hideElement(loadingId);
+    hideElement(contentId);
+    hideElement(errorId);
+    if (emptyId) hideElement(emptyId);
+
+    // Show the requested state
+    switch (state) {
+        case "loading":
+            return showElement(loadingId);
+        
+        case "content":
+            return showElement(contentId);
+        
+        case "error":
+            if (message) updateElementText(errorId, message);
+            return showElement(errorId);
+        
+        case "empty":
+            if (emptyId) {
+                if (message) updateElementText(emptyId, message);
+                return showElement(emptyId);
+            }
+            return false;
+        
+        default:
+            console.warn(`Unknown UI state: ${state}`);
+            return false;
+    }
+};
+
+/**
+ * Copy text to clipboard (modern approach)
+ * @param {string} text - Text to copy
+ * @returns {Promise<boolean>} Promise that resolves to true if successful
+ */
+export const copyToClipboard = async (text) => {
+    try {
+        if (navigator.clipboard && window.isSecureContext) {
+            await navigator.clipboard.writeText(text);
+            return true;
+        } else {
+            // Fallback for older browsers
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            textArea.style.position = "fixed";
+            textArea.style.left = "-999999px";
+            textArea.style.top = "-999999px";
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            
+            try {
+                document.execCommand("copy");
+                textArea.remove();
+                return true;
+            } catch {
+                textArea.remove();
+                return false;
+            }
+        }
+    } catch {
+        return false;
+    }
+};

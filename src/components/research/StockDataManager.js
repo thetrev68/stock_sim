@@ -8,6 +8,11 @@ import {
     formatPriceChange,
     getGainLossColorClass
 } from "../../utils/currency-utils.js";
+import { 
+    updateElementText,
+    setUIState,
+    getElement
+} from "../../utils/dom-utils.js";
 import { getInitial } from "../../utils/string-utils.js";
 
 export class StockDataManager {
@@ -21,17 +26,17 @@ export class StockDataManager {
         const data = stockData;
 
         // Update header information
-        this.updateElement("company-name", data.companyName);
-        this.updateElement("quote-ticker", data.ticker);
-        this.updateElement("company-exchange", data.exchange);
-        this.updateElement("company-sector", data.sector);
-        this.updateElement("company-currency", data.currency);
+        updateElementText("company-name", data.companyName);
+        updateElementText("quote-ticker", data.ticker);
+        updateElementText("company-exchange", data.exchange);
+        updateElementText("company-sector", data.sector);
+        updateElementText("company-currency", data.currency);
 
         // Update price information
-        this.updateElement("current-price", formatPrice(data.currentPrice));
+        updateElementText("current-price", formatPrice(data.currentPrice));
         
         // Price change with color
-        const changeEl = document.getElementById("price-change");
+        const changeEl = getElement("price-change");
         if (changeEl && data.priceChange !== undefined) {
             const changeFormatted = formatPriceChange(data.priceChange, data.priceChangePercent);
             const colorClass = getGainLossColorClass(data.priceChange);
@@ -41,19 +46,19 @@ export class StockDataManager {
         }
 
         // Update quick stats
-        this.updateElement("open-price", formatPrice(data.openPrice));
-        this.updateElement("day-high", formatPrice(data.dayHigh));
-        this.updateElement("day-low", formatPrice(data.dayLow));
-        this.updateElement("volume", data.volume ? formatNumberWithCommas(data.volume) : "--");
+        updateElementText("open-price", formatPrice(data.openPrice));
+        updateElementText("day-high", formatPrice(data.dayHigh));
+        updateElementText("day-low", formatPrice(data.dayLow));
+        updateElementText("volume", data.volume ? formatNumberWithCommas(data.volume) : "--");
 
         // Update last updated
-        this.updateElement("last-updated", `Last updated: ${new Date().toLocaleTimeString()}`);
+        updateElementText("last-updated", `Last updated: ${new Date().toLocaleTimeString()}`);
 
         // Update company logo
-        const logoImg = document.getElementById("logo-img");
-        const logoContainer = document.getElementById("company-logo");
-        const logoFallback = document.getElementById("company-logo-fallback");
-        const companyInitial = document.getElementById("company-initial");
+        const logoImg = getElement("logo-img");
+        const logoContainer = getElement("company-logo");
+        const logoFallback = getElement("company-logo-fallback");
+        const companyInitial = getElement("company-initial");
 
         if (data.logo && logoImg && logoContainer && logoFallback) {
             logoImg.src = data.logo;
@@ -81,13 +86,13 @@ export class StockDataManager {
 
         const profile = stockData.companyProfile;
 
-        this.updateElement("market-cap", profile.marketCapitalization ? this.formatMillionsBillions(profile.marketCapitalization) : "--");
-        this.updateElement("shares-outstanding", profile.shareOutstanding ? formatNumberWithCommas(profile.shareOutstanding): "--");
-        this.updateElement("ipo-date", profile.ipo ? new Date(profile.ipo).toLocaleDateString() : "--");
-        this.updateElement("company-country", profile.country || "--");
+        updateElementText("market-cap", profile.marketCapitalization ? this.formatMillionsBillions(profile.marketCapitalization) : "--");
+        updateElementText("shares-outstanding", profile.shareOutstanding ? formatNumberWithCommas(profile.shareOutstanding): "--");
+        updateElementText("ipo-date", profile.ipo ? new Date(profile.ipo).toLocaleDateString() : "--");
+        updateElementText("company-country", profile.country || "--");
 
-        const companyWebsiteDiv = document.getElementById("company-website");
-        const websiteLink = document.getElementById("website-link");
+        const companyWebsiteDiv = getElement("company-website");
+        const websiteLink = getElement("website-link");
         if (profile.weburl && websiteLink && companyWebsiteDiv) {
             websiteLink.href = profile.weburl;
             companyWebsiteDiv.classList.remove("hidden");
@@ -108,29 +113,29 @@ export class StockDataManager {
         return num.toLocaleString();
     }
 
-    updateElement(id, text) {
-        const element = document.getElementById(id);
-        if (element) {
-            element.textContent = text;
-        }
-    }
-
     // Profile UI State Management
+    // Replace all profile state methods with these:
     showProfileLoading() {
-        document.getElementById("profile-loading")?.classList.remove("hidden");
-        document.getElementById("profile-data")?.classList.add("hidden");
-        document.getElementById("profile-error")?.classList.add("hidden");
+        setUIState({
+            loadingId: "profile-loading",
+            contentId: "profile-data", 
+            errorId: "profile-error"
+        }, "loading");
     }
 
     showProfileData() {
-        document.getElementById("profile-loading")?.classList.add("hidden");
-        document.getElementById("profile-data")?.classList.remove("hidden");
-        document.getElementById("profile-error")?.classList.add("hidden");
+        setUIState({
+            loadingId: "profile-loading",
+            contentId: "profile-data", 
+            errorId: "profile-error"
+        }, "content");
     }
 
     showProfileError() {
-        document.getElementById("profile-loading")?.classList.add("hidden");
-        document.getElementById("profile-data")?.classList.add("hidden");
-        document.getElementById("profile-error")?.classList.remove("hidden");
+        setUIState({
+            loadingId: "profile-loading",
+            contentId: "profile-data", 
+            errorId: "profile-error"
+        }, "error");
     }
 }

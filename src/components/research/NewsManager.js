@@ -3,6 +3,7 @@
 // Handles all news-related operations for research view
 
 import { formatNewsDate } from "../../utils/date-utils.js";
+import { setUIState } from "../../utils/dom-utils.js";
 import { getNewsArticleCardTemplate } from "../../templates/research/research-news.js";
 import { getRefreshNewsButtonTemplate } from "../../templates/research/research-stock-display.js";
 
@@ -192,30 +193,38 @@ export class NewsManager {
 
     // News UI State Management
     showNewsLoading() {
-        document.getElementById("news-loading")?.classList.remove("hidden");
-        document.getElementById("news-articles")?.classList.add("hidden");
-        document.getElementById("news-empty")?.classList.add("hidden");
-        document.getElementById("news-error")?.classList.add("hidden");
+        setUIState({
+            loadingId: "news-loading",
+            contentId: "news-articles", 
+            errorId: "news-error",
+            emptyId: "news-empty"
+        }, "loading");
     }
 
     showNewsArticles() {
-        document.getElementById("news-loading")?.classList.add("hidden");
-        document.getElementById("news-articles")?.classList.remove("hidden");
-        document.getElementById("news-empty")?.classList.add("hidden");
-        document.getElementById("news-error")?.classList.add("hidden");
+        setUIState({
+            loadingId: "news-loading",
+            contentId: "news-articles", 
+            errorId: "news-error",
+            emptyId: "news-empty"
+        }, "content");
     }
 
     showNewsEmpty() {
-        document.getElementById("news-loading")?.classList.add("hidden");
-        document.getElementById("news-articles")?.classList.add("hidden");
-        document.getElementById("news-empty")?.classList.remove("hidden");
-        document.getElementById("news-error")?.classList.add("hidden");
+        setUIState({
+            loadingId: "news-loading",
+            contentId: "news-articles", 
+            errorId: "news-error",
+            emptyId: "news-empty"
+        }, "empty");
     }
 
     showNewsError() {
-        document.getElementById("news-loading")?.classList.add("hidden");
-        document.getElementById("news-articles")?.classList.add("hidden");
-        document.getElementById("news-empty")?.classList.add("hidden");
-        document.getElementById("news-error")?.classList.remove("hidden");
+        setUIState({
+            loadingId: "news-loading",
+            contentId: "news-articles", 
+            errorId: "news-error",
+            emptyId: "news-empty"
+        }, "error");
     }
 }
