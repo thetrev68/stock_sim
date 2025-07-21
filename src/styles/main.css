@@ -141,6 +141,20 @@ textarea:not(.form-textarea) {
   font-size: 16px; /* Prevent iOS zoom */
 }
 
+/* ========================================
+   SCROLLBAR UTILITIES
+   ======================================== */
+
+/* Hide scrollbars while maintaining scroll functionality */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* Internet Explorer 10+ */
+  scrollbar-width: none;     /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;            /* Safari and Chrome */
+}
+
 /* Mobile-specific overrides for existing classes */
 @media (max-width: 768px) {
   .p-6 {

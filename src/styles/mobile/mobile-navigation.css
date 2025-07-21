@@ -6,41 +6,37 @@
 
 @media (max-width: 768px) {
   
-  /* Main navigation container */
-  nav.flex {
-    /* Enable horizontal scrolling */
+  /* Main navigation container - centered alignment */
+  nav.flex,
+  nav[role="navigation"] {
+    /* Center navigation like other content */
+    justify-content: center;
+    margin: 0 auto var(--space-xl) auto;
+    padding: 0;
+    
+    /* Enable horizontal scrolling if needed */
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     scroll-behavior: smooth;
-    
-    /* Extend to edges on mobile */
-    margin-left: -var(--space-sm);
-    margin-right: -var(--space-sm);
-    padding-left: var(--space-sm);
-    padding-right: var(--space-sm);
-    margin-bottom: var(--space-xl);
-    
-    /* Position for scroll indicator */
     position: relative;
   }
   
   /* Navigation links */
-  nav.flex .nav-link {
-    /* Prevent shrinking */
+  nav.flex .nav-link,
+  nav[role="navigation"] button {
+    /* Prevent shrinking and touch-friendly sizing */
     flex-shrink: 0;
-    
-    /* Touch-friendly sizing */
     padding: var(--space-md) var(--space-lg);
     font-size: var(--text-sm);
     min-width: auto;
     white-space: nowrap;
     
-    /* Better visual feedback */
+    /* Visual styling */
     border-radius: var(--radius-lg);
     transition: all var(--transition-fast);
   }
   
-  /* Scroll indicator gradient */
+  /* Scroll indicator gradient (for overflow scenarios) */
   nav.flex::after {
     content: "";
     position: absolute;
@@ -59,7 +55,8 @@
    ======================================== */
 
 @media (min-width: 481px) and (max-width: 768px) {
-  nav.flex .nav-link {
+  nav.flex .nav-link,
+  nav[role="navigation"] button {
     padding: var(--space-md) 1.25rem;
     font-size: 0.9rem;
   }
@@ -70,14 +67,16 @@
    ======================================== */
 
 @media (min-width: 769px) {
-  nav.flex {
+  nav.flex,
+  nav[role="navigation"] {
     /* Center navigation on desktop */
     justify-content: center;
     margin: 0 auto var(--space-2xl) auto;
-    max-width: fit-content;
+    max-width: 1200px; /* Match container max-width */
   }
   
-  nav.flex .nav-link {
+  nav.flex .nav-link,
+  nav[role="navigation"] button {
     padding: var(--space-md) var(--space-xl);
     font-size: var(--text-base);
   }
@@ -128,76 +127,5 @@
     min-width: 120px;
     padding: var(--space-md) var(--space-lg);
     font-size: var(--text-sm);
-    white-space: nowrap;
-    border-bottom: 2px solid transparent;
-    transition: all var(--transition-fast);
-  }
-  
-  .simulation-tabs .tab-btn.active {
-    border-bottom-color: var(--color-primary);
-    color: var(--color-primary);
-  }
-  
-  /* Tab scroll indicator */
-  .simulation-tabs::after {
-    content: "";
-    position: absolute;
-    right: 0;
-    top: 0;
-    width: 20px;
-    height: 100%;
-    background: linear-gradient(to right, transparent, var(--bg-card));
-    pointer-events: none;
-    z-index: 1;
-  }
-}
-
-/* ========================================
-   MOBILE MENU BUTTON (Future Enhancement)
-   ======================================== */
-
-.mobile-menu-button {
-  display: none;
-}
-
-@media (max-width: 480px) {
-  .mobile-menu-button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: var(--touch-target);
-    height: var(--touch-target);
-    background: var(--bg-card);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-lg);
-    color: var(--text-primary);
-  }
-  
-  .mobile-menu-button svg {
-    width: 20px;
-    height: 20px;
-  }
-}
-
-/* ========================================
-   BREADCRUMB NAVIGATION
-   ======================================== */
-
-@media (max-width: 768px) {
-  .breadcrumb {
-    font-size: var(--text-sm);
-    color: var(--text-muted);
-    margin-bottom: var(--space-lg);
-    padding: 0 var(--space-sm);
-  }
-  
-  .breadcrumb a {
-    color: var(--color-primary);
-    text-decoration: none;
-  }
-  
-  .breadcrumb .separator {
-    margin: 0 var(--space-sm);
-    color: var(--text-muted);
   }
 }

@@ -32,7 +32,7 @@ import {
     getCleanStatsCardsTemplate,
     getPortfolioSectionTemplate,
     getLeaderboardSectionTemplate,
-    getActivitySectionTemplate, 
+    getActivitySectionTemplate
 } from "../templates/simulation/simulation-layout.js";
 import { 
     getArchivePromptBannerTemplate,

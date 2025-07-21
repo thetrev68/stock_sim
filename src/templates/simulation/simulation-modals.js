@@ -106,7 +106,7 @@ export const getMemberManagementModalTemplate = (memberStats, activeMemberCount,
                                                 <div class="bg-gray-700/50 rounded-md p-2">
                                                     <div class="text-xs text-gray-400 mb-1">Trades</div>
                                                     <div class="text-sm font-medium text-white">
-                                                        ${member.tradesCount || 0}
+                                                        ${member.totalTrades || 0}  
                                                     </div>
                                                 </div>
                                                 <div class="bg-gray-700/50 rounded-md p-2">

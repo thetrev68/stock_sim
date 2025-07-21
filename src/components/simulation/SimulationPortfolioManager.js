@@ -6,7 +6,7 @@ import { TRADE_TYPE_CONFIG } from "../../constants/trade-types.js";
 import { formatCurrencyWithCommas, formatPortfolioChange } from "../../utils/currency-utils.js";
 import {
     setUIState,
-    createElement,
+    // createElement,
     clearElement,
     appendChild,
     hideElement,
@@ -88,27 +88,32 @@ export class SimulationPortfolioManager {
     }
 
     createHoldingElement(ticker, holding) {
-        return createElement(
-            "div", 
-            "bg-gray-700 p-4 rounded-lg flex justify-between items-center",
-            getHoldingElementTemplate(ticker, holding),
-            true // useInnerHTML
-        );
+        // REMOVE the wrapper div completely - template handles its own container
+        const template = getHoldingElementTemplate(ticker, holding);
+        const div = document.createElement("div");
+        div.innerHTML = template;
+        return div.firstElementChild; // Return the actual element, not a wrapper
     }
 
     async loadRecentTrades() {
+        console.log("Loading recent trades for simulation:", this.view.simulationId);
+        console.log("Current user:", this.view.currentUser?.uid);
+        
         try {
             const trades = await getRecentTrades(this.view.currentUser.uid, 5, this.view.simulationId);
+            console.log("Loaded trades:", trades);
             
             hideElement("sim-trades-loading");
             
             if (trades.length === 0) {
+                console.log("No trades found, showing empty state");
                 setUIState({
                     loadingId: "sim-trades-loading",
                     contentId: "sim-trades-list",
                     emptyId: "sim-trades-empty"
                 }, "empty");
             } else {
+                console.log(`Found ${trades.length} trades, displaying them`);
                 setUIState({
                     loadingId: "sim-trades-loading",
                     contentId: "sim-trades-list",
@@ -117,7 +122,8 @@ export class SimulationPortfolioManager {
                 
                 clearElement("sim-trades-list");
                 
-                trades.forEach(trade => {
+                trades.forEach((trade, index) => {
+                    console.log(`Creating trade element ${index}:`, trade);
                     const tradeElement = this.createTradeElement(trade);
                     appendChild("sim-trades-list", tradeElement);
                 });
@@ -134,12 +140,11 @@ export class SimulationPortfolioManager {
 
     createTradeElement(trade) {
         const tradeConfig = TRADE_TYPE_CONFIG[trade.type];
-        return createElement(
-            "div", 
-            "bg-gray-700 p-4 rounded-lg flex justify-between items-center",
-            getTradeElementTemplate(trade, tradeConfig),
-            true // useInnerHTML
-        );
+        // REMOVE the wrapper div completely - template handles its own container  
+        const template = getTradeElementTemplate(trade, tradeConfig);
+        const div = document.createElement("div");
+        div.innerHTML = template;
+        return div.firstElementChild; // Return the actual element, not a wrapper
     }
 
     updatePortfolioStats() {
@@ -216,4 +221,26 @@ export class SimulationPortfolioManager {
         
         return cash + holdingsValue;
     }
+
+    // DEBUGGING: Add this method to SimulationPortfolioManager to verify containers
+    debugContainers() {
+        console.log("=== Portfolio Container Debug ===");
+        const holdingsList = document.getElementById("sim-holdings-list");
+        const tradesList = document.getElementById("sim-trades-list");
+        
+        console.log("Holdings container:", holdingsList);
+        console.log("Holdings children:", holdingsList?.children);
+        console.log("Trades container:", tradesList);
+        console.log("Trades children:", tradesList?.children);
+        
+        // Check for double containers
+        if (holdingsList?.children.length > 0) {
+            const firstHolding = holdingsList.children[0];
+            console.log("First holding element:", firstHolding);
+            console.log("First holding classes:", firstHolding.className);
+            console.log("First holding inner HTML:", firstHolding.innerHTML);
+        }
+    }
+
+    // Call this after loadHoldings() to debug the container structure
 }

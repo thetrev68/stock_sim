@@ -261,3 +261,48 @@
     font-size: var(--text-2xl);
   }
 }
+
+/* ========================================
+   PORTFOLIO SECTION MOBILE OVERRIDES
+   ======================================== */
+
+@media (max-width: 1023px) {
+  /* Force portfolio section to use more width */
+  .portfolio-section {
+    margin-left: -0.5rem !important;
+    margin-right: -0.5rem !important;
+  }
+  
+  /* Portfolio cards use full available width */
+  .portfolio-section .bg-gray-750 {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+  
+  /* Reduce excessive gaps and padding */
+  .portfolio-section .space-y-6 > * + * {
+    margin-top: 1.5rem !important;
+  }
+  
+  /* Make holdings cards breathe more */
+  #sim-holdings-list .bg-gray-750,
+  #sim-trades-list .bg-gray-750 {
+    padding: 1rem !important;
+  }
+}
+
+@media (max-width: 640px) {
+  /* Even more aggressive width usage on small mobile */
+  .portfolio-section {
+    border-radius: 0.5rem !important;
+  }
+  
+  /* Holdings text sizing for mobile */
+  #sim-holdings-list .text-lg {
+    font-size: 1rem !important;
+  }
+  
+  #sim-holdings-list .text-xl {
+    font-size: 1.125rem !important;
+  }
+}

@@ -15,7 +15,7 @@
 @media (min-width: 640px) {
   #app {
     padding: 1.5rem;
-    max-width: 640px;
+    max-width: none; /* Changed: Wider on mobile */
     margin: 0 auto;
   }
 }
@@ -23,7 +23,7 @@
 @media (min-width: 1024px) {
   #app {
     padding: 2rem;
-    max-width: 1280px;
+    max-width: 1200px; /* Changed: Tighter desktop layout */
   }
 }
 
