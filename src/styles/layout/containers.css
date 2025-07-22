@@ -1,5 +1,4 @@
-/* Layout Containers & Grid Systems - SLIMMED VERSION */
-/* Reduced from ~170 lines to ~45 lines (74% reduction) */
+/* Layout Containers & Grid Systems - MOBILE WIDTH FIX */
 
 /* ========================================
    APP CONTAINER (Custom responsive behavior)
@@ -7,23 +6,23 @@
 
 #app {
   margin: 0;
-  padding: 1rem;
+  padding: 0.5rem;      /* REDUCED: From 1rem to 0.5rem for mobile */
   min-width: 100vw;
   max-width: none;
 }
 
 @media (min-width: 640px) {
   #app {
-    padding: 1.5rem;
-    max-width: none; /* Changed: Wider on mobile */
+    padding: 1rem;      /* REDUCED: From 1.5rem to 1rem for tablets */
+    max-width: none;
     margin: 0 auto;
   }
 }
 
 @media (min-width: 1024px) {
   #app {
-    padding: 2rem;
-    max-width: 1200px; /* Changed: Tighter desktop layout */
+    padding: 2rem;      /* KEEP: Desktop padding stays the same */
+    max-width: 1200px;
   }
 }
 
@@ -62,5 +61,3 @@
     grid-template-columns: repeat(3, 1fr);
   }
 }
-
-/* All other layout utilities are handled by Tailwind classes */

@@ -394,18 +394,12 @@ export const getPortfolioSectionTemplate = () => {
 };
 
 /**
- * UPDATE: getLeaderboardSectionTemplate() - Add consistent container
+ * UPDATE: getLeaderboardSectionTemplate() - Add consistent container, remove duplicate title
  */
 export const getLeaderboardSectionTemplate = () => {
     return `
         <section class="leaderboard-section bg-gray-800 rounded-lg shadow-lg border border-gray-700 mb-8">
-            <div class="p-6 border-b border-gray-700">
-                <div>
-                    <h2 class="text-xl font-semibold text-white">Leaderboard</h2>
-                    <p class="text-sm text-gray-400 mt-1">All participants ranked by portfolio value</p>
-                </div>
-            </div>
-            
+            <!-- REMOVED: Duplicate title section -->
             <div class="p-6">
                 <div id="leaderboard-overview-container">
                     <!-- Leaderboard Overview Component will be rendered here -->

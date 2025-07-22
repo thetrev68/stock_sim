@@ -77,9 +77,9 @@
      LAYOUT MOBILE ADJUSTMENTS
      ======================================== */
   
-  /* Container mobile padding */
+  /* Container mobile padding - REMOVED to prevent double padding */
   .container {
-    padding: 0 var(--space-lg);
+    padding: 0;
   }
   
   /* Force single column for mobile */

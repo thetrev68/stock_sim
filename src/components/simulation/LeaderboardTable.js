@@ -69,12 +69,14 @@ export class LeaderboardTable {
 
     getRankingRow(ranking) {
         const isCurrentUser = ranking.userId === this.currentUserId;
-        const totalReturn = ranking.performance?.totalReturn || 0;
-        const totalReturnPercent = ranking.performance?.totalReturnPercent || 0;
-        const totalTrades = ranking.performance?.totalTrades || 0;
-        const totalVolume = ranking.performance?.totalVolume || 0;
-        const holdingsCount = ranking.performance?.holdingsCount || 0;
-        const winRate = ranking.performance?.winRate || 0;
+        
+        // FIXED: Check both nested performance object AND flattened properties from Firestore
+        const totalReturn = ranking.performance?.totalReturn || ranking.totalReturn || 0;
+        const totalReturnPercent = ranking.performance?.totalReturnPercent || ranking.totalReturnPercent || 0;
+        const totalTrades = ranking.performance?.totalTrades || ranking.totalTrades || 0;
+        const totalVolume = ranking.performance?.totalVolume || ranking.totalVolume || 0;
+        const holdingsCount = ranking.performance?.holdingsCount || ranking.holdingsCount || 0;
+        const winRate = ranking.performance?.winRate || ranking.winRate || 0;
         
         const returnClass = totalReturn >= 0 ? "text-green-400" : "text-red-400";
         const rowClass = isCurrentUser ? "bg-cyan-900/30 border-l-4 border-cyan-400" : "hover:bg-gray-700/50";
@@ -95,41 +97,42 @@ export class LeaderboardTable {
             <tr class="${rowClass} transition-colors cursor-pointer ranking-row" 
                 data-user-id="${ranking.userId}" 
                 data-user-name="${ranking.displayName}">
+                <!-- Column 1: RANK -->
                 <td class="px-6 py-4 whitespace-nowrap w-20">
                     ${rankDisplay}
                 </td>
-                <!-- MAX SPACE FOR NAME/EMAIL - Removed avatar icons completely -->
+                <!-- Column 2: PARTICIPANT -->
                 <td class="px-6 py-4">
                     <div>
                         <div class="flex items-center gap-2">
                             <p class="text-white font-medium truncate">${ranking.displayName}</p>
-                            ${isCurrentUser ? "<span class=\"text-cyan-400 text-xs font-medium whitespace-nowrap\">(You)</span>" : ""}
-                            ${ranking.role === "creator" ? "<span class=\"text-yellow-400 text-xs font-medium whitespace-nowrap\">(Creator)</span>" : ""}
+                            ${isCurrentUser ? `<span class="text-cyan-400 text-xs font-semibold bg-cyan-900/30 px-2 py-1 rounded">YOU</span>` : ""}
                         </div>
-                        <p class="text-gray-400 text-sm truncate">${this.formatEmail(ranking.email)}</p>
+                        <p class="text-gray-400 text-sm truncate">${ranking.email}</p>
                     </div>
                 </td>
+                <!-- Column 3: PORTFOLIO VALUE -->
                 <td class="px-6 py-4 whitespace-nowrap text-right">
-                    <span class="text-white font-semibold">${formatCurrencyWithCommas(ranking.portfolioValue)}</span>
-                    <div class="text-gray-400 text-sm">
-                        Cash: ${formatCurrencyWithCommas(ranking.cash)} • 
-                        Holdings: ${formatCurrencyWithCommas(ranking.holdingsValue)}
+                    <div class="text-white font-semibold">${formatCurrencyWithCommas(ranking.portfolioValue)}</div>
+                </td>
+                <!-- Column 4: TOTAL RETURN (MISSING - ADD THIS!) -->
+                <td class="px-6 py-4 whitespace-nowrap text-right">
+                    <div class="${returnClass} font-semibold">
+                        ${totalReturn >= 0 ? "+" : ""}${formatPrice(totalReturn)}
                     </div>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-right">
-                    <span class="${returnClass} font-semibold">
-                        ${formatPrice(Math.abs(totalReturn))}
-                    </span>
-                </td>
+                <!-- Column 5: RETURN % -->
                 <td class="px-6 py-4 whitespace-nowrap text-right">
                     <span class="${returnClass} font-semibold">
                         ${totalReturnPercent >= 0 ? "+" : ""}${totalReturnPercent.toFixed(2)}%
                     </span>
                 </td>
+                <!-- Column 6: TRADES -->
                 <td class="px-6 py-4 whitespace-nowrap text-right">
                     <div class="text-white">${totalTrades}</div>
                     <div class="text-gray-400 text-sm">${formatCurrencyWithCommas(totalVolume, false)} vol</div>
                 </td>
+                <!-- Column 7: HOLDINGS -->
                 <td class="px-6 py-4 whitespace-nowrap text-right">
                     <div class="text-white">${holdingsCount}</div>
                     <div class="text-gray-400 text-sm">${winRate.toFixed(0)}% wins</div>

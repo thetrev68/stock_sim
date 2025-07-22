@@ -143,56 +143,61 @@ export class LeaderboardOverview {
 
     getUserRankCard(userRanking) {
         const rankColor = userRanking.rank === 1 ? "border-yellow-500 bg-yellow-500/10" :
-                         userRanking.rank === 2 ? "border-gray-400 bg-gray-400/10" :
-                         userRanking.rank === 3 ? "border-orange-500 bg-orange-500/10" :
-                         "border-cyan-500 bg-cyan-500/10";
+                        userRanking.rank === 2 ? "border-gray-400 bg-gray-400/10" :
+                        userRanking.rank === 3 ? "border-orange-500 bg-orange-500/10" :
+                        "border-cyan-500 bg-cyan-500/10";
 
-        // Access performance metrics from nested performance object
-        const totalReturn = userRanking.performance?.totalReturn || 0;
-        const totalReturnPercent = userRanking.performance?.totalReturnPercent || 0;
-        const totalTrades = userRanking.performance?.totalTrades || 0;
+        // FIXED: Check both nested performance object AND flattened properties from Firestore
+        const totalReturn = userRanking.performance?.totalReturn || userRanking.totalReturn || 0;
+        const totalReturnPercent = userRanking.performance?.totalReturnPercent || userRanking.totalReturnPercent || 0;
+        const totalTrades = userRanking.performance?.totalTrades || userRanking.totalTrades || 0;
 
         const returnClass = totalReturn >= 0 ? "text-green-400" : "text-red-400";
-        const returnIcon = totalReturn >= 0 ? "↗" : "↘";
 
         return `
-            <div class="bg-gray-800 p-6 rounded-lg shadow-lg border-2 ${rankColor}">
-                <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-                    <div class="flex items-center gap-4">
-                        <div class="w-16 h-16 bg-gradient-to-br from-cyan-500 to-purple-500 rounded-full flex items-center justify-center">
-                            <span class="text-white font-bold text-xl">${userRanking.displayName.charAt(0).toUpperCase()}</span>
-                        </div>
-                        <div>
-                            <h3 class="text-xl font-bold text-white">Your Performance</h3>
-                            <div class="flex items-center gap-2 mt-1">
-                                <span class="text-cyan-400 font-semibold">Rank #${userRanking.rank}</span>
-                                <span class="text-gray-400">of ${this.leaderboardData.totalParticipants}</span>
-                                <span class="text-gray-500">•</span>
-                                <span class="text-gray-400">${this.calculatePercentile(userRanking.rank)}th percentile</span>
-                            </div>
+            <div class="bg-gray-800 p-4 sm:p-6 rounded-lg shadow-lg border-2 ${rankColor}">
+                <!-- Header Section -->
+                <div class="text-center mb-4">
+                    <h3 class="text-xl font-bold text-white mb-2">Your Performance</h3>
+                    <div class="flex items-center justify-center gap-2 text-sm">
+                        <span class="text-cyan-400 font-semibold">Rank #${userRanking.rank}</span>
+                        <span class="text-gray-400">of ${this.leaderboardData.totalParticipants}</span>
+                        <span class="text-gray-500">•</span>
+                        <span class="text-gray-400">${this.calculatePercentile(userRanking.rank)}th percentile</span>
+                    </div>
+                </div>
+                
+                <!-- 4-Box Grid (matches Sim 1 style) -->
+                <div class="grid grid-cols-2 gap-3 sm:gap-4">
+                    <!-- Box 1: Portfolio Value -->
+                    <div class="bg-gray-750 rounded-lg p-3 sm:p-4">
+                        <div class="text-xs sm:text-sm text-gray-400 mb-1">Portfolio Value</div>
+                        <div class="text-sm sm:text-base font-semibold text-white">
+                            ${formatCurrencyWithCommas(userRanking.portfolioValue)}
                         </div>
                     </div>
                     
-                    <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 text-center">
-                        <div>
-                            <p class="text-2xl font-bold text-white">${formatCurrencyWithCommas(userRanking.portfolioValue)}</p>
-                            <p class="text-gray-400 text-sm">Portfolio Value</p>
+                    <!-- Box 2: Total Return -->
+                    <div class="bg-gray-750 rounded-lg p-3 sm:p-4">
+                        <div class="text-xs sm:text-sm text-gray-400 mb-1">Total Return</div>
+                        <div class="text-sm sm:text-base font-semibold ${returnClass}">
+                            ${formatPrice(Math.abs(totalReturn))}
                         </div>
-                        <div>
-                            <p class="text-2xl font-bold ${returnClass}">
-                                ${returnIcon} ${formatPrice(Math.abs(totalReturn))}
-                            </p>
-                            <p class="text-gray-400 text-sm">Total Return</p>
+                    </div>
+                    
+                    <!-- Box 3: Total Trades -->
+                    <div class="bg-gray-750 rounded-lg p-3 sm:p-4">
+                        <div class="text-xs sm:text-sm text-gray-400 mb-1">Total Trades</div>
+                        <div class="text-sm sm:text-base font-semibold text-white">
+                            ${totalTrades}
                         </div>
-                        <div>
-                            <p class="text-2xl font-bold ${returnClass}">
-                                ${totalReturnPercent >= 0 ? "+" : ""}${totalReturnPercent.toFixed(2)}%
-                            </p>
-                            <p class="text-gray-400 text-sm">Return %</p>
-                        </div>
-                        <div>
-                            <p class="text-2xl font-bold text-white">${totalTrades}</p>
-                            <p class="text-gray-400 text-sm">Total Trades</p>
+                    </div>
+                    
+                    <!-- Box 4: Return % -->
+                    <div class="bg-gray-750 rounded-lg p-3 sm:p-4">
+                        <div class="text-xs sm:text-sm text-gray-400 mb-1">Return %</div>
+                        <div class="text-sm sm:text-base font-semibold ${returnClass}">
+                            ${totalReturnPercent >= 0 ? "+" : ""}${totalReturnPercent.toFixed(2)}%
                         </div>
                     </div>
                 </div>
@@ -207,7 +212,7 @@ export class LeaderboardOverview {
     }
 
     getTopPerformerCard(performer, position) {
-        // Gold/Silver/Bronze colors for top 3, remove medal emojis
+        // Gold/Silver/Bronze colors for top 3
         const rankColors = {
             1: { text: "text-yellow-400", bg: "bg-yellow-500/10", border: "border-yellow-500/30" },
             2: { text: "text-gray-300", bg: "bg-gray-400/10", border: "border-gray-400/30" },
@@ -215,9 +220,15 @@ export class LeaderboardOverview {
         };
         
         const colors = rankColors[position];
-        const totalReturn = performer.performance?.totalReturn || 0;
-        const totalReturnPercent = performer.performance?.totalReturnPercent || 0;
-        const totalTrades = performer.performance?.totalTrades || 0;
+        
+        // FIXED: Check both nested performance object AND flattened properties from Firestore
+        const totalReturn = performer.performance?.totalReturn || performer.totalReturn || 0;
+        const totalReturnPercent = performer.performance?.totalReturnPercent || performer.totalReturnPercent || 0;
+        const totalTrades = performer.performance?.totalTrades || performer.totalTrades || 0;
+        
+        console.log("Performer data:", performer); // DEBUG: Remove this line after testing
+        console.log("Total trades found:", totalTrades); // DEBUG: Remove this line after testing
+        
         const returnClass = totalReturn >= 0 ? "text-green-400" : "text-red-400";
 
         return `
@@ -242,7 +253,7 @@ export class LeaderboardOverview {
                     </div>
                     <div class="flex justify-between">
                         <span class="text-gray-400">Trades:</span>
-                        <span class="text-white">${totalTrades}</span>
+                        <span class="text-white font-semibold">${totalTrades}</span>
                     </div>
                 </div>
             </div>
@@ -260,7 +271,13 @@ export class LeaderboardOverview {
         }
 
         const rankings = this.leaderboardData.rankings;
-        const totalVolume = sumByProperty(rankings, "totalVolume");
+        
+        // FIXED: Calculate totalVolume manually with fallback for data structure
+        const totalVolume = rankings.reduce((sum, ranking) => {
+            const volume = ranking.performance?.totalVolume || ranking.totalVolume || 0;
+            return sum + volume;
+        }, 0);
+        
         const highestPortfolio = rankings.length > 0 ? rankings[0].portfolioValue : 0;
 
         return {

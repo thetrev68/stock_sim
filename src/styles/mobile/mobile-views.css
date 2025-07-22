@@ -18,7 +18,7 @@
      ======================================== */
   
   .simulation-view {
-    padding: var(--space-lg);
+    padding: 0;
     max-width: 100vw;
     overflow-x: hidden;
   }
@@ -52,20 +52,20 @@
   }
 
   /* ========================================
-     SIMULATION HEADER BUTTONS MOBILE
+     SIMULATION HEADER BUTTONS MOBILE - FIXED
      ======================================== */
   
-  /* Stack the header buttons vertically on mobile */
-  .simulation-header .flex.gap-3,
-  .bg-gray-800 .flex.gap-3 {
+  /* Stack the header buttons vertically on mobile - MORE SPECIFIC TARGETING */
+  .simulation-header > .flex.gap-3,
+  .bg-gray-800 > .flex.gap-3 {
     flex-direction: column !important;
     gap: var(--space-md) !important;
     width: 100% !important;
   }
   
-  /* Make buttons full width on mobile */
-  .simulation-header .flex.gap-3 button,
-  .bg-gray-800 .flex.gap-3 button {
+  /* Make buttons full width on mobile - MORE SPECIFIC TARGETING */
+  .simulation-header > .flex.gap-3 button,
+  .bg-gray-800 > .flex.gap-3 button {
     width: 100% !important;
     justify-content: center !important;
   }
@@ -76,6 +76,26 @@
     flex-direction: column !important;
     align-items: stretch !important;
     gap: var(--space-lg) !important;
+  }
+
+  /* ========================================
+     PORTFOLIO CARD LAYOUT - KEEP HORIZONTAL
+     ======================================== */
+  
+  /* Ensure portfolio cards stay horizontal on mobile */
+  .bg-gray-750 .flex.items-center.justify-between,
+  .bg-gray-700 .flex.justify-between.items-center {
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 1rem !important;
+  }
+  
+  /* Ensure card content doesn't wrap unnecessarily */
+  .bg-gray-750 .flex.items-center.justify-between .text-right,
+  .bg-gray-700 .flex.justify-between.items-center .text-right {
+    flex-shrink: 0 !important;
+    min-width: fit-content !important;
   }
 
   /* ========================================
@@ -230,7 +250,7 @@
 
 @media (max-width: 768px) and (orientation: landscape) {
   .simulation-view {
-    padding: var(--space-md);
+    padding: 0;
   }
   
   .stats-grid {
@@ -248,7 +268,7 @@
 
 @media (max-width: 374px) {
   .simulation-view {
-    padding: var(--space-md);
+    padding: 0;
   }
   
   .tab-btn {
@@ -263,17 +283,21 @@
 }
 
 /* ========================================
-   PORTFOLIO SECTION MOBILE OVERRIDES
-   ======================================== */
+     CONSISTENT SECTION WIDTH - ALL SECTIONS SAME SIZE
+     ======================================== */
 
 @media (max-width: 1023px) {
-  /* Force portfolio section to use more width */
-  .portfolio-section {
-    margin-left: -0.5rem !important;
-    margin-right: -0.5rem !important;
+  /* Make ALL sections use the same expanded width as portfolio */
+  .portfolio-section,
+  .bg-gray-800.rounded-lg.shadow-lg.border.border-gray-700,
+  .leaderboard-section,
+  .activity-section,
+  .simulation-management {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
   }
   
-  /* Portfolio cards use full available width */
+  /* Keep the existing portfolio-specific rules */
   .portfolio-section .bg-gray-750 {
     margin-left: 0 !important;
     margin-right: 0 !important;
