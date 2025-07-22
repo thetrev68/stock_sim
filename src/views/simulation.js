@@ -6,6 +6,7 @@ import { SimulationService } from "../services/simulation.js";
 import { AuthService } from "../services/auth.js";
 import { ActivityService } from "../services/activity.js";
 import { LeaderboardService } from "../services/leaderboard.js";
+import { getPortfolio } from "../services/trading.js";
 
 // Components
 import { LeaderboardOverview } from "../components/simulation/LeaderboardOverview.js";
@@ -19,6 +20,9 @@ import { SimulationDisplayManager } from "../components/simulation/SimulationDis
 // Constants
 import { REFRESH_INTERVALS } from "../constants/app-config.js";
 import { SIMULATION_STATUS } from "../constants/simulation-status.js";
+
+//Utilities
+import { formatCurrencyWithCommas, formatPortfolioChange } from "../utils/currency-utils.js";
 
 // Templates
 import { getSimulationLoadingTemplate } from "../templates/simulation/ui-messages.js";
@@ -303,6 +307,9 @@ export default class SimulationView {
         }, 1000); // Wait 1 second after page loads
         
         await this.loadUserSimulationsForDropdown();
+
+        // Force a portfolio value refresh to ensure accuracy
+        await this.refreshPortfolioValues();
     }
 
     async loadLeaderboard() {
@@ -455,58 +462,55 @@ export default class SimulationView {
             this.tabManager.showMembersTab();
         }
     }
+    
+    /**
+     * Method 1: Add the missing refreshSimulation method
+     */
+    async refreshSimulation() {
+        console.log("Refreshing simulation data...");
+        
+        try {
+            // Reload simulation members
+            if (this.memberManager) {
+                await this.memberManager.loadSimulationMembers();
+            }
+            
+            // Reload activities
+            if (this.activityManager) {
+                await this.activityManager.loadSimulationActivities();
+            }
+            
+            console.log("Simulation data refreshed");
+        } catch (error) {
+            console.error("Error refreshing simulation:", error);
+        }
+    }
 
+    /**
+     * Method 4: Fixed startAutoRefresh with proper constants
+     */
     startAutoRefresh() {
-        // FIXED: Clear any existing intervals first
+        // Import at the top of your file if not already done:
+        // import { REFRESH_INTERVALS } from "../constants/app-config.js";
+        
+        // Clear existing intervals
         this.stopAutoRefresh();
 
-        if (this.isDestroyed) {
-            console.log("View is destroyed, not starting auto-refresh");
-            return;
-        }
-
-        console.log("Starting auto-refresh with intervals:", {
-            simulationData: REFRESH_INTERVALS.SIMULATION_DATA,
-            leaderboard: REFRESH_INTERVALS.LEADERBOARD
-        });
-
-        // FIXED: Refresh member data and activities every 30 seconds (not 15)
-        this.refreshInterval = setInterval(async () => {
-            if (this.isDestroyed) {
-                this.stopAutoRefresh();
-                return;
-            }
-
-            try {
-                console.log("Auto-refreshing simulation data...");
-                await Promise.all([
-                    this.loadSimulationMembers(),
-                    this.loadSimulationActivities()
-                ]);
-            } catch (error) {
-                console.error("Auto-refresh error:", error);
+        // Refresh simulation data every 30 seconds
+        this.refreshInterval = setInterval(() => {
+            if (!this.isDestroyed) {
+                this.refreshSimulation();
             }
         }, REFRESH_INTERVALS.SIMULATION_DATA);
 
-        // FIXED: Refresh leaderboard every 2 minutes
-        this.leaderboardRefreshInterval = setInterval(async () => {
-            if (this.isDestroyed) {
-                this.stopAutoRefresh();
-                return;
-            }
-
-            try {
-                console.log("Auto-refreshing leaderboard...");
-                await this.loadLeaderboard();
-                
-                // Re-render if leaderboard tab is active
-                if (this.tabManager && this.tabManager.isTabActive("tab-leaderboard")) {
-                    this.renderLeaderboardComponents();
-                }
-            } catch (error) {
-                console.error("Leaderboard auto-refresh error:", error);
+        // Refresh portfolio values and leaderboard every 2 minutes
+        this.leaderboardRefreshInterval = setInterval(() => {
+            if (!this.isDestroyed) {
+                this.refreshPortfolioValues();
             }
         }, REFRESH_INTERVALS.LEADERBOARD);
+
+        console.log("Auto-refresh started");
     }
 
     stopAutoRefresh() {
@@ -1080,5 +1084,96 @@ export default class SimulationView {
             alert(`Invite Code: ${this.currentSimulation.inviteCode}`, error.message);
         }
     }
+
+    /**
+     * Method 2: Fixed refreshPortfolioValues (without forceRefreshLeaderboard)
+     */
+    async refreshPortfolioValues() {
+        console.log("Refreshing portfolio values...");
+        
+        try {
+            // 1. Refresh the portfolio manager data
+            if (this.portfolioManager) {
+                await this.portfolioManager.refreshPortfolioData();
+            }
+
+            // 2. Use generateSimulationLeaderboard to force a fresh calculation
+            if (this.simulationId && this.leaderboardService) {
+                this.leaderboardData = await this.leaderboardService.generateSimulationLeaderboard(
+                    this.simulationId, 
+                    this.currentSimulation
+                );
+                
+                // Re-render leaderboard components
+                this.renderLeaderboardComponents();
+            }
+
+            // 3. Update the stats cards with fresh data
+            await this.updatePortfolioStatsCards();
+            
+            console.log("Portfolio values refreshed successfully");
+            
+        } catch (error) {
+            console.error("Error refreshing portfolio values:", error);
+        }
+    }
+
+    /**
+     * Method 3: Update portfolio stats cards
+     */
+    async updatePortfolioStatsCards() {
+        if (!this.currentUser || !this.simulationId) return;
+        
+        try {
+            // Import required functions at the top of your file if not already done
+            // import { formatCurrencyWithCommas, formatPortfolioChange } from "../utils/currency-utils.js";
+            // import { getPortfolio } from "../services/trading.js";
+            
+            // Get fresh portfolio value
+            const portfolio = await getPortfolio(this.currentUser.uid, this.simulationId);
+            if (!portfolio) return;
+            
+            // Calculate value with live prices
+            const portfolioValue = await this.leaderboardService.calculatePortfolioValue(portfolio);
+            
+            // Update portfolio value card
+            const portfolioValueEl = document.getElementById("portfolio-value");
+            if (portfolioValueEl) {
+                portfolioValueEl.textContent = formatCurrencyWithCommas(portfolioValue.totalValue);
+            }
+            
+            // Update portfolio change
+            const portfolioChangeEl = document.getElementById("portfolio-change");
+            if (portfolioChangeEl && this.currentSimulation) {
+                const startingBalance = this.currentSimulation.startingBalance || 10000;
+                const change = portfolioValue.totalValue - startingBalance;
+                const changePercent = (change / startingBalance * 100);
+                
+                const formatted = formatPortfolioChange(change, changePercent);
+                portfolioChangeEl.textContent = formatted.display;
+                portfolioChangeEl.className = `text-xs ${formatted.colorClass}`;
+            }
+            
+            // Update rank if we have leaderboard data
+            if (this.leaderboardData?.rankings) {
+                const userRanking = this.leaderboardData.rankings.find(r => r.userId === this.currentUser.uid);
+                if (userRanking) {
+                    const userRankEl = document.getElementById("user-rank");
+                    if (userRankEl) {
+                        userRankEl.textContent = `#${userRanking.rank}`;
+                    }
+                    
+                    const userRankDetailEl = document.getElementById("user-rank-detail");
+                    if (userRankDetailEl) {
+                        userRankDetailEl.textContent = `of ${this.leaderboardData.totalParticipants} participants`;
+                    }
+                }
+            }
+            
+        } catch (error) {
+            console.error("Error updating stats cards:", error);
+        }
+    }
+
 }
 

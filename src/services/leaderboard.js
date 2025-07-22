@@ -36,14 +36,18 @@ export class LeaderboardService {
     }
 
     /**
-     * Calculate portfolio value with live/cached prices
-     * @param {object} portfolio - Portfolio data
-     * @param {object} cachedPrices - Pre-fetched prices (optional)
-     * @returns {Promise<{totalValue: number, holdingsValue: number, cash: number, holdings: object}>}
+     * Enhanced portfolio value calculation with better error handling
+     * This method should replace the existing calculatePortfolioValue method
      */
     async calculatePortfolioValue(portfolio, cachedPrices = {}) {
         if (!portfolio) {
-            return { totalValue: 0, holdingsValue: 0, cash: 0, holdings: {} };
+            return { 
+                totalValue: 0, 
+                holdingsValue: 0, 
+                cash: 0, 
+                holdings: {},
+                lastUpdated: new Date()
+            };
         }
 
         const cash = portfolio.cash || 0;
@@ -51,44 +55,64 @@ export class LeaderboardService {
         let holdingsValue = 0;
         const holdingsBreakdown = {};
 
-        // Calculate holdings value
+        console.log(`Calculating portfolio value - Cash: $${cash}, Holdings: ${Object.keys(holdings).length}`);
+
+        // Calculate holdings value with live prices
         for (const ticker in holdings) {
             if (Object.prototype.hasOwnProperty.call(holdings, ticker)) {
                 const holding = holdings[ticker];
                 let currentPrice = cachedPrices[ticker];
 
                 // Get price if not cached
-                if (!currentPrice) {
+                if (currentPrice === undefined || currentPrice === null) {
                     try {
                         currentPrice = await this.stockService.getQuote(ticker);
-                        if (currentPrice === null) {
-                            currentPrice = holding.avgPrice; // Fallback to avg price
-                        }
+                        console.log(`Fetched live price for ${ticker}: $${currentPrice}`);
                     } catch (error) {
-                        console.warn(`Error getting price for ${ticker}, using avg price:`, error);
+                        console.error(`Error fetching price for ${ticker}:`, error);
+                        // Fall back to average price if API fails
                         currentPrice = holding.avgPrice;
+                        console.log(`Using fallback price for ${ticker}: $${currentPrice}`);
                     }
                 }
 
-                const holdingValue = holding.quantity * currentPrice;
-                holdingsValue += holdingValue;
+                // Ensure we have a valid price
+                if (currentPrice === null || currentPrice === undefined || isNaN(currentPrice)) {
+                    currentPrice = holding.avgPrice || 0;
+                }
+
+                const quantity = holding.quantity || 0;
+                const value = quantity * currentPrice;
+                const costBasis = quantity * (holding.avgPrice || 0);
+                const gainLoss = value - costBasis;
+                const gainLossPercent = costBasis > 0 ? (gainLoss / costBasis) * 100 : 0;
+
+                holdingsValue += value;
                 
                 holdingsBreakdown[ticker] = {
-                    quantity: holding.quantity,
-                    avgPrice: holding.avgPrice,
-                    currentPrice: currentPrice,
-                    currentValue: holdingValue,
-                    gainLoss: holdingValue - (holding.quantity * holding.avgPrice),
-                    gainLossPercent: ((currentPrice - holding.avgPrice) / holding.avgPrice) * 100
+                    quantity,
+                    avgPrice: holding.avgPrice || 0,
+                    currentPrice,
+                    value,
+                    costBasis,
+                    gainLoss,
+                    gainLossPercent
                 };
+
+                console.log(`${ticker}: ${quantity} @ $${currentPrice} = $${value} (P&L: ${gainLoss >= 0 ? '+' : ''}$${gainLoss.toFixed(2)})`);
             }
         }
 
+        const totalValue = cash + holdingsValue;
+        
+        console.log(`Portfolio Total - Cash: $${cash}, Holdings: $${holdingsValue}, Total: $${totalValue}`);
+
         return {
-            totalValue: cash + holdingsValue,
+            totalValue,
             holdingsValue,
             cash,
-            holdings: holdingsBreakdown
+            holdings: holdingsBreakdown,
+            lastUpdated: new Date()
         };
     }
 
@@ -139,9 +163,8 @@ export class LeaderboardService {
     }
 
     /**
-     * Pre-fetch all unique stock prices for efficiency
-     * @param {Array} membersWithPortfolios - Members with portfolio data
-     * @returns {Promise<object>} Object with ticker -> price mapping
+     * Enhanced prefetch method with better error handling
+     * This method should replace the existing prefetchStockPrices method
      */
     async prefetchStockPrices(membersWithPortfolios) {
         const uniqueTickers = new Set();
@@ -156,20 +179,42 @@ export class LeaderboardService {
         });
 
         const prices = {};
-        const pricePromises = Array.from(uniqueTickers).map(async (ticker) => {
-            try {
-                const price = await this.stockService.getQuote(ticker);
-                if (price !== null) {
-                    prices[ticker] = price;
-                }
-            } catch (error) {
-                console.warn(`Error prefetching price for ${ticker}:`, error);
-            }
-        });
-
-        await Promise.all(pricePromises);
+        const errors = [];
         
-        console.log(`Prefetched prices for ${Object.keys(prices).length} tickers`);
+        // Batch fetch with rate limiting
+        const batchSize = 5; // Fetch 5 at a time to avoid rate limits
+        const tickerArray = Array.from(uniqueTickers);
+        
+        for (let i = 0; i < tickerArray.length; i += batchSize) {
+            const batch = tickerArray.slice(i, i + batchSize);
+            const batchPromises = batch.map(async (ticker) => {
+                try {
+                    const price = await this.stockService.getQuote(ticker);
+                    if (price !== null && price !== undefined && !isNaN(price)) {
+                        prices[ticker] = price;
+                        console.log(`Prefetched ${ticker}: $${price}`);
+                    } else {
+                        errors.push(`Invalid price for ${ticker}`);
+                    }
+                } catch (error) {
+                    console.warn(`Error prefetching price for ${ticker}:`, error.message);
+                    errors.push(`${ticker}: ${error.message}`);
+                }
+            });
+            
+            await Promise.all(batchPromises);
+            
+            // Small delay between batches to avoid rate limiting
+            if (i + batchSize < tickerArray.length) {
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+        }
+        
+        console.log(`Prefetched prices for ${Object.keys(prices).length}/${uniqueTickers.size} tickers`);
+        if (errors.length > 0) {
+            console.warn(`Price fetch errors: ${errors.join(', ')}`);
+        }
+        
         return prices;
     }
 
