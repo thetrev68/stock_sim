@@ -99,7 +99,7 @@ export class LeaderboardService {
                     gainLossPercent
                 };
 
-                console.log(`${ticker}: ${quantity} @ $${currentPrice} = $${value} (P&L: ${gainLoss >= 0 ? '+' : ''}$${gainLoss.toFixed(2)})`);
+                console.log(`${ticker}: ${quantity} @ $${currentPrice} = $${value} (P&L: ${gainLoss >= 0 ? "+" : ""}$${gainLoss.toFixed(2)})`);
             }
         }
 
@@ -212,7 +212,7 @@ export class LeaderboardService {
         
         console.log(`Prefetched prices for ${Object.keys(prices).length}/${uniqueTickers.size} tickers`);
         if (errors.length > 0) {
-            console.warn(`Price fetch errors: ${errors.join(', ')}`);
+            console.warn(`Price fetch errors: ${errors.join(", ")}`);
         }
         
         return prices;

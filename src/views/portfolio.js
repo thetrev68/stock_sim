@@ -12,10 +12,10 @@ import {
     formatCashPercentage,
     formatPortfolioChange,
     calculateGainLoss,
-    formatGainLoss,
     calculateMarketValue,
     calculateCostBasis
 } from "../utils/currency-utils.js";
+import { calculateComprehensiveGains } from "../utils/math-utils.js";
 
 // Portfolio Templates
 import { getMainPortfolioLayoutTemplate } from "../templates/portfolio/portfolio-main-layout.js";
@@ -26,6 +26,11 @@ import {
 } from "../templates/portfolio/portfolio-holdings.js";
 import { getTradeHistoryRowTemplate } from "../templates/portfolio/portfolio-trade-history.js";
 import { getPortfolioErrorTemplate } from "../templates/portfolio/portfolio-errors.js";
+import { 
+    createGainsSummarySection, 
+    updateGainsSummary,
+    setupGainsEventListeners 
+} from "../templates/gains-templates.js";
 
 export default class PortfolioView {
     constructor() {
@@ -36,19 +41,88 @@ export default class PortfolioView {
         this.currentPortfolio = null;
         this.allTrades = [];
         this.sortOrder = { field: "date", direction: "desc" };
+        this.gainsData = null;
     }
 
+    // ADD THE MISSING RENDER METHOD
     async render(container) {
         container.innerHTML = this.getTemplate();
+        
         this.viewContainer = container;
         this.attachEventListeners(container);
+        
+        // Setup gains event listeners
+        setupGainsEventListeners();
+        
         setTimeout(async () => {
             await this.loadData();
+            // Calculate and display gains after data loads
+            await this.calculateAndDisplayGains();
         }, 0); 
     }
 
+    // UPDATED: Fix the gains calculation method
+    async calculateAndDisplayGains() {
+        try {
+            // Make sure we have the required data
+            if (!this.currentPortfolio || !this.allTrades) {
+                console.warn("Portfolio or trades data not available for gains calculation");
+                return;
+            }
+
+            const holdings = this.currentPortfolio.holdings || {};
+            const currentPrices = {};
+            
+            // Get current prices for all holdings
+            for (const ticker of Object.keys(holdings)) {
+                try {
+                    // Use your existing stock service method
+                    const quote = await this.stockService.getQuote(ticker);
+                    currentPrices[ticker] = quote || holdings[ticker].avgPrice;
+                } catch (error) {
+                    console.warn(`Could not get current price for ${ticker}:`, error);
+                    currentPrices[ticker] = holdings[ticker].avgPrice;
+                }
+            }
+
+            // Calculate comprehensive gains
+            const gainsData = calculateComprehensiveGains(holdings, currentPrices, this.allTrades);
+            
+            // Update the gains display
+            updateGainsSummary(gainsData);
+            
+            // Store for later use
+            this.gainsData = gainsData;
+            
+        } catch (error) {
+            console.error("Error calculating gains:", error);
+            // Optionally show error state in gains section
+            this.showGainsError();
+        }
+    }
+
+    // Keep your existing showGainsError method
+    showGainsError() {
+        const totalGainsEl = document.getElementById("total-gains");
+        const realizedEl = document.getElementById("realized-gains");
+        const unrealizedEl = document.getElementById("unrealized-gains");
+        
+        if (totalGainsEl) totalGainsEl.textContent = "Error loading";
+        if (realizedEl) realizedEl.textContent = "Error loading";
+        if (unrealizedEl) unrealizedEl.textContent = "Error loading";
+    }
+
+    // UPDATED: Modify getTemplate to include gains section
     getTemplate() {
-        return getMainPortfolioLayoutTemplate();
+        const originalTemplate = getMainPortfolioLayoutTemplate();
+        const gainsSection = createGainsSummarySection();
+        
+        // Insert gains section after the portfolio summary section
+        // Look for the end of the first section and insert gains section
+        return originalTemplate.replace(
+            /(<\/section>)/, // Find the first closing section tag
+            `$1${gainsSection}` // Replace it with itself plus the gains section
+        );
     }
 
     attachEventListeners(container) {
@@ -345,6 +419,9 @@ export default class PortfolioView {
             
             // Reload holdings with fresh prices
             await this.loadHoldingsWithLivePrices();
+            
+            // ADDED: Recalculate gains after price refresh
+            await this.calculateAndDisplayGains();
             
             console.log("Prices refreshed successfully");
         } catch (error) {

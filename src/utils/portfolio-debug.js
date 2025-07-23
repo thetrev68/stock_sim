@@ -51,7 +51,7 @@ export class PortfolioDebugger {
                 console.log(`  Avg Price: $${data.avgPrice.toFixed(2)}`);
                 console.log(`  Current Price: $${data.currentPrice.toFixed(2)}`);
                 console.log(`  Value: $${data.value.toFixed(2)}`);
-                console.log(`  P&L: ${data.gainLoss >= 0 ? '+' : ''}$${data.gainLoss.toFixed(2)} (${data.gainLossPercent >= 0 ? '+' : ''}${data.gainLossPercent.toFixed(2)}%)`);
+                console.log(`  P&L: ${data.gainLoss >= 0 ? "+" : ""}$${data.gainLoss.toFixed(2)} (${data.gainLossPercent >= 0 ? "+" : ""}${data.gainLossPercent.toFixed(2)}%)`);
             }
 
             console.log("=== PORTFOLIO DEBUG END ===");
@@ -119,7 +119,7 @@ export class PortfolioDebugger {
                 // Log top 5 for verification
                 console.log("\nTop 5 After Refresh:");
                 leaderboard.rankings.slice(0, 5).forEach((ranking, index) => {
-                    console.log(`${index + 1}. ${ranking.displayName}: ${ranking.portfolioValue.toFixed(2)} (${ranking.totalReturnPercent >= 0 ? '+' : ''}${ranking.totalReturnPercent.toFixed(2)}%)`);
+                    console.log(`${index + 1}. ${ranking.displayName}: ${ranking.portfolioValue.toFixed(2)} (${ranking.totalReturnPercent >= 0 ? "+" : ""}${ranking.totalReturnPercent.toFixed(2)}%)`);
                 });
             }
             
@@ -147,7 +147,7 @@ export class PortfolioDebugger {
             const userRanking = leaderboard?.rankings?.find(r => r.userId === userId);
             
             console.log(`Direct Calculation: $${directValue.totalValue.toFixed(2)}`);
-            console.log(`Leaderboard Value: $${userRanking?.portfolioValue?.toFixed(2) || 'Not found'}`);
+            console.log(`Leaderboard Value: $${userRanking?.portfolioValue?.toFixed(2) || "Not found"}`);
             
             if (userRanking && Math.abs(directValue.totalValue - userRanking.portfolioValue) > 0.01) {
                 console.warn("⚠️ INCONSISTENCY DETECTED!");
@@ -186,7 +186,7 @@ export async function refreshPortfolios(simulationId) {
 }
 
 // Make functions available globally for console debugging
-if (typeof window !== 'undefined') {
+if (typeof window !== "undefined") {
     window.portfolioDebug = {
         debug: debugPortfolio,
         refresh: refreshPortfolios,
