@@ -5,7 +5,8 @@ import { Router } from "./utils/router.js";
 import { AuthService } from "./services/auth.js";
 import { HeaderComponent } from "./components/layout/Header.js";
 import { NavigationComponent } from "./components/layout/Navigation.js";
-import { initializePortfolio } from "./services/trading.js"; // Import initializePortfolio
+import { initializePortfolio } from "./services/trading.js"; 
+import { pwaManager } from "./utils/pwa-utils.js";
 
 class App {
     constructor() {
@@ -15,10 +16,13 @@ class App {
         this.isInitialized = false;
         this.headerComponent = null;
         this.navigationComponent = null;
+        this.pwaManager = pwaManager;
     }
 
     async initialize() {
         try {
+            await this.initializePWA();
+
             // Initialize Firebase
             await initializeApp();
             console.log("Firebase initialized");
@@ -167,6 +171,20 @@ class App {
                 </button>
             </div>
         `;
+    }
+
+    async initializePWA() {
+        try {
+            console.log("Initializing PWA features...");
+            await this.pwaManager.initialize();
+            
+            if (this.pwaManager.isInstalled()) {
+                document.body.classList.add("pwa-mode");
+                console.log("Running as installed PWA");
+            }
+        } catch (error) {
+            console.error("PWA initialization failed:", error);
+        }
     }
 }
 

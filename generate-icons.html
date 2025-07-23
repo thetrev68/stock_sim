@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PWA Icon Generator</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .icon-preview {
+            width: 200px;
+            height: 200px;
+            background: linear-gradient(135deg, #22d3ee 0%, #1e40af 100%);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 80px;
+            margin: 20px auto;
+            box-shadow: 0 8px 25px rgba(34, 211, 238, 0.3);
+        }
+        .controls {
+            margin: 20px 0;
+        }
+        .controls label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+        .controls input, .controls select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        .download-section {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        .size-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .size-item {
+            text-align: center;
+            padding: 10px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e1e5e9;
+        }
+        .size-preview {
+            margin: 0 auto 10px;
+            background: linear-gradient(135deg, #22d3ee 0%, #1e40af 100%);
+            border-radius: 15%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+        button {
+            background: #22d3ee;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        button:hover {
+            background: #0891b2;
+        }
+        .download-all {
+            width: 100%;
+            margin-top: 20px;
+            padding: 15px;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>PWA Icon Generator for Stock Trading Simulator</h1>
+        <p>Generate all the icon sizes you need for your Progressive Web App.</p>
+        
+        <div class="icon-preview" id="iconPreview">📈</div>
+        
+        <div class="controls">
+            <label for="iconText">Icon Text/Emoji:</label>
+            <input type="text" id="iconText" value="📈" maxlength="2">
+            
+            <label for="bgColor1">Background Color 1:</label>
+            <input type="color" id="bgColor1" value="#22d3ee">
+            
+            <label for="bgColor2">Background Color 2:</label>
+            <input type="color" id="bgColor2" value="#1e40af">
+            
+            <label for="borderRadius">Border Radius (%):</label>
+            <input type="range" id="borderRadius" min="0" max="50" value="20">
+        </div>
+        
+        <div class="download-section">
+            <h3>Required Icon Sizes</h3>
+            <p>Download these icons and place them in your <code>/icons/</code> folder:</p>
+            
+            <div class="size-grid" id="sizeGrid">
+                <!-- Size items will be generated here -->
+            </div>
+            
+            <button class="download-all" onclick="downloadAllIcons()">Download All Icons as ZIP</button>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script>
+        const sizes = [16, 32, 72, 96, 128, 144, 152, 192, 384, 512];
+        const iconPreview = document.getElementById('iconPreview');
+        const iconText = document.getElementById('iconText');
+        const bgColor1 = document.getElementById('bgColor1');
+        const bgColor2 = document.getElementById('bgColor2');
+        const borderRadius = document.getElementById('borderRadius');
+        const sizeGrid = document.getElementById('sizeGrid');
+        
+        function updatePreview() {
+            const gradient = `linear-gradient(135deg, ${bgColor1.value} 0%, ${bgColor2.value} 100%)`;
+            const radius = `${borderRadius.value}px`;
+            
+            iconPreview.style.background = gradient;
+            iconPreview.style.borderRadius = radius;
+            iconPreview.textContent = iconText.value;
+            
+            // Update all size previews
+            document.querySelectorAll('.size-preview').forEach(preview => {
+                preview.style.background = gradient;
+                preview.textContent = iconText.value;
+            });
+        }
+        
+        function generateSizeGrid() {
+            sizeGrid.innerHTML = sizes.map(size => `
+                <div class="size-item">
+                    <div class="size-preview" style="width: ${Math.min(size/4, 60)}px; height: ${Math.min(size/4, 60)}px; font-size: ${Math.min(size/8, 30)}px;">
+                        ${iconText.value}
+                    </div>
+                    <div><strong>${size}×${size}</strong></div>
+                    <button onclick="downloadIcon(${size})">Download</button>
+                </div>
+            `).join('');
+            updatePreview();
+        }
+        
+        function createIconCanvas(size) {
+            const canvas = document.createElement('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+            
+            // Create gradient background
+            const gradient = ctx.createLinearGradient(0, 0, size, size);
+            gradient.addColorStop(0, bgColor1.value);
+            gradient.addColorStop(1, bgColor2.value);
+            
+            // Draw background with rounded corners
+            const radius = (borderRadius.value / 100) * size;
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.roundRect(0, 0, size, size, radius);
+            ctx.fill();
+            
+            // Draw text/emoji
+            const fontSize = size * 0.6;
+            ctx.font = `${fontSize}px Apple Color Emoji, Segoe UI Emoji, Noto Color Emoji, Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillStyle = 'white';
+            
+            // For emoji, we might want to use a different approach
+            if (iconText.value.match(/[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]/u)) {
+                // It's an emoji
+                ctx.fillText(iconText.value, size/2, size/2);
+            } else {
+                // It's text
+                ctx.fillText(iconText.value, size/2, size/2);
+            }
+            
+            return canvas;
+        }
+        
+        function downloadIcon(size) {
+            const canvas = createIconCanvas(size);
+            canvas.toBlob(blob => {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `icon-${size}.png`;
+                a.click();
+                URL.revokeObjectURL(url);
+            });
+        }
+        
+        async function downloadAllIcons() {
+            const zip = new JSZip();
+            
+            for (const size of sizes) {
+                const canvas = createIconCanvas(size);
+                const blob = await new Promise(resolve => canvas.toBlob(resolve));
+                zip.file(`icon-${size}.png`, blob);
+            }
+            
+            // Add favicon
+            const faviconCanvas = createIconCanvas(32);
+            const faviconBlob = await new Promise(resolve => faviconCanvas.toBlob(resolve));
+            zip.file('favicon.ico', faviconBlob);
+            
+            const zipBlob = await zip.generateAsync({type: 'blob'});
+            const url = URL.createObjectURL(zipBlob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'stock-trading-simulator-icons.zip';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+        
+        // Add event listeners
+        iconText.addEventListener('input', updatePreview);
+        bgColor1.addEventListener('input', updatePreview);
+        bgColor2.addEventListener('input', updatePreview);
+        borderRadius.addEventListener('input', updatePreview);
+        
+        // Initialize
+        generateSizeGrid();
+        
+        // Add polyfill for roundRect if not supported
+        if (!CanvasRenderingContext2D.prototype.roundRect) {
+            CanvasRenderingContext2D.prototype.roundRect = function(x, y, width, height, radius) {
+                this.moveTo(x + radius, y);
+                this.arcTo(x + width, y, x + width, y + height, radius);
+                this.arcTo(x + width, y + height, x, y + height, radius);
+                this.arcTo(x, y + height, x, y, radius);
+                this.arcTo(x, y, x + width, y, radius);
+            };
+        }
+    </script>
+</body>
+</html>

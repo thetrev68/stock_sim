@@ -399,23 +399,24 @@ export class SimulationMembershipManager {
             );
 
             if (result.success) {
-                this.view.showTemporaryMessage(SUCCESS_MESSAGES.SETTINGS_UPDATED, "success");
-                
-                // Update local simulation data
-                this.view.currentSimulation.name = settings.name;
-                this.view.currentSimulation.maxMembers = settings.maxMembers;
-                this.view.currentSimulation.description = settings.description;
-                
-                // Update the main simulation display
-                if (this.view.displayManager) {
-                    this.view.displayManager.displaySimulation();
-                }
-                
-                // Close modal after successful save
-                setTimeout(() => {
-                    document.getElementById("simulation-settings-modal")?.remove();
-                }, 1500);
+            this.view.showTemporaryMessage(SUCCESS_MESSAGES.SETTINGS_UPDATED, "success");
+            
+            // CRITICAL FIX: Refresh the current simulation data from Firebase
+            await this.view.loadSimulationData();
+            
+            // CRITICAL FIX: Refresh the dropdown with the new data
+            await this.view.loadUserSimulationsForDropdown();
+            
+            // Update the main simulation display
+            if (this.view.displayManager) {
+                this.view.displayManager.displaySimulation();
             }
+            
+            // Close modal after successful save
+            setTimeout(() => {
+                document.getElementById("simulation-settings-modal")?.remove();
+            }, 1500);
+        }
 
         } catch (error) {
             console.error("Error saving settings:", error);
