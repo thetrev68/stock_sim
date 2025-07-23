@@ -9,13 +9,9 @@ import { LeaderboardService } from "../services/leaderboard.js";
 import { getPortfolio } from "../services/trading.js";
 
 // Components
-import { LeaderboardOverview } from "../components/simulation/LeaderboardOverview.js";
-import { LeaderboardTable } from "../components/simulation/LeaderboardTable.js";
-import { SimulationAdminManager } from "../components/simulation/SimulationAdminManager.js";
-import { SimulationPortfolioManager } from "../components/simulation/SimulationPortfolioManager.js";
-import { SimulationMemberManager } from "../components/simulation/SimulationMemberManager.js";
-import { SimulationActivityManager } from "../components/simulation/SimulationActivityManager.js";
-import { SimulationDisplayManager } from "../components/simulation/SimulationDisplayManager.js";
+import { LeaderboardManager } from "../components/simulation/LeaderboardManager.js";
+import { SimulationContentManager } from "../components/simulation/SimulationContentManager.js";
+import { SimulationMembershipManager } from "../components/simulation/SimulationMembershipManager.js";
 
 // Constants
 import { REFRESH_INTERVALS } from "../constants/app-config.js";
@@ -51,8 +47,9 @@ export default class SimulationView {
         this.authService = new AuthService();
         this.activityService = new ActivityService();
         this.leaderboardService = new LeaderboardService();
-        this.leaderboardOverview = new LeaderboardOverview();
-        this.leaderboardTable = new LeaderboardTable();
+        // this.leaderboardOverview = new LeaderboardOverview();
+        // this.leaderboardTable = new LeaderboardTable();
+        this.leaderboardManager = new LeaderboardManager();
         this.adminManager = null; // Will be initialized after data loads
         this.portfolioManager = null; // Will be initialized after data loads
         this.memberManager = null; // Will be initialized after data loads
@@ -112,9 +109,6 @@ export default class SimulationView {
     attachEventListeners(container) {
         // Initialize tab manager
         this.attachSimplifiedEventListeners();
-
-        // Initialize display manager
-        this.displayManager = new SimulationDisplayManager(this);
 
         // Simulation dropdown handler (ADD THIS)
         const simulationDropdown = container.querySelector("#simulation-dropdown");
@@ -261,10 +255,6 @@ export default class SimulationView {
             }
 
             // Initialize managers now that we have data
-            this.adminManager = new SimulationAdminManager(this);
-            this.portfolioManager = new SimulationPortfolioManager(this);
-            this.memberManager = new SimulationMemberManager(this);
-            this.activityManager = new SimulationActivityManager(this);
             this.activityManager.initialize(this.simulationId);
 
             // Load all data in parallel for better performance
@@ -396,7 +386,7 @@ export default class SimulationView {
         // Render leaderboard overview
         const overviewContainer = document.getElementById("leaderboard-overview-container");
         if (overviewContainer) {
-            this.leaderboardOverview.render(
+            this.leaderboardManager.renderOverview(
                 overviewContainer,
                 this.leaderboardData,
                 this.currentUser?.uid,
@@ -407,13 +397,12 @@ export default class SimulationView {
         // Render leaderboard table
         const tableContainer = document.getElementById("leaderboard-table-container");
         if (tableContainer && this.leaderboardData.rankings) {
-            this.leaderboardTable.render(
+            this.leaderboardManager.renderTable(
                 tableContainer,
                 this.leaderboardData.rankings,
                 this.currentUser?.uid,
                 (userId, userName) => {
                     console.log(`View details for user: ${userName}`);
-                    // Could show user detail modal here
                 }
             );
         }
@@ -968,23 +957,25 @@ export default class SimulationView {
     }
 
     initializeManagers() {
-        // Initialize member manager with simulation reference
-        this.memberManager = new SimulationMemberManager(this);
+        // Initialize the new consolidated managers
+        this.contentManager = new SimulationContentManager(this);
+        this.membershipManager = new SimulationMembershipManager(this);
+        
+        // Initialize activity functionality within content manager
+        this.contentManager.initialize(this.simulationId);
+        
+        // Update simulation reference for membership manager
         if (this.currentSimulation) {
-            this.memberManager.updateSimulationReference(this.currentSimulation);
+            this.membershipManager.updateSimulationReference(this.currentSimulation);
         }
 
-        // Initialize other managers
-        this.activityManager = new SimulationActivityManager(this);
-        this.activityManager.initialize(this.simulationId);
-
-        // FIX: Remove the initialize call for portfolioManager
-        this.portfolioManager = new SimulationPortfolioManager(this);
-        // this.portfolioManager.initialize(this.simulationId); // REMOVE THIS LINE
-
-        // FIX: Remove the initialize call for adminManager  
-        this.adminManager = new SimulationAdminManager(this);
-        // this.adminManager.initialize(this.simulationId, this.currentUser); // REMOVE THIS LINE
+        // Backward compatibility aliases (optional - remove after testing)
+        // These allow existing code to work while you transition
+        this.memberManager = this.membershipManager;      // For member operations
+        this.adminManager = this.membershipManager;       // For admin operations  
+        this.portfolioManager = this.contentManager;      // For portfolio operations
+        this.activityManager = this.contentManager;       // For activity operations
+        this.displayManager = this.contentManager;        // For display operations
     }
 
     async handleSimulationSwitch(newSimulationId) {
