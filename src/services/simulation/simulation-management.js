@@ -12,7 +12,7 @@ import {
     query,
     where,
     orderBy,
-    // limit,
+    writeBatch,
     serverTimestamp
 } from "firebase/firestore";
 import { SIMULATION_STATUS } from "../../constants/simulation-status.js";
@@ -146,8 +146,17 @@ export async function updateSimulationSettings(simulationId, userId, settings, d
             updatedByRole: permissions.accessReason
         };
 
+        let nameChanged = false;
+        const oldName = simulation.name;
+
         if (settings.name && settings.name.trim() !== simulation.name) {
             updateData.name = settings.name.trim();
+            nameChanged = true;
+
+            console.log("🔍 NAME CHANGE DETECTED:");
+            console.log("  Old name:", simulation.name);
+            console.log("  New name:", settings.name.trim());
+            console.log("  nameChanged flag:", nameChanged);
         }
 
         if (settings.description !== undefined) {
@@ -168,12 +177,23 @@ export async function updateSimulationSettings(simulationId, userId, settings, d
         }
 
         const changes = Object.keys(updateData).filter(k => !k.includes("At") && k !== "updatedBy" && k !== "updatedByRole");
+        
         if (changes.length > 0) {
+            // First update the main simulation document
             await updateDoc(simRef, updateData);
+            
+            // If name changed, update it everywhere
+            if (nameChanged) {
+                console.log(`🔄 About to update name everywhere: "${oldName}" → "${settings.name.trim()}"`);
+                console.log("Calling updateSimulationNameEverywhere...");
+                await updateSimulationNameEverywhere(simulationId, settings.name.trim(), database);
+                console.log("✅ updateSimulationNameEverywhere completed");
+            }
+            
             console.log(`Simulation ${simulationId} settings updated by ${userId} (${permissions.accessReason})`);
-            return { success: true, changes, updatedBy: permissions.accessReason };
+            return { success: true, changes, updatedBy: permissions.accessReason, nameChanged };
         } else {
-            return { success: true, changes: [], updatedBy: permissions.accessReason };
+            return { success: true, changes: [], updatedBy: permissions.accessReason, nameChanged: false };
         }
     } catch (error) {
         console.error("Error updating simulation settings:", error);
@@ -725,3 +745,76 @@ export async function updateSimulationStatus(simulationId, newStatus, db = null)
         return handleError("updating simulation status", error);
     }
 };
+
+/**
+ * Update simulation name across all collections (denormalized data)
+ * Call this after updating the main simulation document
+ */
+export async function updateSimulationNameEverywhere(simulationId, newName, db = null) {
+    const database = getDb(db);
+    
+    try {
+        console.log(`Updating simulation name to "${newName}" across all collections...`);
+        
+        // Use a batch to ensure all updates succeed or fail together
+        const batch = writeBatch(database);
+        let updateCount = 0;
+
+        // 1. Update portfolios collection
+        const portfoliosQuery = query(
+            collection(database, "portfolios"),
+            where("simulationId", "==", simulationId)
+        );
+        const portfolioDocs = await getDocs(portfoliosQuery);
+        
+        portfolioDocs.forEach(docSnap => {
+            const portfolioRef = doc(database, "portfolios", docSnap.id);
+            batch.update(portfolioRef, { 
+                simulationName: newName,
+                updatedAt: serverTimestamp()
+            });
+            updateCount++;
+        });
+
+        // 2. Update activities collection (if it exists and has simulationName)
+        try {
+            const activitiesQuery = query(
+                collection(database, "activities"),
+                where("simulationId", "==", simulationId)
+            );
+            const activityDocs = await getDocs(activitiesQuery);
+            
+            activityDocs.forEach(docSnap => {
+                const activityData = docSnap.data();
+                // Only update if the document has a simulationName field
+                if (activityData.simulationName) {
+                    const activityRef = doc(database, "activities", docSnap.id);
+                    batch.update(activityRef, { 
+                        simulationName: newName,
+                        updatedAt: serverTimestamp()
+                    });
+                    updateCount++;
+                }
+            });
+        } catch (error) {
+            console.warn("Activities collection may not exist or have simulationName field:", error.message);
+        }
+
+        // 3. Update any other collections that might store simulationName
+        // Add more collections here as needed
+        
+        // Execute all updates as a batch
+        if (updateCount > 0) {
+            await batch.commit();
+            console.log(`Successfully updated simulationName in ${updateCount} documents`);
+        } else {
+            console.log("No documents found to update");
+        }
+
+        return { success: true, updatedDocuments: updateCount };
+
+    } catch (error) {
+        console.error("Error updating simulation name everywhere:", error);
+        throw new Error(`Failed to update simulation name across collections: ${error.message}`);
+    }
+}

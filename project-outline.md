@@ -16,15 +16,15 @@
 - Exports: 1
 
 ## components/research/ChartManager.js
-- Lines: 232
+- Lines: 235
 - Functions: labels
 - Exports: 1
-- Imports: ../../templates/research/research-errors.js
+- Imports: ../../templates/research/research-errors.js, ../../utils/dom-utils.js
 
 ## components/research/NewsManager.js
-- Lines: 221
+- Lines: 230
 - Exports: 1
-- Imports: ../../utils/date-utils.js, ../../templates/research/research-news.js, ../../templates/research/research-stock-display.js
+- Imports: ../../utils/date-utils.js, ../../utils/dom-utils.js, ../../templates/research/research-news.js, ../../templates/research/research-stock-display.js
 
 ## components/research/SearchManager.js
 - Lines: 98
@@ -32,61 +32,42 @@
 - Imports: ../../constants/app-config.js
 
 ## components/research/StockDataManager.js
-- Lines: 136
+- Lines: 141
 - Exports: 1
 - Imports: ../../utils/string-utils.js
 
 ## components/simulation/CreateSimulationModal.js
-- Lines: 392
+- Lines: 408
 - Exports: 1
 - Imports: ../../services/simulation.js, ../../services/auth.js
 
 ## components/simulation/EmailInviteModal.js
-- Lines: 451
+- Lines: 429
 - Exports: 1
-- Imports: ../../services/simulation.js, ../../services/auth.js
+- Imports: ../../services/simulation.js, ../../services/auth.js, ../../utils/validation-utils.js
 
 ## components/simulation/JoinSimulationModal.js
-- Lines: 362
+- Lines: 374
 - Exports: 1
-- Imports: ../../services/simulation.js, ../../services/auth.js, ../../utils/string-utils.js
+- Imports: ../../services/simulation.js, ../../services/auth.js, ../../utils/string-utils.js, ../../utils/validation-utils.js
 
-## components/simulation/LeaderboardOverview.js
-- Lines: 352
-- Functions: totalVolume
+## components/simulation/LeaderboardManager.js
+- Lines: 744
+- Functions: rankingRows, totalVolume, totalReturns
 - Exports: 1
+- Imports: ../../utils/date-utils.js
 
-## components/simulation/LeaderboardTable.js
-- Lines: 256
-- Functions: rankingRows
+## components/simulation/SimulationContentManager.js
+- Lines: 600
+- Functions: pricePromises, sortedTrades
 - Exports: 1
+- Imports: ../../constants/simulation-status.js, ../../constants/trade-types.js, ../../utils/date-utils.js, ../../utils/currency-utils.js, ../../utils/string-utils.js, ../../utils/dom-utils.js, ../../services/trading.js, ../../services/stocks.js, ../../templates/simulation/portfolio-components.js, ../../templates/portfolio/portfolio-errors.js, ../../templates/simulation/error-states.js
 
-## components/simulation/SimulationActivityManager.js
-- Lines: 86
-- Exports: 1
-- Imports: ../../templates/simulation/error-states.js
-
-## components/simulation/SimulationAdminManager.js
-- Lines: 359
-- Exports: 1
-- Imports: ../../templates/simulation/simulation-modals.js, ../../constants/ui-messages.js
-
-## components/simulation/SimulationDisplayManager.js
-- Lines: 190
-- Functions: userRanking
-- Exports: 1
-- Imports: ../../constants/simulation-status.js, ../../utils/date-utils.js, ../../utils/currency-utils.js, ../../utils/string-utils.js
-
-## components/simulation/SimulationMemberManager.js
-- Lines: 274
+## components/simulation/SimulationMembershipManager.js
+- Lines: 622
 - Functions: activeMemberCount, removedMemberCount
 - Exports: 1
-- Imports: ../../constants/simulation-status.js, ../../templates/simulation/member-components.js, ../../templates/simulation/simulation-modals.js, ../../templates/simulation/error-states.js
-
-## components/simulation/SimulationPortfolioManager.js
-- Lines: 208
-- Exports: 1
-- Imports: ../../services/trading.js, ../../constants/trade-types.js, ../../utils/currency-utils.js, ../../templates/simulation/error-states.js
+- Imports: ../../constants/simulation-status.js, ../../constants/ui-messages.js, ../../templates/simulation/member-components.js, ../../templates/simulation/simulation-modals.js, ../../templates/simulation/error-states.js
 
 ## constants/app-config.js
 - Lines: 112
@@ -105,10 +86,10 @@
 - Exports: 9
 
 ## main.js
-- Lines: 180
+- Lines: 198
 - Class: App
-  - Methods: constructor, initialize, setupComponents, setupRouting, loadView, updateNavigationActive, handleAuthStateChange, showApp, showError
-- Imports: ./services/firebase.js, ./utils/router.js, ./services/auth.js, ./components/layout/Header.js, ./components/layout/Navigation.js, ./services/trading.js
+  - Methods: constructor, initialize, setupComponents, setupRouting, loadView, updateNavigationActive, handleAuthStateChange, showApp, showError, initializePWA
+- Imports: ./services/firebase.js, ./utils/router.js, ./services/auth.js, ./components/layout/Header.js, ./components/layout/Navigation.js, ./services/trading.js, ./utils/pwa-utils.js
 
 ## services/activity.js
 - Lines: 485
@@ -132,21 +113,21 @@
 - Imports: firebase/app, firebase/analytics, firebase/auth, firebase/firestore
 
 ## services/leaderboard.js
-- Lines: 502
-- Functions: pricePromises, buyTrades, sellTrades, totalVolume, averageReturn, userRanking
+- Lines: 552
+- Functions: batchPromises, buyTrades, sellTrades, averageReturn, userRanking
 - Exports: 1
 - Imports: ./firebase.js, ./trading.js, ./stocks.js
 
 ## services/simulation/simulation-core.js
-- Lines: 255
+- Lines: 254
 - Exports: 6
-- Imports: ../firebase.js, ../../constants/simulation-status.js, ../../utils/string-utils.js
+- Imports: ../firebase.js, ../../constants/simulation-status.js
 
 ## services/simulation/simulation-management.js
-- Lines: 726
-- Functions: getDb, handleError, changes, activeMembers, removedMembers, tradeActivities, memberSimulationIds, results, toDate
-- Exports: 13
-- Imports: ../firebase.js, ../../constants/simulation-status.js, ./simulation-core.js, ../auth/permission-service.js
+- Lines: 820
+- Functions: getDb, handleError, changes, activeMembers, removedMembers, tradeActivities, memberSimulationIds, toDate
+- Exports: 14
+- Imports: ../firebase.js, ../../constants/simulation-status.js, ./simulation-core.js, ../auth/permission-service.js, ../../utils/date-utils.js
 
 ## services/simulation/simulation-members.js
 - Lines: 297
@@ -154,10 +135,10 @@
 - Imports: ../firebase.js, ../../constants/simulation-status.js
 
 ## services/simulation/simulation-user-operations.js
-- Lines: 176
+- Lines: 173
 - Functions: simulationIds, memberData
 - Exports: 2
-- Imports: ../firebase.js, ../../constants/simulation-status.js, ./simulation-members.js
+- Imports: ../firebase.js, ../../constants/simulation-status.js, ./simulation-members.js, ../../utils/date-utils.js
 
 ## services/simulation.js
 - Lines: 222
@@ -176,14 +157,15 @@
 - Imports: ../../constants/app-config.js
 
 ## services/stocks/stock-news.js
-- Lines: 311
+- Lines: 315
 - Exports: 1
 - Imports: ../../constants/app-config.js, ../../utils/date-utils.js, ../../utils/string-utils.js
 
 ## services/stocks/stock-quotes.js
-- Lines: 503
+- Lines: 505
 - Functions: timestamps, closes, opens, highs, lows, volumes
 - Exports: 1
+- Imports: ../../utils/currency-utils
 
 ## services/stocks.js
 - Lines: 177
@@ -191,9 +173,9 @@
 - Imports: ./stocks/stock-news.js, ./stocks/stock-cache.js, ./stocks/stock-api.js, ./stocks/stock-quotes.js
 
 ## services/trading.js
-- Lines: 455
+- Lines: 475
 - Exports: 9
-- Imports: ./firebase, firebase/firestore, ../constants/trade-types.js
+- Imports: ./firebase, firebase/firestore, ../constants/trade-types.js, ../utils/date-utils.js, ../utils/validation-utils.js
 
 ## templates/archive/archive-export.js
 - Lines: 54
@@ -209,6 +191,11 @@
 - Exports: 2
 - Imports: ../../utils/currency-utils
 
+## templates/gains-templates.js
+- Lines: 404
+- Functions: formatCurrency, formatNumber, formatPercent, getColorClass
+- Exports: 9
+
 ## templates/portfolio/portfolio-errors.js
 - Lines: 34
 - Exports: 2
@@ -219,14 +206,14 @@
 - Imports: ../../utils/string-utils.js
 
 ## templates/portfolio/portfolio-main-layout.js
-- Lines: 241
+- Lines: 242
 - Exports: 1
 - Imports: ../../utils/currency-utils.js
 
 ## templates/portfolio/portfolio-trade-history.js
-- Lines: 48
+- Lines: 47
 - Exports: 1
-- Imports: ../../utils/string-utils.js
+- Imports: ../../utils/date-utils.js, ../../utils/string-utils.js
 
 ## templates/research/research-charts.js
 - Lines: 230
@@ -270,15 +257,17 @@
 - Exports: 3
 
 ## templates/simulation/portfolio-components.js
-- Lines: 52
-- Exports: 2
+- Lines: 127
+- Exports: 4
+- Imports: ../../utils/date-utils.js
 
 ## templates/simulation/simulation-layout.js
-- Lines: 411
+- Lines: 456
 - Exports: 7
 
 ## templates/simulation/simulation-modals.js
-- Lines: 444
+- Lines: 509
+- Functions: activeMembers, removedMembers, isCurrentUserCreator
 - Exports: 2
 
 ## templates/simulation/ui-messages.js
@@ -302,62 +291,73 @@
 - Lines: 209
 
 ## templates/trade/trade-recent-trades.js
-- Lines: 32
+- Lines: 34
 - Exports: 2
+- Imports: ../../utils/currency-utils.js
 
 ## templates/trade/trade-stock-lookup.js
 - Lines: 193
 
 ## utils/currency-utils.js
-- Lines: 194
-- Exports: 14
+- Lines: 199
+- Exports: 15
 
 ## utils/date-utils.js
-- Lines: 183
-- Exports: 12
+- Lines: 248
+- Exports: 17
 
 ## utils/dom-utils.js
-- Lines: 514
-- Exports: 34
+- Lines: 948
+- Exports: 58
 
 ## utils/math-utils.js
-- Lines: 379
-- Functions: validNumbers, validNumbers, sorted, wins, squaredDifferences
-- Exports: 28
+- Lines: 476
+- Functions: validNumbers, wins, tickerTrades, tickerTrades
+- Exports: 17
+
+## utils/portfolio-debug.js
+- Lines: 196
+- Functions: userRanking
+- Exports: 3
+- Imports: ../services/leaderboard.js, ../services/trading.js, ../services/stocks.js
+
+## utils/pwa-utils.js
+- Lines: 376
+- Exports: 2
 
 ## utils/router.js
 - Lines: 60
 - Exports: 1
 
 ## utils/string-utils.js
-- Lines: 310
-- Exports: 22
+- Lines: 176
+- Exports: 12
 
 ## utils/validation-utils.js
-- Lines: 504
-- Exports: 19
+- Lines: 405
+- Exports: 16
 
 ## views/auth.js
-- Lines: 247
+- Lines: 245
 - Exports: 1
-- Imports: ../services/auth.js
+- Imports: ../services/auth.js, ../utils/validation-utils.js
 
 ## views/dashboard.js
-- Lines: 503
+- Lines: 491
 - Functions: activeSimCount
 - Exports: 1
-- Imports: ../services/simulation.js, ../services/auth.js, ../components/simulation/CreateSimulationModal.js, ../components/simulation/JoinSimulationModal.js, ../components/simulation/EmailInviteModal.js, ../constants/simulation-status.js
+- Imports: ../services/simulation.js, ../services/auth.js, ../components/simulation/CreateSimulationModal.js, ../components/simulation/JoinSimulationModal.js, ../components/simulation/EmailInviteModal.js, ../constants/simulation-status.js, ../utils/currency-utils.js
 
 ## views/portfolio.js
-- Lines: 405
+- Lines: 482
 - Functions: totalVolume
 - Exports: 1
-- Imports: ../services/trading.js, ../services/auth.js, ../services/stocks.js, ../templates/portfolio/portfolio-main-layout.js, ../templates/portfolio/portfolio-trade-history.js, ../templates/portfolio/portfolio-errors.js
+- Imports: ../services/trading.js, ../services/auth.js, ../services/stocks.js, ../utils/math-utils.js, ../templates/portfolio/portfolio-main-layout.js, ../templates/portfolio/portfolio-trade-history.js, ../templates/portfolio/portfolio-errors.js
 
 ## views/research.js
 - Lines: 337
 - Exports: 1
-- Imports: ../services/stocks.js, ../constants/app-config.js, ../constants/ui-messages.js, ../utils/string-utils.js, ../components/research/NewsManager.js, ../components/research/ChartManager.js, ../components/research/SearchManager.js, ../components/research/StockDataManager.js, ../templates/research/research-main-layout.js
+- Imports: ../services/stocks.js, ../constants/app-config.js, ../constants/ui-messages.js, ../components/research/NewsManager.js, ../components/research/ChartManager.js, ../components/research/SearchManager.js, ../components/research/StockDataManager.js, ../templates/research/research-main-layout.js
 
 ## views/simulation-archive.js
 - Lines: 289
@@ -365,13 +365,13 @@
 - Imports: ../services/simulation.js, ../services/auth.js, ../constants/app-config.js
 
 ## views/simulation.js
-- Lines: 1085
-- Functions: userRanking, isCreator
+- Lines: 1189
+- Functions: userRanking, isCreator, userRanking
 - Exports: 1
-- Imports: ../services/simulation.js, ../services/auth.js, ../services/activity.js, ../services/leaderboard.js, ../components/simulation/LeaderboardOverview.js, ../components/simulation/LeaderboardTable.js, ../components/simulation/SimulationAdminManager.js, ../components/simulation/SimulationPortfolioManager.js, ../components/simulation/SimulationMemberManager.js, ../components/simulation/SimulationActivityManager.js, ../components/simulation/SimulationDisplayManager.js, ../constants/app-config.js, ../constants/simulation-status.js, ../templates/simulation/ui-messages.js
+- Imports: ../services/simulation.js, ../services/auth.js, ../services/activity.js, ../services/leaderboard.js, ../services/trading.js, ../components/simulation/LeaderboardManager.js, ../components/simulation/SimulationContentManager.js, ../components/simulation/SimulationMembershipManager.js, ../constants/app-config.js, ../constants/simulation-status.js, ../utils/currency-utils.js, ../templates/simulation/ui-messages.js
 
 ## views/trade.js
 - Lines: 528
 - Functions: simPortfolio
 - Exports: 1
-- Imports: ../services/stocks.js, ../services/trading.js, ../services/simulation.js, ../services/auth.js, ../constants/trade-types.js, ../constants/ui-messages.js, ../utils/string-utils.js, ../templates/trade/trade-main-layout.js
+- Imports: ../services/stocks.js, ../services/trading.js, ../services/simulation.js, ../services/auth.js, ../constants/trade-types.js, ../constants/ui-messages.js, ../templates/trade/trade-main-layout.js

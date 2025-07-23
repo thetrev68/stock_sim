@@ -4,6 +4,7 @@
 ├── count-js-files.ps1
 ├── css-restructure.md
 ├── eslint.config.js
+├── favicon.ico
 ├── firebase.json
 ├── firestore.indexes.json
 ├── firestore.rules
@@ -12,6 +13,7 @@
 │   ├── index.js
 │   ├── package-lock.json
 │   └── package.json
+├── generate-icons.html
 ├── generate-project-map.mjs
 ├── index.html
 ├── package-lock.json
@@ -39,13 +41,9 @@
 │   │       ├── CreateSimulationModal.js
 │   │       ├── EmailInviteModal.js
 │   │       ├── JoinSimulationModal.js
-│   │       ├── LeaderboardOverview.js
-│   │       ├── LeaderboardTable.js
-│   │       ├── SimulationActivityManager.js
-│   │       ├── SimulationAdminManager.js
-│   │       ├── SimulationDisplayManager.js
-│   │       ├── SimulationMemberManager.js
-│   │       └── SimulationPortfolioManager.js
+│   │       ├── LeaderboardManager.js
+│   │       ├── SimulationContentManager.js
+│   │       └── SimulationMembershipManager.js
 │   ├── constants
 │   │   ├── app-config.js
 │   │   ├── simulation-status.js
@@ -104,6 +102,7 @@
 │   │   │   ├── archive-export.js
 │   │   │   ├── archive-layout.js
 │   │   │   └── archive-leaderboard.js
+│   │   ├── gains-templates.js
 │   │   ├── portfolio
 │   │   │   ├── portfolio-errors.js
 │   │   │   ├── portfolio-holdings.js
@@ -138,6 +137,8 @@
 │   │   ├── date-utils.js
 │   │   ├── dom-utils.js
 │   │   ├── math-utils.js
+│   │   ├── portfolio-debug.js
+│   │   ├── pwa-utils.js
 │   │   ├── router.js
 │   │   ├── string-utils.js
 │   │   └── validation-utils.js
@@ -149,6 +150,7 @@
 │       ├── simulation-archive.js
 │       ├── simulation.js
 │       └── trade.js
+├── StockSimOverview.md
 ├── tailwind.config.js
 ├── tree.mjs
 ├── tree.txt

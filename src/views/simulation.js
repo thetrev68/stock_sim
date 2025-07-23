@@ -1037,32 +1037,50 @@ export default class SimulationView {
     }
 
     populateSimulationDropdown(userSimulations = []) {
-        const dropdown = document.querySelector("#simulation-dropdown");
-        if (!dropdown) return;
-
-        // Clear existing options except the first one
-        dropdown.innerHTML = "<option value=\"\">Switch Simulation...</option>";
-
-        // Add current simulation first
-        if (this.currentSimulation) {
-            const currentOption = document.createElement("option");
-            currentOption.value = this.currentSimulation.id;
-            currentOption.textContent = `${this.currentSimulation.name} (Current)`;
-            currentOption.selected = true;
-            dropdown.appendChild(currentOption);
+        console.log("=== POPULATE DROPDOWN DEBUG ===");
+        console.log("Current simulation:", this.currentSimulation);
+        console.log("Current simulation name:", this.currentSimulation?.name);
+        console.log("User simulations array:", userSimulations);
+        
+        // The trade page uses #portfolio-selector, not #simulation-dropdown
+        const dropdown = document.querySelector("#portfolio-selector");
+        if (!dropdown) {
+            console.log("❌ Portfolio selector dropdown element not found!");
+            return;
         }
 
-        // Add other simulations
+        console.log("✅ Found portfolio selector dropdown");
+
+        // Clear existing options except the first one
+        dropdown.innerHTML = "<option value=\"\">Select a portfolio...</option>";
+
+        // Add solo portfolio option first
+        const soloOption = document.createElement("option");
+        soloOption.value = "solo";
+        soloOption.textContent = "Solo Practice Mode";
+        dropdown.appendChild(soloOption);
+
+        // Add simulation portfolio options using the updated names
         userSimulations.forEach(sim => {
-            if (sim.id !== this.simulationId) {
-                const option = document.createElement("option");
-                option.value = sim.id;
-                option.textContent = sim.name;
-                dropdown.appendChild(option);
+            console.log("✅ Adding simulation to dropdown:", sim.name, "ID:", sim.id);
+            const option = document.createElement("option");
+            option.value = sim.id;
+            option.textContent = sim.name; // This should now have the updated name
+            
+            // Select the current simulation if we're on its trade page
+            if (sim.id === this.simulationId) {
+                option.selected = true;
             }
+            
+            dropdown.appendChild(option);
         });
 
-        console.log("Simulation dropdown populated with", userSimulations.length, "simulations");
+        console.log("📋 Final dropdown options:");
+        Array.from(dropdown.options).forEach((option, index) => {
+            console.log(`  ${index}: value="${option.value}", text="${option.textContent}"`);
+        });
+
+        console.log("Portfolio selector populated with", userSimulations.length, "simulations");
     }
 
     // And add this method to your SimulationView class:

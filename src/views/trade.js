@@ -200,11 +200,12 @@ export default class TradeView {
         soloOption.textContent = "Solo Practice Mode";
         selector.appendChild(soloOption);
 
-        // Add simulation portfolio options
+        // Add simulation portfolio options with FRESH names
         this.userPortfolios.forEach(portfolio => {
             if (portfolio.type === "simulation" && portfolio.simulationId) {
                 const option = document.createElement("option");
                 option.value = portfolio.simulationId;
+                // Use the updated simulationName from the portfolio document
                 option.textContent = portfolio.simulationName || `Simulation ${portfolio.simulationId}`;
                 selector.appendChild(option);
             }

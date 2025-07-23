@@ -3,7 +3,9 @@ graph TD
   components_admin_UserRoleManager --> services_auth_permission_service
   components_admin_UserRoleManager --> services_firebase
   components_research_ChartManager --> templates_research_research_errors
+  components_research_ChartManager --> utils_dom_utils
   components_research_NewsManager --> utils_date_utils
+  components_research_NewsManager --> utils_dom_utils
   components_research_NewsManager --> templates_research_research_news
   components_research_NewsManager --> templates_research_research_stock_display
   components_research_SearchManager --> constants_app_config
@@ -12,30 +14,35 @@ graph TD
   components_simulation_CreateSimulationModal --> services_auth
   components_simulation_EmailInviteModal --> services_simulation
   components_simulation_EmailInviteModal --> services_auth
+  components_simulation_EmailInviteModal --> utils_validation_utils
   components_simulation_JoinSimulationModal --> services_simulation
   components_simulation_JoinSimulationModal --> services_auth
   components_simulation_JoinSimulationModal --> utils_string_utils
-  components_simulation_SimulationActivityManager --> templates_simulation_error_states
-  components_simulation_SimulationAdminManager --> templates_simulation_simulation_modals
-  components_simulation_SimulationAdminManager --> constants_ui_messages
-  components_simulation_SimulationDisplayManager --> constants_simulation_status
-  components_simulation_SimulationDisplayManager --> utils_date_utils
-  components_simulation_SimulationDisplayManager --> utils_currency_utils
-  components_simulation_SimulationDisplayManager --> utils_string_utils
-  components_simulation_SimulationMemberManager --> constants_simulation_status
-  components_simulation_SimulationMemberManager --> templates_simulation_member_components
-  components_simulation_SimulationMemberManager --> templates_simulation_simulation_modals
-  components_simulation_SimulationMemberManager --> templates_simulation_error_states
-  components_simulation_SimulationPortfolioManager --> services_trading
-  components_simulation_SimulationPortfolioManager --> constants_trade_types
-  components_simulation_SimulationPortfolioManager --> utils_currency_utils
-  components_simulation_SimulationPortfolioManager --> templates_simulation_error_states
+  components_simulation_JoinSimulationModal --> utils_validation_utils
+  components_simulation_LeaderboardManager --> utils_date_utils
+  components_simulation_SimulationContentManager --> constants_simulation_status
+  components_simulation_SimulationContentManager --> constants_trade_types
+  components_simulation_SimulationContentManager --> utils_date_utils
+  components_simulation_SimulationContentManager --> utils_currency_utils
+  components_simulation_SimulationContentManager --> utils_string_utils
+  components_simulation_SimulationContentManager --> utils_dom_utils
+  components_simulation_SimulationContentManager --> services_trading
+  components_simulation_SimulationContentManager --> services_stocks
+  components_simulation_SimulationContentManager --> templates_simulation_portfolio_components
+  components_simulation_SimulationContentManager --> templates_portfolio_portfolio_errors
+  components_simulation_SimulationContentManager --> templates_simulation_error_states
+  components_simulation_SimulationMembershipManager --> constants_simulation_status
+  components_simulation_SimulationMembershipManager --> constants_ui_messages
+  components_simulation_SimulationMembershipManager --> templates_simulation_member_components
+  components_simulation_SimulationMembershipManager --> templates_simulation_simulation_modals
+  components_simulation_SimulationMembershipManager --> templates_simulation_error_states
   main --> services_firebase
   main --> utils_router
   main --> services_auth
   main --> components_layout_Header
   main --> components_layout_Navigation
   main --> services_trading
+  main --> utils_pwa_utils
   services_activity --> services_firebase
   services_activity --> utils_date_utils
   services_auth_permission_service --> services_firebase
@@ -46,52 +53,64 @@ graph TD
   services_leaderboard --> services_stocks
   services_simulation_simulation_core --> services_firebase
   services_simulation_simulation_core --> constants_simulation_status
-  services_simulation_simulation_core --> utils_string_utils
   services_simulation_simulation_management --> services_firebase
   services_simulation_simulation_management --> constants_simulation_status
   services_simulation_simulation_management --> services_simulation_simulation_core
   services_simulation_simulation_management --> services_auth_permission_service
+  services_simulation_simulation_management --> utils_date_utils
   services_simulation_simulation_members --> services_firebase
   services_simulation_simulation_members --> constants_simulation_status
   services_simulation_simulation_user_operations --> services_firebase
   services_simulation_simulation_user_operations --> constants_simulation_status
   services_simulation_simulation_user_operations --> services_simulation_simulation_members
+  services_simulation_simulation_user_operations --> utils_date_utils
   services_simulation --> services_firebase
   services_stocks_stock_api --> constants_app_config
   services_stocks_stock_cache --> constants_app_config
   services_stocks_stock_news --> constants_app_config
   services_stocks_stock_news --> utils_date_utils
   services_stocks_stock_news --> utils_string_utils
+  services_stocks_stock_quotes --> utils_currency_utils
   services_stocks --> services_stocks_stock_news
   services_stocks --> services_stocks_stock_cache
   services_stocks --> services_stocks_stock_api
   services_stocks --> services_stocks_stock_quotes
   services_trading --> services_firebase
   services_trading --> constants_trade_types
+  services_trading --> utils_date_utils
+  services_trading --> utils_validation_utils
   templates_archive_archive_layout --> utils_currency_utils
   templates_archive_archive_leaderboard --> utils_currency_utils
   templates_portfolio_portfolio_holdings --> utils_string_utils
   templates_portfolio_portfolio_main_layout --> utils_currency_utils
+  templates_portfolio_portfolio_trade_history --> utils_date_utils
   templates_portfolio_portfolio_trade_history --> utils_string_utils
   templates_simulation_member_components --> utils_date_utils
   templates_simulation_member_components --> utils_string_utils
+  templates_simulation_portfolio_components --> utils_date_utils
+  templates_trade_trade_recent_trades --> utils_currency_utils
+  utils_portfolio_debug --> services_leaderboard
+  utils_portfolio_debug --> services_trading
+  utils_portfolio_debug --> services_stocks
   views_auth --> services_auth
+  views_auth --> utils_validation_utils
   views_dashboard --> services_simulation
   views_dashboard --> services_auth
   views_dashboard --> components_simulation_CreateSimulationModal
   views_dashboard --> components_simulation_JoinSimulationModal
   views_dashboard --> components_simulation_EmailInviteModal
   views_dashboard --> constants_simulation_status
+  views_dashboard --> utils_currency_utils
   views_portfolio --> services_trading
   views_portfolio --> services_auth
   views_portfolio --> services_stocks
+  views_portfolio --> utils_math_utils
   views_portfolio --> templates_portfolio_portfolio_main_layout
   views_portfolio --> templates_portfolio_portfolio_trade_history
   views_portfolio --> templates_portfolio_portfolio_errors
   views_research --> services_stocks
   views_research --> constants_app_config
   views_research --> constants_ui_messages
-  views_research --> utils_string_utils
   views_research --> components_research_NewsManager
   views_research --> components_research_ChartManager
   views_research --> components_research_SearchManager
@@ -104,15 +123,13 @@ graph TD
   views_simulation --> services_auth
   views_simulation --> services_activity
   views_simulation --> services_leaderboard
-  views_simulation --> components_simulation_LeaderboardOverview
-  views_simulation --> components_simulation_LeaderboardTable
-  views_simulation --> components_simulation_SimulationAdminManager
-  views_simulation --> components_simulation_SimulationPortfolioManager
-  views_simulation --> components_simulation_SimulationMemberManager
-  views_simulation --> components_simulation_SimulationActivityManager
-  views_simulation --> components_simulation_SimulationDisplayManager
+  views_simulation --> services_trading
+  views_simulation --> components_simulation_LeaderboardManager
+  views_simulation --> components_simulation_SimulationContentManager
+  views_simulation --> components_simulation_SimulationMembershipManager
   views_simulation --> constants_app_config
   views_simulation --> constants_simulation_status
+  views_simulation --> utils_currency_utils
   views_simulation --> templates_simulation_ui_messages
   views_trade --> services_stocks
   views_trade --> services_trading
@@ -120,7 +137,6 @@ graph TD
   views_trade --> services_auth
   views_trade --> constants_trade_types
   views_trade --> constants_ui_messages
-  views_trade --> utils_string_utils
   views_trade --> templates_trade_trade_main_layout
   App --> main
 ```
@@ -137,5 +153,6 @@ classDiagram
     + handleAuthStateChange()
     + showApp()
     + showError()
+    + initializePWA()
   }
 ```
