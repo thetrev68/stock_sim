@@ -371,25 +371,51 @@ export async function executeTrade(userId, tradeDetails, simulationId = null) {
 
         // Log activity for simulation trades
         if (simulationId && updatedPortfolio) {
+        try {
+            const { ActivityService } = await import("./activity.js");
+            const activityService = new ActivityService();
+            activityService.initialize();
+
+            // Get user display name - PRIORITIZE Firestore Users collection over Firebase Auth
+            let userDisplayName = "Anonymous User";
             try {
-                const { ActivityService } = await import("./activity.js");
-                const activityService = new ActivityService();
-                activityService.initialize();
-
-                // Get user display name from auth or portfolio
-                const userDisplayName = updatedPortfolio.userDisplayName || "Anonymous User";
-
-                // Log the trade activity
-                await activityService.logTradeActivity(simulationId, userId, userDisplayName, tradeDetails);
-
-                // Check for achievements
-                await activityService.detectAndLogAchievements(simulationId, userId, userDisplayName, tradeDetails, updatedPortfolio);
-
-            } catch (error) {
-                console.error("Error logging trade activity:", error);
-                // Don't fail the trade if activity logging fails
+                // First, try to get from Firestore Users collection (most up-to-date)
+                const { getFirestoreDb } = await import("./firebase.js");
+                const { doc, getDoc } = await import("firebase/firestore");
+                const db = getFirestoreDb();
+                const userRef = doc(db, "Users", userId);
+                const userDoc = await getDoc(userRef);
+                
+                if (userDoc.exists() && userDoc.data().displayName) {
+                    userDisplayName = userDoc.data().displayName;
+                } else {
+                    // Fallback to Firebase Auth if Firestore doesn't have it
+                    const { getFirebaseAuth } = await import("./firebase.js");
+                    const auth = getFirebaseAuth();
+                    const currentUser = auth.currentUser;
+                    
+                    if (currentUser && currentUser.uid === userId) {
+                        userDisplayName = currentUser.displayName || 
+                                        currentUser.email?.split("@")[0] || 
+                                        "Anonymous User";
+                    }
+                }
+            } catch (authError) {
+                console.error("Error getting user display name:", authError);
+                // userDisplayName remains "Anonymous User"
             }
+
+            // Log the trade activity
+            await activityService.logTradeActivity(simulationId, userId, userDisplayName, tradeDetails);
+
+            // Check for achievements
+            await activityService.detectAndLogAchievements(simulationId, userId, userDisplayName, tradeDetails, updatedPortfolio);
+
+        } catch (error) {
+            console.error("Error logging trade activity:", error);
+            // Don't fail the trade if activity logging fails
         }
+    }
 
         const contextMsg = simulationId ? `in simulation ${simulationId}` : "in solo mode";
         console.log(`Trade executed successfully for user ${userId} ${contextMsg}: ${type} ${quantity} ${ticker} at $${price.toFixed(2)}`);

@@ -170,3 +170,307 @@ export const calculatePercentile = (rank, total) => {
     if (total === 0 || rank > total) return 0;
     return Math.round((1 - (rank - 1) / total) * 100);
 };
+
+/**
+ * Enhanced Math Utilities - Gains/Loss and Short/Long Term Calculations
+ * Add these functions to your existing utils/math-utils.js file
+ */
+
+/**
+ * Calculate realized gains/losses from completed trades
+ * @param {Array} trades - Array of all trade records
+ * @returns {object} Realized gains data with short/long term breakdown
+ */
+export const calculateRealizedGains = (trades) => {
+    if (!Array.isArray(trades) || trades.length === 0) {
+        return {
+            totalRealized: 0,
+            shortTermGains: 0,
+            longTermGains: 0,
+            shortTermTrades: [],
+            longTermTrades: []
+        };
+    }
+
+    // Group trades by ticker
+    const tradesByTicker = {};
+    trades.forEach(trade => {
+        if (!tradesByTicker[trade.ticker]) {
+            tradesByTicker[trade.ticker] = [];
+        }
+        tradesByTicker[trade.ticker].push({
+            ...trade,
+            timestamp: new Date(trade.timestamp)
+        });
+    });
+
+    let totalRealized = 0;
+    let shortTermGains = 0;
+    let longTermGains = 0;
+    const shortTermTrades = [];
+    const longTermTrades = [];
+
+    // Calculate realized gains for each ticker using FIFO method
+    Object.keys(tradesByTicker).forEach(ticker => {
+        const tickerTrades = tradesByTicker[ticker].sort((a, b) => a.timestamp - b.timestamp);
+        const buyQueue = []; // FIFO queue for buy trades
+        
+        tickerTrades.forEach(trade => {
+            if (trade.type === "buy") {
+                buyQueue.push(trade);
+            } else if (trade.type === "sell") {
+                let sellQuantity = trade.quantity;
+                
+                while (sellQuantity > 0 && buyQueue.length > 0) {
+                    const buyTrade = buyQueue[0];
+                    const matchQuantity = Math.min(sellQuantity, buyTrade.quantity);
+                    
+                    // Calculate realized gain/loss for this match
+                    const costBasis = matchQuantity * buyTrade.price;
+                    const saleProceeds = matchQuantity * trade.price;
+                    const realizedGain = saleProceeds - costBasis;
+                    
+                    // Determine if short-term or long-term (365 days = 1 year)
+                    const holdingPeriodDays = (trade.timestamp - buyTrade.timestamp) / (1000 * 60 * 60 * 24);
+                    const isLongTerm = holdingPeriodDays >= 365;
+                    
+                    const gainRecord = {
+                        ticker,
+                        quantity: matchQuantity,
+                        buyDate: buyTrade.timestamp,
+                        sellDate: trade.timestamp,
+                        buyPrice: buyTrade.price,
+                        sellPrice: trade.price,
+                        costBasis,
+                        saleProceeds,
+                        realizedGain,
+                        holdingPeriodDays: Math.round(holdingPeriodDays),
+                        isLongTerm
+                    };
+                    
+                    totalRealized += realizedGain;
+                    
+                    if (isLongTerm) {
+                        longTermGains += realizedGain;
+                        longTermTrades.push(gainRecord);
+                    } else {
+                        shortTermGains += realizedGain;
+                        shortTermTrades.push(gainRecord);
+                    }
+                    
+                    // Update quantities
+                    sellQuantity -= matchQuantity;
+                    buyTrade.quantity -= matchQuantity;
+                    
+                    if (buyTrade.quantity === 0) {
+                        buyQueue.shift();
+                    }
+                }
+            }
+        });
+    });
+
+    return {
+        totalRealized,
+        shortTermGains,
+        longTermGains,
+        shortTermTrades,
+        longTermTrades
+    };
+};
+
+/**
+ * Calculate unrealized gains/losses from current holdings
+ * @param {object} holdings - Current holdings with avgPrice and quantity
+ * @param {object} currentPrices - Current market prices by ticker
+ * @param {Array} trades - All trades to determine holding periods
+ * @returns {object} Unrealized gains data with short/long term breakdown
+ */
+export const calculateUnrealizedGains = (holdings, currentPrices, trades) => {
+    if (!holdings || typeof holdings !== "object") {
+        return {
+            totalUnrealized: 0,
+            shortTermUnrealized: 0,
+            longTermUnrealized: 0,
+            holdingDetails: []
+        };
+    }
+
+    const holdingDetails = [];
+    let totalUnrealized = 0;
+    let shortTermUnrealized = 0;
+    let longTermUnrealized = 0;
+
+    // Calculate purchase dates for each holding using trades
+    const holdingPurchaseDates = calculateHoldingPurchaseDates(holdings, trades);
+
+    Object.keys(holdings).forEach(ticker => {
+        const holding = holdings[ticker];
+        const currentPrice = currentPrices[ticker] || holding.avgPrice;
+        const marketValue = holding.quantity * currentPrice;
+        const costBasis = holding.quantity * holding.avgPrice;
+        const unrealizedGain = marketValue - costBasis;
+        
+        // Get weighted average holding period
+        const avgHoldingDays = holdingPurchaseDates[ticker]?.avgHoldingDays || 0;
+        const isLongTerm = avgHoldingDays >= 365;
+        
+        const holdingDetail = {
+            ticker,
+            quantity: holding.quantity,
+            avgPrice: holding.avgPrice,
+            currentPrice,
+            costBasis,
+            marketValue,
+            unrealizedGain,
+            unrealizedGainPercent: (unrealizedGain / costBasis) * 100,
+            avgHoldingDays: Math.round(avgHoldingDays),
+            isLongTerm
+        };
+        
+        holdingDetails.push(holdingDetail);
+        totalUnrealized += unrealizedGain;
+        
+        if (isLongTerm) {
+            longTermUnrealized += unrealizedGain;
+        } else {
+            shortTermUnrealized += unrealizedGain;
+        }
+    });
+
+    return {
+        totalUnrealized,
+        shortTermUnrealized,
+        longTermUnrealized,
+        holdingDetails
+    };
+};
+
+/**
+ * Calculate weighted average holding periods for current holdings
+ * @param {object} holdings - Current holdings
+ * @param {Array} trades - All trade records
+ * @returns {object} Holding purchase date information by ticker
+ */
+export const calculateHoldingPurchaseDates = (holdings, trades) => {
+    if (!Array.isArray(trades) || !holdings) return {};
+
+    const holdingPurchaseDates = {};
+    const now = new Date();
+
+    // Group trades by ticker and sort by date
+    const tradesByTicker = {};
+    trades.forEach(trade => {
+        if (!tradesByTicker[trade.ticker]) {
+            tradesByTicker[trade.ticker] = [];
+        }
+        tradesByTicker[trade.ticker].push({
+            ...trade,
+            timestamp: new Date(trade.timestamp)
+        });
+    });
+
+    Object.keys(holdings).forEach(ticker => {
+        if (!tradesByTicker[ticker]) return;
+
+        const tickerTrades = tradesByTicker[ticker].sort((a, b) => a.timestamp - b.timestamp);
+        const buyTrades = [];
+
+        // Simulate trades to find current position composition
+        tickerTrades.forEach(trade => {
+            if (trade.type === "buy") {
+                buyTrades.push({
+                    ...trade,
+                    remainingShares: trade.quantity
+                });
+            } else if (trade.type === "sell") {
+                let sellQuantity = trade.quantity;
+                
+                // Remove sold shares from buy trades (FIFO)
+                for (let i = 0; i < buyTrades.length && sellQuantity > 0; i++) {
+                    const reduction = Math.min(sellQuantity, buyTrades[i].remainingShares);
+                    buyTrades[i].remainingShares -= reduction;
+                    sellQuantity -= reduction;
+                }
+                
+                // Remove buy trades with no remaining shares
+                for (let i = buyTrades.length - 1; i >= 0; i--) {
+                    if (buyTrades[i].remainingShares === 0) {
+                        buyTrades.splice(i, 1);
+                    }
+                }
+            }
+        });
+
+        // Calculate weighted average holding period for remaining shares
+        if (buyTrades.length > 0) {
+            let totalShareDays = 0;
+            let totalShares = 0;
+
+            buyTrades.forEach(buyTrade => {
+                if (buyTrade.remainingShares > 0) {
+                    const holdingDays = (now - buyTrade.timestamp) / (1000 * 60 * 60 * 24);
+                    totalShareDays += buyTrade.remainingShares * holdingDays;
+                    totalShares += buyTrade.remainingShares;
+                }
+            });
+
+            holdingPurchaseDates[ticker] = {
+                avgHoldingDays: totalShares > 0 ? totalShareDays / totalShares : 0,
+                oldestBuyDate: buyTrades[0]?.timestamp,
+                totalShares
+            };
+        }
+    });
+
+    return holdingPurchaseDates;
+};
+
+/**
+ * Calculate comprehensive gains summary
+ * @param {object} holdings - Current holdings
+ * @param {object} currentPrices - Current market prices
+ * @param {Array} trades - All trade records
+ * @returns {object} Complete gains/loss summary
+ */
+export const calculateComprehensiveGains = (holdings, currentPrices, trades) => {
+    const realized = calculateRealizedGains(trades);
+    const unrealized = calculateUnrealizedGains(holdings, currentPrices, trades);
+
+    return {
+        realized,
+        unrealized,
+        totalGains: realized.totalRealized + unrealized.totalUnrealized,
+        netShortTerm: realized.shortTermGains + unrealized.shortTermUnrealized,
+        netLongTerm: realized.longTermGains + unrealized.longTermUnrealized
+    };
+};
+
+/**
+ * Calculate tax implications (simplified US tax rates)
+ * @param {number} shortTermGains - Short-term capital gains
+ * @param {number} longTermGains - Long-term capital gains
+ * @param {number} ordinaryTaxRate - Ordinary income tax rate (default: 22%)
+ * @param {number} capitalGainsTaxRate - Long-term capital gains rate (default: 15%)
+ * @returns {object} Tax calculation summary
+ */
+export const calculateTaxImplications = (
+    shortTermGains, 
+    longTermGains, 
+    ordinaryTaxRate = 0.22, 
+    capitalGainsTaxRate = 0.15
+) => {
+    const shortTermTax = Math.max(0, shortTermGains * ordinaryTaxRate);
+    const longTermTax = Math.max(0, longTermGains * capitalGainsTaxRate);
+    const totalTax = shortTermTax + longTermTax;
+    const afterTaxGains = (shortTermGains + longTermGains) - totalTax;
+
+    return {
+        shortTermTax,
+        longTermTax,
+        totalTax,
+        afterTaxGains,
+        effectiveRate: (shortTermGains + longTermGains) > 0 ? 
+            (totalTax / (shortTermGains + longTermGains)) * 100 : 0
+    };
+};

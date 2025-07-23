@@ -91,7 +91,7 @@ export class ActivityService {
                 type: "trade",
                 action: "executed_trade",
                 data: {
-                    ticker: tradeData.ticker,
+                    ticker: tradeData.ticker.toUpperCase(), // FIX: Convert ticker to uppercase
                     tradeType: tradeData.type,
                     quantity: tradeData.quantity,
                     price: tradeData.price,
@@ -102,7 +102,7 @@ export class ActivityService {
             };
 
             await addDoc(collection(this.db, ACTIVITIES_COLLECTION), activity);
-            console.log(`Logged trade activity for user ${userId}: ${tradeData.type} ${tradeData.quantity} ${tradeData.ticker}`);
+            console.log(`Logged trade activity for user ${userId}: ${tradeData.type} ${tradeData.quantity} ${tradeData.ticker.toUpperCase()}`);
             
         } catch (error) {
             console.error("Error logging trade activity:", error);
