@@ -183,13 +183,26 @@ export const getCleanHeaderSectionTemplate = () => {
                             <h1 id="sim-name" class="text-2xl sm:text-3xl font-bold text-white truncate">
                                 Loading...
                             </h1>
-                            <span id="sim-status-badge" class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-600 text-gray-300 w-fit">
+                            <span id="sim-status" class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-600 text-gray-300 w-fit">
                                 Loading...
                             </span>
                         </div>
                         <p id="sim-description" class="text-gray-400 text-sm sm:text-base">
                             Loading simulation details...
                         </p>
+
+                        <!-- ADDED: Invite Code Section -->
+                        <div id="sim-invite-section" class="mt-2 flex items-center gap-2">
+                            <span class="text-gray-400 text-sm">Invite Code:</span>
+                            <span id="sim-invite-code" class="text-white font-mono text-sm bg-gray-700 px-2 py-1 rounded">
+                                Loading...
+                            </span>
+                            <button id="copy-invite-btn" class="bg-gray-600 hover:bg-gray-500 text-white p-1 rounded transition-colors" title="Copy invite code">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                </svg>
+                            </button>
+                        </div>
                     </div>
                     
                     <!-- Primary Action Button (Trade Now) -->
@@ -276,10 +289,10 @@ export const getCleanStatsCardsTemplate = () => {
                 </div>
             </div>
 
-            <!-- Time Remaining Card -->
+            <!-- Days Remaining Card -->
             <div class="bg-gray-800 rounded-xl p-4 sm:p-6 border border-gray-700 hover:border-gray-600 transition-colors sm:col-span-2 lg:col-span-1">
                 <div class="flex items-center justify-between mb-3">
-                    <h3 class="text-sm font-medium text-gray-400">Time Remaining</h3>
+                    <h3 class="text-sm font-medium text-gray-400">Days Remaining</h3>
                     <div class="p-2 bg-yellow-500/20 rounded-lg">
                         <svg class="w-4 h-4 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -287,8 +300,8 @@ export const getCleanStatsCardsTemplate = () => {
                     </div>
                 </div>
                 <div class="flex flex-col">
-                    <span id="time-remaining-number" class="text-2xl sm:text-3xl font-bold text-white">7</span>
-                    <span id="time-remaining-subtitle" class="text-xs text-gray-400">days left</span>
+                    <span id="days-remaining" class="text-2xl sm:text-3xl font-bold text-white">7</span>
+                    <span id="time-remaining-subtitle" class="text-xs text-gray-400">days remaining</span>
                 </div>
             </div>
         </div>

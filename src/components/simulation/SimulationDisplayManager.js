@@ -55,15 +55,9 @@ export class SimulationDisplayManager {
             statusEl.className = `px-3 py-1 rounded-full text-sm font-semibold ${statusClass}`;
         }
 
-        // Update trade button text based on status
+        // Update trade button text to always say "Trade Now" (simplified)
         if (tradeBtnTextEl) {
-            if (this.currentSimulation.status === SIMULATION_STATUS.PENDING) {
-                tradeBtnTextEl.textContent = "Practice Trade";
-            } else if (this.currentSimulation.status === SIMULATION_STATUS.ACTIVE) {
-                tradeBtnTextEl.textContent = "Trade Now";
-            } else {
-                tradeBtnTextEl.textContent = "View Portfolio";
-            }
+            tradeBtnTextEl.textContent = "Trade Now";
         }
 
         // Participants
@@ -93,6 +87,48 @@ export class SimulationDisplayManager {
         const inviteCodeEl = document.getElementById("sim-invite-code");
         if (inviteCodeEl && this.currentSimulation.inviteCode) {
             inviteCodeEl.textContent = this.currentSimulation.inviteCode;
+        }
+
+        // Handle invite code copy button
+        const copyInviteBtn = document.getElementById("copy-invite-btn");
+        if (copyInviteBtn && this.currentSimulation.inviteCode) {
+            // Remove existing listener to prevent duplicates
+            copyInviteBtn.replaceWith(copyInviteBtn.cloneNode(true));
+            const newCopyBtn = document.getElementById("copy-invite-btn");
+            
+            newCopyBtn.addEventListener("click", async () => {
+                try {
+                    await navigator.clipboard.writeText(this.currentSimulation.inviteCode);
+                    // Visual feedback
+                    const originalHTML = newCopyBtn.innerHTML;
+                    newCopyBtn.innerHTML = `<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`;
+                    newCopyBtn.className = "bg-green-600 text-white p-1 rounded transition-colors";
+                    
+                    setTimeout(() => {
+                        newCopyBtn.innerHTML = originalHTML;
+                        newCopyBtn.className = "bg-gray-600 hover:bg-gray-500 text-white p-1 rounded transition-colors";
+                    }, 2000);
+                } catch (error) {
+                    console.error("Failed to copy invite code:", error);
+                }
+            });
+        }
+
+        // Handle trade button navigation
+        const tradeBtn = document.getElementById("trade-now-btn");
+        if (tradeBtn) {
+            // Remove existing listener to prevent duplicates
+            tradeBtn.replaceWith(tradeBtn.cloneNode(true));
+            const newTradeBtn = document.getElementById("trade-now-btn");
+            
+            newTradeBtn.addEventListener("click", () => {
+                const tradeUrl = `/trade?sim=${this.currentSimulation.id}`;
+                if (window.app && window.app.router) {
+                    window.app.router.navigate(tradeUrl);
+                } else {
+                    window.location.href = tradeUrl;
+                }
+            });
         }
 
         console.log("Simulation displayed:", this.currentSimulation);

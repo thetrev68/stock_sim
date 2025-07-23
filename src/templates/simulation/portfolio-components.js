@@ -4,7 +4,6 @@
 import { 
     formatCurrencyWithCommas,
     formatPrice,
-    formatPortfolioChange
 } from "../../utils/currency-utils.js";
 import { formatSimpleDate } from "../../utils/date-utils.js";
 
@@ -12,14 +11,7 @@ import { formatSimpleDate } from "../../utils/date-utils.js";
  * Enhanced holding template with live price display
  */
 export const getHoldingElementTemplate = (ticker, holding) => {
-    // Use currentPrice if available, otherwise fall back to avgPrice
-    const currentPrice = holding.currentPrice || holding.avgPrice;
-    const currentValue = holding.quantity * currentPrice;
-    const costBasis = holding.quantity * holding.avgPrice;
-    const gainLoss = currentValue - costBasis;
-    const gainLossPercent = (gainLoss / costBasis) * 100;
-    
-    const gainLossFormatted = formatPortfolioChange(gainLoss, gainLossPercent);
+    const currentValue = holding.quantity * holding.avgPrice;
     
     return `
         <div class="bg-gray-750 rounded-lg p-4 border border-gray-600 hover:border-gray-500 transition-colors">
@@ -30,20 +22,17 @@ export const getHoldingElementTemplate = (ticker, holding) => {
                         <span class="text-cyan-400 font-bold text-xs sm:text-sm">${ticker.charAt(0)}</span>
                     </div>
                     <div class="min-w-0">
-                        <h4 class="text-white font-bold text-base sm:text-lg">${ticker.toUpperCase()}</h4>
-                        <p class="text-gray-400 text-xs sm:text-sm">
-                            ${holding.quantity} shares @ ${formatPrice(holding.avgPrice)}
+                        <h4 class="text-white font-bold text-base">${ticker.toUpperCase()}</h4>
+                        <p class="text-gray-400 text-xs">
+                            ${holding.quantity} @ ${formatPrice(holding.avgPrice)}
                         </p>
-                        ${currentPrice !== holding.avgPrice ? `
-                            <p class="text-gray-500 text-xs">Current: ${formatPrice(currentPrice)}</p>
-                        ` : ''}
                     </div>
                 </div>
                 
-                <!-- Right: Value and P&L -->
+                <!-- Right: Value -->
                 <div class="text-right flex-shrink-0">
-                    <div class="text-white font-bold text-base sm:text-xl">${formatCurrencyWithCommas(currentValue)}</div>
-                    <div class="text-xs ${gainLossFormatted.colorClass}">${gainLossFormatted.display}</div>
+                    <div class="text-white font-semibold">${formatCurrencyWithCommas(currentValue)}</div>
+                    <div class="text-gray-500 text-xs">Total value</div>
                 </div>
             </div>
         </div>
@@ -53,7 +42,7 @@ export const getHoldingElementTemplate = (ticker, holding) => {
 /**
  * Loading state for holdings
  */
-export const getHoldingLoadingTemplate = (ticker) => {
+export const getHoldingLoadingTemplate = (_ticker) => {
     return `
         <div class="bg-gray-750 rounded-lg p-4 border border-gray-600 animate-pulse">
             <div class="flex items-center justify-between gap-3">

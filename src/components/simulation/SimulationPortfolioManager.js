@@ -203,12 +203,21 @@ export class SimulationPortfolioManager {
         console.log("Loading recent trades for simulation:", this.view.simulationId);
         console.log("Current portfolio trades:", this.simulationPortfolio?.trades);
         
-        const tradesContainer = document.getElementById("sim-trades-container");
-        if (!tradesContainer) return;
+        const tradesContainer = document.getElementById("sim-recent-trades-container");
+        if (!tradesContainer) {
+            console.log("ERROR: sim-recent-trades-container not found!");
+            return;
+        }
 
         const tradesLoading = document.getElementById("sim-trades-loading");
         const tradesEmpty = document.getElementById("sim-trades-empty");
         const tradesList = document.getElementById("sim-trades-list");
+
+        // NOW you can safely use the variables:
+        console.log("Trades length:", this.simulationPortfolio?.trades?.length);
+        console.log(`Found ${this.simulationPortfolio.trades.length} trades`);
+        console.log("tradesEmpty element:", tradesEmpty);
+        console.log("tradesList element:", tradesList);
 
         if (tradesLoading) tradesLoading.classList.add("hidden");
 
@@ -247,7 +256,7 @@ export class SimulationPortfolioManager {
     showPortfolioError() {
         const errorContent = getPortfolioErrorTemplate();
         updateElementHTML("sim-holdings-container", errorContent);
-        updateElementHTML("sim-trades-container", errorContent);
+        updateElementHTML("sim-recent-trades-container", errorContent);
     }
 
     // Method to refresh portfolio data
