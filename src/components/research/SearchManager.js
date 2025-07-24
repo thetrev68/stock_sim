@@ -34,10 +34,14 @@ export class SearchManager {
         // Debounce search
         this.searchTimeout = setTimeout(async () => {
             try {
-                this.searchResults = await this.stockService.searchStocks(query);
+                const results = await this.stockService.searchStocks(query);
+                // Ensure we always have an array
+                this.searchResults = Array.isArray(results) ? results : [];
                 this.displaySearchResults(onStockSelected);
             } catch (error) {
                 console.error("Search error:", error);
+                // Ensure searchResults is an array even on error
+                this.searchResults = [];
                 this.hideSearchResults();
             } finally {
                 this.showSearchLoading(false);
@@ -84,7 +88,8 @@ export class SearchManager {
 
     showSearchResults() {
         const resultsContainer = document.getElementById("search-results");
-        if (resultsContainer && this.searchResults.length > 0) {
+        // Add check for undefined searchResults
+        if (resultsContainer && this.searchResults && this.searchResults.length > 0) {
             resultsContainer.classList.remove("hidden");
         }
     }

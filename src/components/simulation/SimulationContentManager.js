@@ -279,25 +279,64 @@ export class SimulationContentManager {
         }
 
         try {
-            // Load portfolio data
-            const portfolio = await getPortfolio(this.currentUser.uid, this.simulationId);
+            console.log("🔄 Loading simulation portfolio...");
+            
+            // First, try to load the portfolio
+            let portfolio = await getPortfolio(this.currentUser.uid, this.simulationId);
+            
             if (!portfolio) {
-                console.warn("No portfolio found for simulation");
-                this.showPortfolioError();
-                return;
+                console.log("📋 Portfolio not found, creating it...");
+                
+                // Get simulation details for portfolio creation
+                const simulation = this.currentSimulation || await this.simulationService.getSimulation(this.simulationId);
+                
+                if (!simulation) {
+                    throw new Error("Simulation not found");
+                }
+                
+                // Force create the portfolio
+                const { initializePortfolio } = await import("../../services/trading.js");
+                await initializePortfolio(
+                    this.currentUser.uid, 
+                    simulation.startingBalance || 25000, 
+                    this.simulationId, 
+                    simulation
+                );
+                
+                console.log("✅ Portfolio created, now loading...");
+                
+                // Try loading again
+                portfolio = await getPortfolio(this.currentUser.uid, this.simulationId);
+            }
+            
+            if (!portfolio) {
+                throw new Error("Failed to create or load portfolio");
             }
 
+            console.log("✅ Portfolio loaded successfully:", portfolio);
             this.simulationPortfolio = portfolio;
-            console.log("Loaded simulation portfolio:", this.simulationPortfolio);
 
-            // Fetch live prices and update displays
+            // Fetch live prices and update displays (complete implementation)
             await this.fetchLivePricesForHoldings();
             await this.updatePortfolioStats();
             this.loadHoldings();
             this.loadRecentTrades();
 
+            // 🚀 FORCE SHOW: Make sure all content sections are visible
+            const contentSections = ["content-portfolio", "content-leaderboard", "content-members"];
+            contentSections.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.classList.remove("hidden");
+                    element.style.display = "block";
+                    console.log(`✅ Showing ${id}:`, element);
+                } else {
+                    console.log(`❌ Element ${id} not found`);
+                }
+            });
+
         } catch (error) {
-            console.error("Error loading simulation portfolio:", error);
+            console.error("❌ Error loading simulation portfolio:", error);
             this.showPortfolioError();
         }
     }

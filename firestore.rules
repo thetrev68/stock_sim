@@ -7,18 +7,17 @@ service cloud.firestore {
       allow read: if request.auth != null; // Allow reading other users for admin purposes
     }
     
-    // Simulations: Read if member, write if creator or admin
+    // Simulations: Read if authenticated, write if creator or admin
     match /simulations/{simulationId} {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null && 
+      allow read, create: if request.auth != null;
+      allow update, delete: if request.auth != null && 
         (resource.data.createdBy == request.auth.uid || 
          get(/databases/$(database)/documents/Users/$(request.auth.uid)).data.systemRole in ['admin', 'super_admin']);
     }
     
-    // Simulation members
+    // Simulation members - full access for authenticated users
     match /simulationMembers/{memberId} {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null;
+      allow read, write: if request.auth != null;
     }
     
     // Portfolios: Users can access their own portfolios
@@ -27,16 +26,24 @@ service cloud.firestore {
         portfolioId.matches('.*' + request.auth.uid + '.*');
     }
     
-    // Activities: Read if authenticated
-    match /activities/{activityId} {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null;
+    // Simulation activities - full access for authenticated users
+    match /simulationActivities/{activityId} {
+      allow read, write: if request.auth != null;
     }
     
-    // Archives: Read if authenticated
+    // 🚀 SIMPLIFIED: Cached leaderboards - full access for authenticated users
+    match /cachedLeaderboards/{leaderboardId} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // Archives - full access for authenticated users
     match /simulationArchives/{archiveId} {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null;
+      allow read, write: if request.auth != null;
+    }
+    
+    // 🚀 CATCH-ALL: Allow any other collections for authenticated users (temporary)
+    match /{document=**} {
+      allow read, write: if request.auth != null;
     }
   }
 }

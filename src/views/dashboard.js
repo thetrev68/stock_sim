@@ -188,6 +188,9 @@ export default class DashboardView {
         }
 
         try {
+            // ADD THIS PORTFOLIO LOADING (new)
+            await this.loadPortfolioData(user.uid);
+
             // Initialize simulation service
             this.simulationService.initialize();
             
@@ -487,5 +490,64 @@ export default class DashboardView {
             // Optionally refresh simulation data to show updated member counts
             this.loadData();
         });
+    }
+
+    // ADD THIS NEW METHOD - loads portfolio data
+    async loadPortfolioData(userId) {
+        try {
+            // You'll need to add these imports at the top of dashboard.js
+            const { getPortfolio } = await import("../services/trading.js");
+            const { StockService } = await import("../services/stocks.js");
+            
+            const stockService = new StockService();
+            const portfolio = await getPortfolio(userId);
+            
+            if (portfolio) {
+                // Calculate total portfolio value with live prices
+                let totalValue = portfolio.cash || 0;
+                
+                if (portfolio.holdings) {
+                    for (const [ticker, holding] of Object.entries(portfolio.holdings)) {
+                        try {
+                            const currentPrice = await stockService.getQuote(ticker);
+                            const price = currentPrice !== null ? currentPrice : holding.avgPrice;
+                            totalValue += holding.quantity * price;
+                        } catch (error) {
+                            console.error(`Error getting price for ${ticker}:`, error);
+                            totalValue += holding.quantity * holding.avgPrice;
+                        }
+                    }
+                }
+                
+                // Update the dashboard display
+                this.updatePortfolioDisplay(totalValue, portfolio);
+            }
+        } catch (error) {
+            console.error("Error loading portfolio data:", error);
+        }
+    }
+
+    // ADD THIS NEW METHOD - updates the UI
+    updatePortfolioDisplay(totalValue, _portfolio) {
+        // Find the portfolio value element in the dashboard
+        const portfolioValueEl = document.querySelector(".dashboard-view .text-2xl.font-bold.text-white");
+        if (portfolioValueEl) {
+            portfolioValueEl.textContent = formatCurrencyWithCommas(totalValue);
+        }
+        
+        // Update the Today's P/L in the second card
+        const startingBalance = 10000; // Default starting balance
+        const change = totalValue - startingBalance;
+        
+        // Find the second card's values (Today's P/L)
+        const plElements = document.querySelectorAll(".dashboard-view .text-2xl.font-bold");
+        if (plElements.length > 1) {
+            const plValueEl = plElements[1]; // Second card
+            const sign = change >= 0 ? "+" : "";
+            const color = change >= 0 ? "text-green-400" : "text-red-400";
+            
+            plValueEl.textContent = `${sign}$${Math.abs(change).toFixed(2)}`;
+            plValueEl.className = `text-2xl font-bold ${color}`;
+        }
     }
 }
