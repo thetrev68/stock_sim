@@ -17,6 +17,7 @@ import {
     formatCurrencyWithCommas,
     getTradeTypeColorClass
 } from "../utils/currency-utils.js";
+import { logger } from "../utils/logger.js";
 
 // Templates
 import { getMainTradeLayoutTemplate } from "../templates/trade/trade-main-layout.js";
@@ -97,15 +98,15 @@ export default class TradeView {
 
             // Load all user portfolios
             this.userPortfolios = await getUserPortfolios(this.currentUser.uid);
-            console.log("Loaded user portfolios:", this.userPortfolios);
+            logger.info("Loaded user portfolios:", this.userPortfolios);
 
             // If no portfolios exist yet, we need to initialize at least the simulation ones
             if (requestedSimulationId && !this.userPortfolios.find(p => p.simulationId === requestedSimulationId)) {
-                console.log("Requested simulation portfolio not found, initializing...");
+                logger.info("Requested simulation portfolio not found, initializing...");
                 await this.initializeSimulationPortfolio(requestedSimulationId);
                 // Reload portfolios after initialization
                 this.userPortfolios = await getUserPortfolios(this.currentUser.uid);
-                console.log("Reloaded portfolios after initialization:", this.userPortfolios);
+                logger.info("Reloaded portfolios after initialization:", this.userPortfolios);
             }
 
             // Populate portfolio selector
@@ -135,7 +136,7 @@ export default class TradeView {
             }
 
         } catch (error) {
-            console.error("Error loading initial trade data:", error);
+            logger.error("Error loading initial trade data:", error);
             this.showFeedback("Failed to load trading data. Please try again.", "text-red-400");
         }
     }
@@ -211,8 +212,8 @@ export default class TradeView {
             }
         });
 
-        console.log("Portfolio selector populated with:", this.userPortfolios.length, "portfolios");
-        console.log("Simulation portfolios:", this.userPortfolios.filter(p => p.type === "simulation"));
+        logger.info("Portfolio selector populated with:", this.userPortfolios.length, "portfolios");
+        logger.info("Simulation portfolios:", this.userPortfolios.filter(p => p.type === "simulation"));
     }
 
     async handlePortfolioSwitch() {
@@ -276,7 +277,7 @@ export default class TradeView {
             this.showFeedback("");
 
         } catch (error) {
-            console.error("Error switching portfolio:", error);
+            logger.error("Error switching portfolio:", error);
             this.showFeedback(`Failed to switch portfolio: ${error.message}`, "text-red-400");
         }
     }
@@ -304,7 +305,7 @@ export default class TradeView {
             await this.switchToPortfolio(simulationId);
 
         } catch (error) {
-            console.error("Error initializing simulation portfolio:", error);
+            logger.error("Error initializing simulation portfolio:", error);
             this.showFeedback(`Failed to initialize simulation portfolio: ${error.message}`, "text-red-400");
             // Fall back to solo mode
             await this.switchToPortfolio(null);
@@ -434,7 +435,7 @@ export default class TradeView {
                     this.showFeedback("Could not fetch price for this ticker.", "text-yellow-400");
                 }
             } catch (error) {
-                console.error("Error fetching price:", error);
+                logger.error("Error fetching price:", error);
                 currentPriceSpan.textContent = "Error";
                 totalCostSpan.textContent = "Error";
                 pricePreview.classList.remove("hidden");
@@ -509,7 +510,7 @@ export default class TradeView {
                 this.showFeedback(`Trade failed: ${result.message}`, "text-red-400");
             }
         } catch (error) {
-            console.error("Trade execution error:", error);
+            logger.error("Trade execution error:", error);
             this.showFeedback(`Trade failed: ${error.message}`, "text-red-400");
         } finally {
             setTimeout(() => {

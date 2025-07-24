@@ -3,6 +3,7 @@ import { initializeApp as firebaseInitializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
+import { logger } from "../utils/logger.js";
 
 // Firebase config with your actual values
 const firebaseConfig = {
@@ -31,10 +32,10 @@ export async function initializeApp() {
         db = getFirestore(app);
         analytics = getAnalytics(app);
         
-        console.log("Firebase services initialized successfully");
+        logger.info("Firebase services initialized successfully");
         return { app, auth, db, analytics };
     } catch (error) {
-        console.error("Error initializing Firebase:", error);
+        logger.error("Error initializing Firebase:", error);
         throw error;
     }
 }

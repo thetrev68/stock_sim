@@ -1,6 +1,7 @@
 // src/components/simulation/CreateSimulationModal.js
 import { SimulationService } from "../../services/simulation.js";
 import { AuthService } from "../../services/auth.js";
+import { logger } from "../../utils/logger.js";
 import { 
     validateSimulationName, 
     validateDateRange, 
@@ -288,7 +289,7 @@ export class CreateSimulationModal {
             const result = await this.simulationService.createSimulation(user.uid, formData);
             
             if (result.success) {
-                console.log("Simulation created successfully:", result);
+                logger.info("Simulation created successfully:", result);
                 
                 this.showSuccess(result.inviteCode);
                 
@@ -302,7 +303,7 @@ export class CreateSimulationModal {
             }
 
         } catch (error) {
-            console.error("Error creating simulation:", error);
+            logger.error("Error creating simulation:", error);
             this.showError(error.message);
         } finally {
             this.setLoading(false);

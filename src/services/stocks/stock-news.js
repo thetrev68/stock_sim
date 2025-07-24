@@ -7,6 +7,7 @@
 
 import { CACHE_CONFIG } from "../../constants/app-config.js";
 import { filterByDateRange, sortByDateDesc } from "../../utils/date-utils.js";
+import { logger } from "../../utils/logger.js";
 import { filterBySearch, generateSimpleId } from "../../utils/string-utils.js";
 
 export class StockNewsService {
@@ -86,7 +87,7 @@ export class StockNewsService {
         // Check cache first
         const cached = this.getFromCache(this.newsCache, cacheKey);
         if (cached) {
-            console.log(`Using cached news for ${upperTicker}`);
+            logger.info(`Using cached news for ${upperTicker}`);
             return cached;
         }
 
@@ -113,7 +114,7 @@ export class StockNewsService {
             // Build Finnhub company news URL
             const url = `${this.apiService.baseUrl}/company-news?symbol=${upperTicker}&from=${fromDateStr}&to=${toDateStr}&token=${this.apiService.apiKey}`;
             
-            console.log(`Fetching news for ${upperTicker}...`);
+            logger.info(`Fetching news for ${upperTicker}...`);
             
             const response = await fetch(url);
             
@@ -136,7 +137,7 @@ export class StockNewsService {
                 // Reset API status on success
                 this.apiService.apiStatus.isDown = false;
                 
-                console.log(`Fetched ${processedNews.length} news articles for ${upperTicker}`);
+                logger.info(`Fetched ${processedNews.length} news articles for ${upperTicker}`);
                 return processedNews;
             } else {
                 console.warn(`No news data returned for ${upperTicker}`);
@@ -148,15 +149,15 @@ export class StockNewsService {
             }
             
         } catch (error) {
-            console.error(`Error fetching news for ${upperTicker}:`, error);
+            logger.error(`Error fetching news for ${upperTicker}:`, error);
             this.apiService.handleAPIError(error, "news");
             
             // Only use fallback data in development environment
             if (this.apiService.useMockDataFallback) {
-                console.log("Development environment detected - using mock news data");
+                logger.info("Development environment detected - using mock news data");
                 return this.getFallbackNews(upperTicker, limit);
             } else {
-                console.log("Production environment - throwing error instead of using mock data");
+                logger.info("Production environment - throwing error instead of using mock data");
                 throw new Error(`Unable to fetch news for ${upperTicker}: API temporarily unavailable`);
             }
         }
@@ -206,7 +207,7 @@ export class StockNewsService {
                 related: rawArticle.related || ""
             };
         } catch (error) {
-            console.error("Error processing news article:", error);
+            logger.error("Error processing news article:", error);
             return null;
         }
     }

@@ -16,6 +16,7 @@ import {
     serverTimestamp 
 } from "firebase/firestore";
 import { SIMULATION_STATUS } from "../../constants/simulation-status.js";
+import { logger } from "../../utils/logger.js";
 
 const SIMULATIONS_COLLECTION = "simulations";
 const SIMULATION_MEMBERS_COLLECTION = "simulationMembers";
@@ -38,7 +39,7 @@ export async function getCurrentUserInfo(userId) {
             };
         }
     } catch (error) {
-        console.error("Error getting current user info:", error);
+        logger.error("Error getting current user info:", error);
     }
     
     // Fallback
@@ -121,7 +122,7 @@ export async function getSimulation(simulationId, db = null) {
         };
 
     } catch (error) {
-        console.error("Error getting simulation:", error);
+        logger.error("Error getting simulation:", error);
         throw error;
     }
 }
@@ -202,7 +203,7 @@ export async function createSimulation(creatorUserId, simulationData, db = null)
             email: userInfo.email
         });
 
-        console.log(`Simulation created: ${simulationId} with status: ${initialStatus} and invite code: ${inviteCode}`);
+        logger.info(`Simulation created: ${simulationId} with status: ${initialStatus} and invite code: ${inviteCode}`);
         
         return {
             success: true,
@@ -212,7 +213,7 @@ export async function createSimulation(creatorUserId, simulationData, db = null)
         };
 
     } catch (error) {
-        console.error("Error creating simulation:", error);
+        logger.error("Error creating simulation:", error);
         throw error;
     }
 }
@@ -248,7 +249,7 @@ export async function findSimulationByCode(inviteCode, db = null) {
         };
 
     } catch (error) {
-        console.error("Error finding simulation by code:", error);
+        logger.error("Error finding simulation by code:", error);
         throw error;
     }
 }

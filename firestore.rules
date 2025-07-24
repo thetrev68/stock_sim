@@ -1,19 +1,42 @@
 rules_version = '2';
-
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    // This rule allows anyone with your Firestore database reference to view, edit,
-    // and delete all data in your Firestore database. It is useful for getting
-    // started, but it is configured to expire after 30 days because it
-    // leaves your app open to attackers. At that time, all client
-    // requests to your Firestore database will be denied.
-    //
-    // Make sure to write security rules for your app before that time, or else
-    // all client requests to your Firestore database will be denied until you Update
-    // your rules
-    match /{document=**} {
-      allow read, write: if request.time < timestamp.date(2025, 8, 10);
+    // Users can read/write their own user document
+    match /Users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read: if request.auth != null; // Allow reading other users for admin purposes
+    }
+    
+    // Simulations: Read if member, write if creator or admin
+    match /simulations/{simulationId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && 
+        (resource.data.createdBy == request.auth.uid || 
+         get(/databases/$(database)/documents/Users/$(request.auth.uid)).data.systemRole in ['admin', 'super_admin']);
+    }
+    
+    // Simulation members
+    match /simulationMembers/{memberId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
+    }
+    
+    // Portfolios: Users can access their own portfolios
+    match /portfolios/{portfolioId} {
+      allow read, write: if request.auth != null && 
+        portfolioId.matches('.*' + request.auth.uid + '.*');
+    }
+    
+    // Activities: Read if authenticated
+    match /activities/{activityId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
+    }
+    
+    // Archives: Read if authenticated
+    match /simulationArchives/{archiveId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
     }
   }
 }

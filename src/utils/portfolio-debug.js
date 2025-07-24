@@ -4,6 +4,7 @@
 import { LeaderboardService } from "../services/leaderboard.js";
 import { getPortfolio } from "../services/trading.js";
 import { StockService } from "../services/stocks.js";
+import { logger } from "../utils/logger.js";
 
 /**
  * Debug utility for portfolio value calculations
@@ -19,47 +20,47 @@ export class PortfolioDebugger {
      * Debug portfolio value calculation for a specific user in a simulation
      */
     async debugUserPortfolio(userId, simulationId) {
-        console.log("=== PORTFOLIO DEBUG START ===");
-        console.log(`User: ${userId}`);
-        console.log(`Simulation: ${simulationId}`);
+        logger.debug("=== PORTFOLIO DEBUG START ===");
+        logger.debug(`User: ${userId}`);
+        logger.debug(`Simulation: ${simulationId}`);
         
         try {
             // Get portfolio data
             const portfolio = await getPortfolio(userId, simulationId);
             if (!portfolio) {
-                console.error("No portfolio found!");
+                logger.error("No portfolio found!");
                 return null;
             }
 
-            console.log("\n--- Portfolio Data ---");
-            console.log(`Cash: $${portfolio.cash}`);
-            console.log(`Holdings: ${Object.keys(portfolio.holdings || {}).length}`);
-            console.log(`Trades: ${(portfolio.trades || []).length}`);
+            logger.debug("\n--- Portfolio Data ---");
+            logger.debug(`Cash: $${portfolio.cash}`);
+            logger.debug(`Holdings: ${Object.keys(portfolio.holdings || {}).length}`);
+            logger.debug(`Trades: ${(portfolio.trades || []).length}`);
 
             // Calculate value with live prices
             const portfolioValue = await this.leaderboardService.calculatePortfolioValue(portfolio);
             
-            console.log("\n--- Calculated Values ---");
-            console.log(`Total Value: $${portfolioValue.totalValue.toFixed(2)}`);
-            console.log(`Holdings Value: $${portfolioValue.holdingsValue.toFixed(2)}`);
-            console.log(`Cash: $${portfolioValue.cash.toFixed(2)}`);
+            logger.debug("\n--- Calculated Values ---");
+            logger.debug(`Total Value: $${portfolioValue.totalValue.toFixed(2)}`);
+            logger.debug(`Holdings Value: $${portfolioValue.holdingsValue.toFixed(2)}`);
+            logger.debug(`Cash: $${portfolioValue.cash.toFixed(2)}`);
             
-            console.log("\n--- Holdings Breakdown ---");
+            logger.debug("\n--- Holdings Breakdown ---");
             for (const [ticker, data] of Object.entries(portfolioValue.holdings)) {
-                console.log(`${ticker}:`);
-                console.log(`  Quantity: ${data.quantity}`);
-                console.log(`  Avg Price: $${data.avgPrice.toFixed(2)}`);
-                console.log(`  Current Price: $${data.currentPrice.toFixed(2)}`);
-                console.log(`  Value: $${data.value.toFixed(2)}`);
-                console.log(`  P&L: ${data.gainLoss >= 0 ? "+" : ""}$${data.gainLoss.toFixed(2)} (${data.gainLossPercent >= 0 ? "+" : ""}${data.gainLossPercent.toFixed(2)}%)`);
+                logger.debug(`${ticker}:`);
+                logger.debug(`  Quantity: ${data.quantity}`);
+                logger.debug(`  Avg Price: $${data.avgPrice.toFixed(2)}`);
+                logger.debug(`  Current Price: $${data.currentPrice.toFixed(2)}`);
+                logger.debug(`  Value: $${data.value.toFixed(2)}`);
+                logger.debug(`  P&L: ${data.gainLoss >= 0 ? "+" : ""}$${data.gainLoss.toFixed(2)} (${data.gainLossPercent >= 0 ? "+" : ""}${data.gainLossPercent.toFixed(2)}%)`);
             }
 
-            console.log("=== PORTFOLIO DEBUG END ===");
+            logger.debug("=== PORTFOLIO DEBUG END ===");
             
             return portfolioValue;
 
         } catch (error) {
-            console.error("Debug error:", error);
+            logger.error("Debug error:", error);
             throw error;
         }
     }
@@ -68,11 +69,11 @@ export class PortfolioDebugger {
      * Compare portfolio values across different calculation methods
      */
     async compareCalculationMethods(userId, simulationId) {
-        console.log("=== COMPARING CALCULATION METHODS ===");
+        logger.debug("=== COMPARING CALCULATION METHODS ===");
         
         const portfolio = await getPortfolio(userId, simulationId);
         if (!portfolio) {
-            console.error("No portfolio found!");
+            logger.error("No portfolio found!");
             return;
         }
 
@@ -82,18 +83,18 @@ export class PortfolioDebugger {
             const holding = portfolio.holdings[ticker];
             method1Value += holding.quantity * holding.avgPrice;
         }
-        console.log(`Method 1 (Avg Prices): $${method1Value.toFixed(2)}`);
+        logger.debug(`Method 1 (Avg Prices): $${method1Value.toFixed(2)}`);
 
         // Method 2: Using live prices
         const liveValue = await this.leaderboardService.calculatePortfolioValue(portfolio);
-        console.log(`Method 2 (Live Prices): $${liveValue.totalValue.toFixed(2)}`);
+        logger.debug(`Method 2 (Live Prices): $${liveValue.totalValue.toFixed(2)}`);
 
         // Show the difference
         const difference = liveValue.totalValue - method1Value;
         const percentDiff = (difference / method1Value) * 100;
-        console.log(`Difference: $${difference.toFixed(2)} (${percentDiff.toFixed(2)}%)`);
+        logger.debug(`Difference: $${difference.toFixed(2)} (${percentDiff.toFixed(2)}%)`);
         
-        console.log("=== END COMPARISON ===");
+        logger.debug("=== END COMPARISON ===");
         
         return {
             avgPriceValue: method1Value,
@@ -107,26 +108,26 @@ export class PortfolioDebugger {
      * Force refresh all portfolio values in a simulation
      */
     async refreshSimulationPortfolios(simulationId) {
-        console.log(`Refreshing all portfolios for simulation ${simulationId}...`);
+        logger.debug(`Refreshing all portfolios for simulation ${simulationId}...`);
         
         try {
             // Use generateSimulationLeaderboard to force fresh calculation
             const leaderboard = await this.leaderboardService.generateSimulationLeaderboard(simulationId);
             
             if (leaderboard && leaderboard.rankings) {
-                console.log(`Refreshed ${leaderboard.rankings.length} portfolios`);
+                logger.debug(`Refreshed ${leaderboard.rankings.length} portfolios`);
                 
                 // Log top 5 for verification
-                console.log("\nTop 5 After Refresh:");
+                logger.debug("\nTop 5 After Refresh:");
                 leaderboard.rankings.slice(0, 5).forEach((ranking, index) => {
-                    console.log(`${index + 1}. ${ranking.displayName}: ${ranking.portfolioValue.toFixed(2)} (${ranking.totalReturnPercent >= 0 ? "+" : ""}${ranking.totalReturnPercent.toFixed(2)}%)`);
+                    logger.debug(`${index + 1}. ${ranking.displayName}: ${ranking.portfolioValue.toFixed(2)} (${ranking.totalReturnPercent >= 0 ? "+" : ""}${ranking.totalReturnPercent.toFixed(2)}%)`);
                 });
             }
             
             return leaderboard;
             
         } catch (error) {
-            console.error("Error refreshing portfolios:", error);
+            logger.error("Error refreshing portfolios:", error);
             throw error;
         }
     }
@@ -135,7 +136,7 @@ export class PortfolioDebugger {
      * Verify portfolio consistency across all views
      */
     async verifyPortfolioConsistency(userId, simulationId) {
-        console.log("=== VERIFYING PORTFOLIO CONSISTENCY ===");
+        logger.debug("=== VERIFYING PORTFOLIO CONSISTENCY ===");
         
         try {
             // Get portfolio value from trading service
@@ -146,14 +147,14 @@ export class PortfolioDebugger {
             const leaderboard = await this.leaderboardService.getLeaderboard(simulationId);
             const userRanking = leaderboard?.rankings?.find(r => r.userId === userId);
             
-            console.log(`Direct Calculation: $${directValue.totalValue.toFixed(2)}`);
-            console.log(`Leaderboard Value: $${userRanking?.portfolioValue?.toFixed(2) || "Not found"}`);
+            logger.debug(`Direct Calculation: $${directValue.totalValue.toFixed(2)}`);
+            logger.debug(`Leaderboard Value: $${userRanking?.portfolioValue?.toFixed(2) || "Not found"}`);
             
             if (userRanking && Math.abs(directValue.totalValue - userRanking.portfolioValue) > 0.01) {
                 console.warn("⚠️ INCONSISTENCY DETECTED!");
-                console.log(`Difference: $${Math.abs(directValue.totalValue - userRanking.portfolioValue).toFixed(2)}`);
+                logger.debug(`Difference: $${Math.abs(directValue.totalValue - userRanking.portfolioValue).toFixed(2)}`);
             } else {
-                console.log("✅ Values are consistent");
+                logger.debug("✅ Values are consistent");
             }
             
             return {
@@ -163,7 +164,7 @@ export class PortfolioDebugger {
             };
             
         } catch (error) {
-            console.error("Error verifying consistency:", error);
+            logger.error("Error verifying consistency:", error);
             throw error;
         }
     }
@@ -192,5 +193,5 @@ if (typeof window !== "undefined") {
         refresh: refreshPortfolios,
         PortfolioDebugger
     };
-    console.log("Portfolio debug utilities loaded. Use window.portfolioDebug.debug(userId, simulationId) to debug.");
+    logger.debug("Portfolio debug utilities loaded. Use window.portfolioDebug.debug(userId, simulationId) to debug.");
 }

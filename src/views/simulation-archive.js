@@ -10,6 +10,7 @@ import {
     formatCurrencyWithCommas,
     formatGainLoss
 } from "../utils/currency-utils.js";
+import { logger } from "../utils/logger.js";
 
 // Template components
 import { 
@@ -66,7 +67,7 @@ export default class SimulationArchiveView {
         this.currentUser = this.authService.getCurrentUser();
         
         if (!this.currentUser) {
-            console.log("No user signed in for archive view.");
+            logger.info("No user signed in for archive view.");
             this.showNotFound();
             return;
         }
@@ -91,7 +92,7 @@ export default class SimulationArchiveView {
             this.displayArchive();
             
         } catch (error) {
-            console.error("Error loading archive:", error);
+            logger.error("Error loading archive:", error);
             this.showError();
         }
     }
@@ -139,7 +140,7 @@ export default class SimulationArchiveView {
         // Display simulation details
         this.displaySimulationDetails(sim);
 
-        console.log("Archive displayed:", this.archiveData);
+        logger.info("Archive displayed:", this.archiveData);
     }
 
     displayWinner(winner) {
@@ -232,7 +233,7 @@ export default class SimulationArchiveView {
             this.showTemporaryMessage("Archive exported successfully!", "success");
 
         } catch (error) {
-            console.error("Error exporting archive:", error);
+            logger.error("Error exporting archive:", error);
             this.showTemporaryMessage(`Failed to export archive: ${error.message}`, "error");
         } finally {
             const exportBtn = document.getElementById("export-archive-btn");

@@ -11,6 +11,7 @@ import {
     getDocs, 
     // updateDoc, doc, serverTimestamp 
 } from "firebase/firestore";
+import { logger } from "../../utils/logger.js";
 
 export class UserRoleManager {
     constructor() {
@@ -58,7 +59,7 @@ export class UserRoleManager {
             
             return this.users;
         } catch (error) {
-            console.error("Error loading users:", error);
+            logger.error("Error loading users:", error);
             throw error;
         }
     }
@@ -78,7 +79,7 @@ export class UserRoleManager {
             
             return { success: true };
         } catch (error) {
-            console.error("Error updating user role:", error);
+            logger.error("Error updating user role:", error);
             throw error;
         }
     }
@@ -179,7 +180,7 @@ export class UserRoleManager {
             if (contentEl) contentEl.classList.remove("hidden");
 
         } catch (error) {
-            console.error("Error loading users:", error);
+            logger.error("Error loading users:", error);
             
             if (loadingEl) loadingEl.classList.add("hidden");
             if (errorEl) errorEl.classList.remove("hidden");

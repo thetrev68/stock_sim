@@ -3,6 +3,7 @@ import { getFirestoreDb } from "./firebase";
 import { doc, getDoc, setDoc, updateDoc, runTransaction, collection, query, where, getDocs } from "firebase/firestore";
 import { TRADE_TYPES } from "../constants/trade-types.js";
 import { convertFirebaseDate } from "../utils/date-utils.js";
+import { logger } from "../utils/logger.js";
 import { validateTradeDetails } from "../utils/validation-utils.js";
 
 const PORTFOLIOS_COLLECTION = "portfolios";
@@ -67,7 +68,7 @@ export async function initializePortfolio(userId, initialBalance = 10000, simula
         };
 
         await setDoc(portfolioRef, newPortfolio);
-        console.log(`Initialized NEW portfolio for user ${userId}${simulationId ? ` in simulation ${simulationId}` : " (solo)"} with balance $${initialBalance}`);
+        logger.info(`Initialized NEW portfolio for user ${userId}${simulationId ? ` in simulation ${simulationId}` : " (solo)"} with balance $${initialBalance}`);
         
         // Log join activity for simulation portfolios
         if (simulationId && simulationInfo) {
@@ -84,12 +85,12 @@ export async function initializePortfolio(userId, initialBalance = 10000, simula
                         currentUser = window.app.authService.getCurrentUser();
                     }
                 } catch (error) {
-                    console.log("AuthService not available for logging:", error.message);
+                    logger.info("AuthService not available for logging:", error.message);
                 }
                 const userDisplayName = currentUser?.displayName || currentUser?.email?.split("@")[0] || "Anonymous User";
                 await activityService.logJoinActivity(simulationId, userId, userDisplayName);
             } catch (error) {
-                console.error("Error logging join activity:", error);
+                logger.error("Error logging join activity:", error);
             }
         }
         
@@ -120,7 +121,7 @@ export async function initializePortfolio(userId, initialBalance = 10000, simula
 
         if (needsUpdate) {
             await updateDoc(portfolioRef, updateData);
-            console.log(`Updated EXISTING portfolio for user ${userId}${simulationId ? ` in simulation ${simulationId}` : " (solo)"}`);
+            logger.info(`Updated EXISTING portfolio for user ${userId}${simulationId ? ` in simulation ${simulationId}` : " (solo)"}`);
             const updatedSnap = await getDoc(portfolioRef);
             return updatedSnap.data();
         }
@@ -185,7 +186,7 @@ export async function getUserPortfolios(userId) {
         return portfolios;
         
     } catch (error) {
-        console.error("Error getting user portfolios:", error);
+        logger.error("Error getting user portfolios:", error);
         throw error;
     }
 }
@@ -243,7 +244,7 @@ export async function validateSimulationTrade(tradeDetails, simulation, portfoli
         return { valid: true };
         
     } catch (error) {
-        console.error("Error validating simulation trade:", error);
+        logger.error("Error validating simulation trade:", error);
         return { valid: false, error: "Error validating trade. Please try again." };
     }
 }
@@ -401,7 +402,7 @@ export async function executeTrade(userId, tradeDetails, simulationId = null) {
                     }
                 }
             } catch (authError) {
-                console.error("Error getting user display name:", authError);
+                logger.error("Error getting user display name:", authError);
                 // userDisplayName remains "Anonymous User"
             }
 
@@ -412,17 +413,17 @@ export async function executeTrade(userId, tradeDetails, simulationId = null) {
             await activityService.detectAndLogAchievements(simulationId, userId, userDisplayName, tradeDetails, updatedPortfolio);
 
         } catch (error) {
-            console.error("Error logging trade activity:", error);
+            logger.error("Error logging trade activity:", error);
             // Don't fail the trade if activity logging fails
         }
     }
 
         const contextMsg = simulationId ? `in simulation ${simulationId}` : "in solo mode";
-        console.log(`Trade executed successfully for user ${userId} ${contextMsg}: ${type} ${quantity} ${ticker} at $${price.toFixed(2)}`);
+        logger.trade(`Trade executed successfully for user ${userId} ${contextMsg}: ${type} ${quantity} ${ticker} at $${price.toFixed(2)}`);
         return { success: true, message: "Trade executed successfully." };
 
     } catch (error) {
-        console.error("Error executing trade:", error.message);
+        logger.error("Error executing trade:", error.message);
         throw error;
     }
 }
@@ -466,10 +467,10 @@ export async function updatePortfolioInitialBalance(userId, newBalance, simulati
         });
         
         const contextMsg = simulationId ? `in simulation ${simulationId}` : "for solo portfolio";
-        console.log(`Portfolio initial balance updated for user ${userId} ${contextMsg} to $${newBalance}`);
+        logger.info(`Portfolio initial balance updated for user ${userId} ${contextMsg} to $${newBalance}`);
         return { success: true, message: "Initial balance updated." };
     } catch (error) {
-        console.error("Error updating initial balance:", error);
+        logger.error("Error updating initial balance:", error);
         throw error;
     }
 }

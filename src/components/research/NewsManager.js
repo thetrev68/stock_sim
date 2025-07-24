@@ -6,6 +6,7 @@ import { formatNewsDate } from "../../utils/date-utils.js";
 import { setUIState } from "../../utils/dom-utils.js";
 import { getNewsArticleCardTemplate } from "../../templates/research/research-news.js";
 import { getRefreshNewsButtonTemplate } from "../../templates/research/research-stock-display.js";
+import { logger } from "../../utils/logger.js";
 
 export class NewsManager {
     constructor(stockService) {
@@ -28,7 +29,7 @@ export class NewsManager {
         this.showNewsLoading();
 
         try {
-            console.log(`Loading news for ${currentStockData.ticker}...`);
+            logger.info(`Loading news for ${currentStockData.ticker}...`);
             
             // Fetch news articles
             this.currentNewsData = await this.stockService.getStockNews(currentStockData.ticker, 20);
@@ -40,7 +41,7 @@ export class NewsManager {
             this.displayNews();
             
         } catch (error) {
-            console.error("Error loading stock news:", error);
+            logger.error("Error loading stock news:", error);
             this.showNewsError();
         }
     }
@@ -180,7 +181,7 @@ export class NewsManager {
             await this.loadStockNews(currentStockData);
             
         } catch (error) {
-            console.error("Error refreshing news:", error);
+            logger.error("Error refreshing news:", error);
             this.showNewsError();
         } finally {
             // Reset refresh button

@@ -5,6 +5,7 @@ import {
     formatCurrencyWithCommas
 } from "../../utils/currency-utils.js";
 import { getTimeAgoCompact } from "../../utils/date-utils.js";
+import { logger } from "../../utils/logger.js";
 
 /**
  * Unified Leaderboard Manager Component
@@ -602,7 +603,7 @@ export class LeaderboardManager {
                 if (this.onUserClick && typeof this.onUserClick === "function") {
                     this.onUserClick(userId, userName);
                 } else {
-                    console.log(`Clicked on user: ${userName} (${userId})`);
+                    logger.info(`Clicked on user: ${userName} (${userId})`);
                 }
             });
         });
@@ -628,7 +629,7 @@ export class LeaderboardManager {
             await this.onRefresh();
 
         } catch (error) {
-            console.error("Error refreshing leaderboard:", error);
+            logger.error("Error refreshing leaderboard:", error);
         } finally {
             // Reset button state
             refreshBtn.disabled = false;

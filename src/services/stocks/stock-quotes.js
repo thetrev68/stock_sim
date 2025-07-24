@@ -6,6 +6,7 @@
  */
 
 import { roundToDecimals } from "../../utils/currency-utils";
+import { logger } from "../../utils/logger.js";
 
 export class StockQuotesService {
     constructor(apiService, cacheService) {
@@ -88,7 +89,7 @@ export class StockQuotesService {
         // Check cache first
         const cachedPrice = this.cacheService.getCachedPrice(upperTicker);
         if (cachedPrice !== null) {
-            console.log(`Using cached price for ${upperTicker}: $${cachedPrice}`);
+            logger.info(`Using cached price for ${upperTicker}: $${cachedPrice}`);
             return cachedPrice;
         }
 
@@ -102,7 +103,7 @@ export class StockQuotesService {
             
             // Make API call to Finnhub
             const url = `${this.apiService.baseUrl}/quote?symbol=${upperTicker}&token=${this.apiService.apiKey}`;
-            console.log(`Fetching live price for ${upperTicker}...`);
+            logger.info(`Fetching live price for ${upperTicker}...`);
             
             const response = await fetch(url);
             
@@ -116,7 +117,7 @@ export class StockQuotesService {
             if (data.c && data.c > 0) {
                 const price = data.c;
                 this.cacheService.setCachedPrice(upperTicker, price);
-                console.log(`Live price for ${upperTicker}: $${price}`);
+                logger.info(`Live price for ${upperTicker}: $${price}`);
                 return price;
             } else {
                 // API returned but no valid price data
@@ -125,7 +126,7 @@ export class StockQuotesService {
             }
             
         } catch (error) {
-            console.error(`Error fetching price for ${upperTicker}:`, error.message);
+            logger.error(`Error fetching price for ${upperTicker}:`, error.message);
             return this.getFallbackPrice(upperTicker);
         }
     }
@@ -172,7 +173,7 @@ export class StockQuotesService {
             };
 
         } catch (error) {
-            console.error(`Error fetching stock details for ${upperTicker}:`, error.message);
+            logger.error(`Error fetching stock details for ${upperTicker}:`, error.message);
             return this.getFallbackStockDetails(upperTicker);
         }
     }
@@ -411,7 +412,7 @@ export class StockQuotesService {
             // Use AllOrigins CORS proxy
             const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(tiingoUrl)}`;
             
-            console.log(`Fetching historical data via CORS proxy for ${upperTicker} (${days} days)...`);
+            logger.info(`Fetching historical data via CORS proxy for ${upperTicker} (${days} days)...`);
             
             const response = await fetch(proxyUrl);
             
@@ -430,7 +431,7 @@ export class StockQuotesService {
             const data = JSON.parse(proxyData.contents);
             
             if (data && Array.isArray(data) && data.length > 0) {
-                console.log(`Successfully fetched ${data.length} data points for ${upperTicker}`);
+                logger.info(`Successfully fetched ${data.length} data points for ${upperTicker}`);
                 
                 // Convert Tiingo format to your chart format
                 const timestamps = data.map(d => new Date(d.date).getTime() / 1000);
@@ -450,7 +451,7 @@ export class StockQuotesService {
             }
             
         } catch (error) {
-            console.error(`Error fetching historical data for ${upperTicker}:`, error);
+            logger.error(`Error fetching historical data for ${upperTicker}:`, error);
             this.apiService.handleAPIError(error, "tiingo-proxy");
             
             // Fallback to mock data
@@ -496,10 +497,10 @@ export class StockQuotesService {
     getFallbackPrice(ticker) {
         const mockPrice = this.mockPrices[ticker];
         if (mockPrice) {
-            console.log(`Using fallback mock price for ${ticker}: ${mockPrice}`);
+            logger.info(`Using fallback mock price for ${ticker}: ${mockPrice}`);
             return mockPrice;
         }
-        console.warn(`No fallback price available for ${ticker}`);
+        logger.warn(`No fallback price available for ${ticker}`);
         return null;
     }
 }

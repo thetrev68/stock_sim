@@ -5,6 +5,7 @@
 import { MEMBER_STATUS } from "../../constants/simulation-status.js";
 import { SUCCESS_MESSAGES, INFO_MESSAGES } from "../../constants/ui-messages.js";
 // import { formatSimpleDate } from "../../utils/date-utils.js";
+import { logger } from "../../utils/logger.js";
 
 // Templates
 import { getMemberCardTemplate } from "../../templates/simulation/member-components.js";
@@ -53,10 +54,10 @@ export class SimulationMembershipManager {
             // Update view's members reference for backward compatibility
             this.view.simulationMembers = this.simulationMembers;
             
-            console.log("Loaded simulation members:", this.simulationMembers);
+            logger.debug("Loaded simulation members:", this.simulationMembers);
             await this.displayMembers();
         } catch (error) {
-            console.error("Error loading simulation members:", error);
+            logger.error("Error loading simulation members:", error);
             this.showMembersError();
         }
     }
@@ -90,7 +91,7 @@ export class SimulationMembershipManager {
         
         // Use the updated permission checking
         const isCreator = this.isCurrentUserCreator();
-        console.log("Creating member card - creator check:", isCreator);
+        logger.debug("Creating member card - creator check:", isCreator);
         
         memberDiv.innerHTML = getMemberCardTemplate(member, isCreator);
         return memberDiv.firstElementChild;
@@ -104,7 +105,7 @@ export class SimulationMembershipManager {
         // Use the view's currentSimulation which should be the most up-to-date
         const simulation = this.view.currentSimulation || this.currentSimulation;
         if (!simulation || !this.currentUser) {
-            console.log("Creator check failed: missing simulation or user data", {
+            logger.debug("Creator check failed: missing simulation or user data", {
                 simulation: !!simulation,
                 currentUser: !!this.currentUser
             });
@@ -112,7 +113,7 @@ export class SimulationMembershipManager {
         }
         
         const isCreator = simulation.createdBy === this.currentUser.uid;
-        console.log("Creator permission check:", {
+        logger.debug("Creator permission check:", {
             currentUserId: this.currentUser.uid,
             simulationCreatedBy: simulation.createdBy,
             isCreator: isCreator
@@ -151,7 +152,7 @@ export class SimulationMembershipManager {
             }
 
         } catch (error) {
-            console.error("Error removing member:", error);
+            logger.error("Error removing member:", error);
             
             // Reset button states
             const kickButtons = document.querySelectorAll(`[data-user-id="${userId}"]`);
@@ -189,7 +190,7 @@ export class SimulationMembershipManager {
      */
     async handleMemberManagement() {
         try {
-            console.log("Loading member management...");
+            logger.debug("Loading member management...");
             
             // Load detailed member statistics
             const memberStats = await this.simulationService.getMemberStatistics(
@@ -197,11 +198,11 @@ export class SimulationMembershipManager {
                 this.currentUser.uid
             );
 
-            console.log("Member statistics loaded successfully:", memberStats);
+            logger.debug("Member statistics loaded successfully:", memberStats);
             this.showMemberManagementModal(memberStats);
 
         } catch (error) {
-            console.error("Error in handleMemberManagement:", error);
+            logger.error("Error in handleMemberManagement:", error);
             
             // Enhanced error messages
             if (error.message.includes("permission") || error.message.includes("creator") || error.message.includes("administrator")) {
@@ -284,7 +285,7 @@ export class SimulationMembershipManager {
             this.showSimulationSettingsModal(managementStats);
 
         } catch (error) {
-            console.error("Error loading simulation settings:", error);
+            logger.error("Error loading simulation settings:", error);
             this.view.showTemporaryMessage(`Failed to load settings: ${error.message}`, "error");
         }
     }
@@ -402,13 +403,13 @@ export class SimulationMembershipManager {
                 this.view.showTemporaryMessage(SUCCESS_MESSAGES.SETTINGS_UPDATED, "success");
                 
                 // CRITICAL FIX: Refresh the current simulation data from Firebase
-                console.log("Loading fresh simulation data...");
+                logger.debug("Loading fresh simulation data...");
                 await this.view.loadData();
                 
-                console.log("Current simulation name AFTER loadData:", this.view.currentSimulation?.name);
+                logger.debug("Current simulation name AFTER loadData:", this.view.currentSimulation?.name);
                 
                 // CRITICAL FIX: Refresh the dropdown with the new data
-                console.log("Calling loadUserSimulationsForDropdown after settings update...");
+                logger.debug("Calling loadUserSimulationsForDropdown after settings update...");
                 await this.view.loadUserSimulationsForDropdown();
                 
                 // Update the main simulation display
@@ -423,7 +424,7 @@ export class SimulationMembershipManager {
             }
 
         } catch (error) {
-            console.error("Error saving settings:", error);
+            logger.error("Error saving settings:", error);
             this.view.showTemporaryMessage(`Failed to save settings: ${error.message}`, "error");
         } finally {
             // Reset button state
@@ -471,7 +472,7 @@ export class SimulationMembershipManager {
             }
 
         } catch (error) {
-            console.error("Error extending simulation:", error);
+            logger.error("Error extending simulation:", error);
             this.view.showTemporaryMessage(`Failed to extend simulation: ${error.message}`, "error");
         }
     }
@@ -516,7 +517,7 @@ export class SimulationMembershipManager {
             }
 
         } catch (error) {
-            console.error("Error ending simulation:", error);
+            logger.error("Error ending simulation:", error);
             this.view.showTemporaryMessage(`Failed to end simulation: ${error.message}`, "error");
         }
     }
@@ -528,7 +529,7 @@ export class SimulationMembershipManager {
     async handleSaveRules(_simulation) {
         // Implementation depends on your rules system
         // This is a placeholder that maintains the existing structure
-        console.log("Save rules functionality - to be implemented based on your rules system");
+        logger.debug("Save rules functionality - to be implemented based on your rules system");
         this.view.showTemporaryMessage("Rules saving functionality is being developed", "info");
     }
 
@@ -542,7 +543,7 @@ export class SimulationMembershipManager {
             
             // This would typically call a service method to generate and download results
             // Implementation depends on your export requirements
-            console.log("Export results functionality - preparing data export");
+            logger.debug("Export results functionality - preparing data export");
             
             // Placeholder for actual export functionality
             setTimeout(() => {
@@ -550,7 +551,7 @@ export class SimulationMembershipManager {
             }, 1000);
 
         } catch (error) {
-            console.error("Error exporting results:", error);
+            logger.error("Error exporting results:", error);
             this.view.showTemporaryMessage(`Failed to export results: ${error.message}`, "error");
         }
     }
@@ -567,7 +568,7 @@ export class SimulationMembershipManager {
         this.currentSimulation = simulation;
         this.view.currentSimulation = simulation;
         
-        console.log("Updated simulation reference for membership manager:", {
+        logger.debug("Updated simulation reference for membership manager:", {
             simulationId: simulation?.id,
             createdBy: simulation?.createdBy,
             currentUserId: this.currentUser?.uid
@@ -604,12 +605,12 @@ export class SimulationMembershipManager {
     async loadManagementData() {
         // This method exists for backward compatibility
         // The actual loading is now handled within handleSimulationSettings()
-        console.log("Management data loading handled within settings modal");
+        logger.debug("Management data loading handled within settings modal");
     }
 
     // Unified error handling
     handleMembershipError(error, context = "membership operation") {
-        console.error(`Error in ${context}:`, error);
+        logger.error(`Error in ${context}:`, error);
         
         if (error.message.includes("permission")) {
             this.view.showTemporaryMessage("You don't have permission for this action", "error");

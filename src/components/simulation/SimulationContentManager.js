@@ -8,6 +8,7 @@ import { formatDateRange, calculateDaysRemaining } from "../../utils/date-utils.
 import { formatCurrencyWithCommas, formatPortfolioChange } from "../../utils/currency-utils.js";
 import { capitalize } from "../../utils/string-utils.js";
 import { updateElementHTML } from "../../utils/dom-utils.js";
+import { logger } from "../../utils/logger.js";
 import { getPortfolio } from "../../services/trading.js";
 import { StockService } from "../../services/stocks.js";
 
@@ -80,11 +81,11 @@ export class SimulationContentManager {
         if (contentEl) contentEl.classList.remove("hidden");
 
         if (!this.currentSimulation) {
-            console.log("No currentSimulation data available for display");
+            logger.debug("No currentSimulation data available for display");
             return;
         }
 
-        console.log("displaySimulation called with simulation:", {
+        logger.debug("displaySimulation called with simulation:", {
             id: this.currentSimulation.id,
             name: this.currentSimulation.name,
             endDate: this.currentSimulation.endDate,
@@ -101,11 +102,11 @@ export class SimulationContentManager {
         // FIXED: Handle invite code directly like the original (not in updateSimulationRules)
         const inviteCodeEl = document.getElementById("sim-invite-code");
         if (inviteCodeEl && this.currentSimulation.inviteCode) {
-            console.log("Setting invite code directly to:", this.currentSimulation.inviteCode);
+            logger.debug("Setting invite code directly to:", this.currentSimulation.inviteCode);
             inviteCodeEl.textContent = this.currentSimulation.inviteCode;
         }
         
-        console.log("Simulation displayed:", this.currentSimulation);
+        logger.debug("Simulation displayed:", this.currentSimulation);
     }
 
     /**
@@ -154,13 +155,13 @@ export class SimulationContentManager {
      * Updates metrics like participants count, duration, etc.
      */
     updateMetricElements() {
-        console.log("updateMetricElements called");
+        logger.debug("updateMetricElements called");
         
         const participantsEl = document.getElementById("sim-participants");
         const durationEl = document.getElementById("sim-duration");
         const daysRemainingEl = document.getElementById("days-remaining"); // Original element ID
 
-        console.log("Elements found:", {
+        logger.debug("Elements found:", {
             duration: !!durationEl,
             daysRemaining: !!daysRemainingEl,
             participants: !!participantsEl
@@ -176,18 +177,18 @@ export class SimulationContentManager {
         // Duration - from original: formatDateRange(this.currentSimulation.startDate, this.currentSimulation.endDate)
         if (durationEl) {
             const dateRange = formatDateRange(this.currentSimulation.startDate, this.currentSimulation.endDate);
-            console.log("Setting duration (date range only) to:", dateRange);
+            logger.debug("Setting duration (date range only) to:", dateRange);
             durationEl.textContent = dateRange;
         }
 
         // Days Remaining - from original: calculateDaysRemaining(this.currentSimulation.endDate)
         if (daysRemainingEl) {
             const diffDays = calculateDaysRemaining(this.currentSimulation.endDate);
-            console.log("Setting days remaining to:", diffDays);
+            logger.debug("Setting days remaining to:", diffDays);
             daysRemainingEl.textContent = diffDays;
         }
 
-        console.log("Days remaining calculation debug:", {
+        logger.debug("Days remaining calculation debug:", {
             endDate: this.currentSimulation.endDate,
             endDateConverted: this.currentSimulation.endDate.toDate ? this.currentSimulation.endDate.toDate() : new Date(this.currentSimulation.endDate),
             now: new Date(),
@@ -260,7 +261,7 @@ export class SimulationContentManager {
     updateUserRankDisplay() {
         // This method exists for backward compatibility
         // The actual rank display is handled by LeaderboardComponents
-        console.log("User rank display updated");
+        logger.debug("User rank display updated");
     }
 
     // ===========================================
@@ -273,7 +274,7 @@ export class SimulationContentManager {
      */
     async loadSimulationPortfolio() {
         if (!this.currentUser || !this.simulationId) {
-            console.error("Cannot load portfolio: missing user or simulation ID");
+            logger.error("Cannot load portfolio: missing user or simulation ID");
             this.showPortfolioError();
             return;
         }
@@ -288,7 +289,7 @@ export class SimulationContentManager {
             }
 
             this.simulationPortfolio = portfolio;
-            console.log("Loaded simulation portfolio:", this.simulationPortfolio);
+            logger.debug("Loaded simulation portfolio:", this.simulationPortfolio);
 
             // Fetch live prices and update displays
             await this.fetchLivePricesForHoldings();
@@ -297,7 +298,7 @@ export class SimulationContentManager {
             this.loadRecentTrades();
 
         } catch (error) {
-            console.error("Error loading simulation portfolio:", error);
+            logger.error("Error loading simulation portfolio:", error);
             this.showPortfolioError();
         }
     }
@@ -320,11 +321,11 @@ export class SimulationContentManager {
                         holdings[ticker].currentPrice = price;
                     }
                 })
-                .catch(error => console.error(`Error fetching price for ${ticker}:`, error))
+                .catch(error => logger.error(`Error fetching price for ${ticker}:`, error))
         );
 
         await Promise.all(pricePromises);
-        console.log("Fetched live prices:", Object.fromEntries(this.cachedPrices));
+        logger.debug("Fetched live prices:", Object.fromEntries(this.cachedPrices));
     }
 
     /**
@@ -487,10 +488,10 @@ export class SimulationContentManager {
     async loadSimulationActivities() {
         try {
             this.simulationActivities = await this.activityService.getSimulationActivities(this.simulationId, 15);
-            console.log("Loaded simulation activities:", this.simulationActivities);
+            logger.debug("Loaded simulation activities:", this.simulationActivities);
             this.displayActivities();
         } catch (error) {
-            console.error("Error loading simulation activities:", error);
+            logger.error("Error loading simulation activities:", error);
             this.showActivitiesError();
         }
     }

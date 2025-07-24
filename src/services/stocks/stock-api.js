@@ -8,6 +8,7 @@
  */
 
 import { API_LIMITS, API_ERROR_CONFIG } from "../../constants/app-config.js";
+import { logger } from "../../utils/logger.js";
 
 export class StockApiService {
     constructor() {
@@ -20,9 +21,11 @@ export class StockApiService {
         this.tiingoBaseUrl = "https://api.tiingo.com/tiingo";
 
         // NEW: Add this line - automatically detects development environment
-        this.useMockDataFallback = window.location.hostname === "localhost" || 
-                                window.location.hostname === "127.0.0.1" ||
-                                window.location.hostname.includes("localhost");
+        this.useMockDataFallback = false; // Set to false for production
+        
+        // window.location.hostname === "localhost" || 
+        // window.location.hostname === "127.0.0.1" ||
+        // window.location.hostname.includes("localhost");
         
         // Enhanced rate limiting
         this.lastApiCall = 0;
@@ -44,14 +47,14 @@ export class StockApiService {
         
         // Check if API is in cooldown after failures
         if (this.apiStatus.isDown && (now - this.apiStatus.lastFailureTime) < this.apiStatus.cooldownPeriod) {
-            console.log("API in cooldown, using fallback data");
+            logger.debug("API in cooldown, using fallback data");
             return false;
         }
         
         // Check rate limiting
         this.callTimestamps = this.callTimestamps.filter(timestamp => now - timestamp < API_LIMITS.RATE_LIMIT_WINDOW);
         if (this.callTimestamps.length >= this.maxCallsPerMinute) {
-            console.log("Rate limit exceeded, using fallback data");
+            logger.debug("Rate limit exceeded, using fallback data");
             return false;
         }
         
@@ -79,7 +82,7 @@ export class StockApiService {
         if (this.callTimestamps.length >= this.maxCallsPerMinute) {
             const oldestCall = Math.min(...this.callTimestamps);
             const waitTime = API_LIMITS.RATE_LIMIT_WINDOW - (now - oldestCall) + API_LIMITS.MIN_TIME_BETWEEN_CALLS;
-            console.log(`Rate limit protection: waiting ${Math.round(waitTime/1000)}s...`);
+            logger.debug(`Rate limit protection: waiting ${Math.round(waitTime/1000)}s...`);
             await new Promise(resolve => setTimeout(resolve, waitTime));
         }
         

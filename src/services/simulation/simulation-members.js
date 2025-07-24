@@ -16,6 +16,7 @@ import {
     serverTimestamp 
 } from "firebase/firestore";
 import { SIMULATION_STATUS } from "../../constants/simulation-status.js";
+import { logger } from "../../utils/logger.js";
 
 const SIMULATIONS_COLLECTION = "simulations";
 const SIMULATION_MEMBERS_COLLECTION = "simulationMembers";
@@ -72,11 +73,11 @@ export async function addMemberToSimulation(simulationId, userId, role = "member
             memberCount: simulation.memberCount + 1
         });
 
-        console.log(`User ${userId} added to simulation ${simulationId} as ${role}`);
+        logger.debug(`User ${userId} added to simulation ${simulationId} as ${role}`);
         return { success: true };
 
     } catch (error) {
-        console.error("Error adding member to simulation:", error);
+        logger.error("Error adding member to simulation:", error);
         throw error;
     }
 }
@@ -103,7 +104,7 @@ export async function getSimulationMembers(simulationId, db = null) {
         }));
 
     } catch (error) {
-        console.error("Error getting simulation members:", error);
+        logger.error("Error getting simulation members:", error);
         throw error;
     }
 }
@@ -127,7 +128,7 @@ export async function isUserMemberOfSimulation(simulationId, userId, db = null) 
         return !memberDocs.empty;
 
     } catch (error) {
-        console.error("Error checking simulation membership:", error);
+        logger.error("Error checking simulation membership:", error);
         return false;
     }
 }
@@ -185,11 +186,11 @@ export async function removeMemberFromSimulation(simulationId, userId, adminUser
             memberCount: simulation.memberCount - 1
         });
 
-        console.log(`User ${userId} removed from simulation ${simulationId} by ${adminUserId}`);
+        logger.debug(`User ${userId} removed from simulation ${simulationId} by ${adminUserId}`);
         return { success: true };
 
     } catch (error) {
-        console.error("Error removing member from simulation:", error);
+        logger.error("Error removing member from simulation:", error);
         throw error;
     }
 }
@@ -228,14 +229,14 @@ export async function getMemberStatistics(simulationId, adminUserId, db = null) 
 
         const simulationData = simSnap.data(); // Changed variable name to avoid conflicts
         
-        console.log("=== getMemberStatistics DEBUG ===");
-        console.log("simulationData.createdBy:", simulationData.createdBy);
-        console.log("adminUserId:", adminUserId);
-        console.log("Type of simulationData.createdBy:", typeof simulationData.createdBy);
-        console.log("Type of adminUserId:", typeof adminUserId);
-        console.log("Are they equal?:", simulationData.createdBy === adminUserId);
-        console.log("Are they equal (loose)?:", simulationData.createdBy == adminUserId);
-        console.log("================================");
+        logger.debug("=== getMemberStatistics DEBUG ===");
+        logger.debug("simulationData.createdBy:", simulationData.createdBy);
+        logger.debug("adminUserId:", adminUserId);
+        logger.debug("Type of simulationData.createdBy:", typeof simulationData.createdBy);
+        logger.debug("Type of adminUserId:", typeof adminUserId);
+        logger.debug("Are they equal?:", simulationData.createdBy === adminUserId);
+        logger.debug("Are they equal (loose)?:", simulationData.createdBy == adminUserId);
+        logger.debug("================================");
         
         if (simulationData.createdBy !== adminUserId) {
             throw new Error("Only simulation creator can view detailed statistics");
@@ -291,7 +292,7 @@ export async function getMemberStatistics(simulationId, adminUserId, db = null) 
         return memberStats;
 
     } catch (error) {
-        console.error("Error getting member statistics:", error);
+        logger.error("Error getting member statistics:", error);
         throw error;
     }
 }

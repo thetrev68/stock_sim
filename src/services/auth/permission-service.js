@@ -3,6 +3,7 @@
 
 import { getFirestoreDb } from "../firebase.js";
 import { doc, getDoc, updateDoc, serverTimestamp } from "firebase/firestore";
+import { logger } from "../../utils/logger.js";
 
 const USERS_COLLECTION = "Users";
 
@@ -67,7 +68,7 @@ export class PermissionService {
             return systemRole;
 
         } catch (error) {
-            console.error("Error getting user system role:", error);
+            logger.error("Error getting user system role:", error);
             return SYSTEM_ROLES.USER; // Default to regular user on error
         }
     }
@@ -188,11 +189,11 @@ export class PermissionService {
             // Clear cache for this user
             this.clearCache(targetUserId);
             
-            console.log(`User ${targetUserId} role updated to ${newRole} by ${adminUserId}`);
+            logger.info(`User ${targetUserId} role updated to ${newRole} by ${adminUserId}`);
             return { success: true };
 
         } catch (error) {
-            console.error("Error setting user system role:", error);
+            logger.error("Error setting user system role:", error);
             throw error;
         }
     }

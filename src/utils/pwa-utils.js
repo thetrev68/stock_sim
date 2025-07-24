@@ -1,4 +1,6 @@
 // PWA utilities for Stock Trading Simulator - Linting fixes applied
+import { logger } from "../utils/logger.js";
+
 export class PWAManager {
     constructor() {
         this.isStandalone = false;
@@ -20,7 +22,7 @@ export class PWAManager {
                            window.navigator.standalone === true;
         
         if (this.isStandalone) {
-            console.log("PWA: Running in standalone mode");
+            logger.info("PWA: Running in standalone mode");
             document.body.classList.add("standalone-mode");
         }
     }
@@ -28,17 +30,17 @@ export class PWAManager {
     async registerServiceWorker() {
         if ("serviceWorker" in navigator) {
             try {
-                console.log("PWA: Registering service worker...");
+                logger.info("PWA: Registering service worker...");
                 
                 this.serviceWorkerRegistration = await navigator.serviceWorker.register("/sw.js", {
                     scope: "/"
                 });
                 
-                console.log("PWA: Service worker registered successfully");
+                logger.info("PWA: Service worker registered successfully");
                 
                 // Listen for updates
                 this.serviceWorkerRegistration.addEventListener("updatefound", () => {
-                    console.log("PWA: New service worker version found");
+                    logger.info("PWA: New service worker version found");
                     this.handleServiceWorkerUpdate();
                 });
                 
@@ -48,17 +50,17 @@ export class PWAManager {
                 }
                 
             } catch (error) {
-                console.error("PWA: Service worker registration failed:", error);
+                logger.error("PWA: Service worker registration failed:", error);
             }
         } else {
-            console.log("PWA: Service workers not supported");
+            logger.info("PWA: Service workers not supported");
         }
     }
 
     setupInstallPrompt() {
         // Listen for the beforeinstallprompt event
         window.addEventListener("beforeinstallprompt", (event) => {
-            console.log("PWA: Install prompt available");
+            logger.info("PWA: Install prompt available");
             
             // Prevent the mini-infobar from appearing
             event.preventDefault();
@@ -72,7 +74,7 @@ export class PWAManager {
 
         // Listen for app installation
         window.addEventListener("appinstalled", () => {
-            console.log("PWA: App was installed");
+            logger.info("PWA: App was installed");
             this.hideInstallButton();
             this.deferredPrompt = null;
             
@@ -88,7 +90,7 @@ export class PWAManager {
 
     async showInstallPrompt() {
         if (!this.deferredPrompt) {
-            console.log("PWA: No install prompt available");
+            logger.info("PWA: No install prompt available");
             return false;
         }
 
@@ -99,12 +101,12 @@ export class PWAManager {
             // Wait for the user's response
             const choiceResult = await this.deferredPrompt.userChoice;
             
-            console.log("PWA: Install prompt result:", choiceResult.outcome);
+            logger.info("PWA: Install prompt result:", choiceResult.outcome);
             
             if (choiceResult.outcome === "accepted") {
-                console.log("PWA: User accepted the install prompt");
+                logger.info("PWA: User accepted the install prompt");
             } else {
-                console.log("PWA: User dismissed the install prompt");
+                logger.info("PWA: User dismissed the install prompt");
             }
             
             // Clear the deferredPrompt
@@ -114,7 +116,7 @@ export class PWAManager {
             return choiceResult.outcome === "accepted";
             
         } catch (error) {
-            console.error("PWA: Error showing install prompt:", error);
+            logger.error("PWA: Error showing install prompt:", error);
             return false;
         }
     }
@@ -255,7 +257,7 @@ export class PWAManager {
         
         newWorker.addEventListener("statechange", () => {
             if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
-                console.log("PWA: New service worker installed, update available");
+                logger.info("PWA: New service worker installed, update available");
                 this.showUpdateAvailable();
             }
         });
@@ -333,7 +335,7 @@ export class PWAManager {
             window.location.reload();
         } else {
             // No actual update available, just dismiss the banner
-            console.log("PWA: No actual update available, dismissing banner");
+            logger.info("PWA: No actual update available, dismissing banner");
             this.hideUpdateBanner();
         }
     }
@@ -341,7 +343,7 @@ export class PWAManager {
     setupAppUpdates() {
         // Listen for service worker controller changes
         navigator.serviceWorker.addEventListener("controllerchange", () => {
-            console.log("PWA: Service worker controller changed, reloading...");
+            logger.info("PWA: Service worker controller changed, reloading...");
             window.location.reload();
         });
     }
@@ -361,10 +363,10 @@ export class PWAManager {
             try {
                 const registration = await navigator.serviceWorker.ready;
                 await registration.sync.register(tag);
-                console.log("PWA: Background sync registered:", tag);
+                logger.info("PWA: Background sync registered:", tag);
                 return true;
             } catch (syncError) {
-                console.error("PWA: Background sync registration failed:", syncError);
+                logger.error("PWA: Background sync registration failed:", syncError);
                 return false;
             }
         }

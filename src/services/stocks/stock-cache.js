@@ -8,6 +8,7 @@
  */
 
 import { CACHE_CONFIG } from "../../constants/app-config.js";
+import { logger } from "../../utils/logger.js";
 
 export class StockCacheService {
     constructor() {
@@ -54,7 +55,7 @@ export class StockCacheService {
         this.priceCache.clear();
         this.profileCache.clear();
         this.searchCache.clear();
-        console.log("All caches cleared");
+        logger.info("All caches cleared");
     }
 
     getCacheStatus() {

@@ -42,7 +42,7 @@ export class SimulationService {
     // Initialize service
     initialize() {
         this.db = getFirestoreDb();
-        console.log("SimulationService initialized");
+        logger.info("SimulationService initialized");
     }
 
     /**
