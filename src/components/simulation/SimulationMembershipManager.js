@@ -254,15 +254,15 @@ export class SimulationMembershipManager {
         });
 
         // Member removal handlers (if any kick buttons exist)
-        document.querySelectorAll("[data-action='kick-member']").forEach(button => {
-            button.addEventListener("click", async (e) => {
-                const userId = e.target.dataset.userId;
-                const userName = e.target.dataset.userName;
-                if (userId && userName) {
-                    await this.removeMember(userId, userName);
-                }
-            });
+        document.querySelectorAll(".kick-member-btn").forEach(button => {
+        button.addEventListener("click", async (e) => {
+            const userId = e.target.dataset.userId;
+            const userName = e.target.dataset.userName;
+            if (userId && userName) {
+                await this.removeMember(userId, userName);
+            }
         });
+    });
     }
 
     // ===========================================
