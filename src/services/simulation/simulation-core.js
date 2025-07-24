@@ -11,11 +11,48 @@ import {
     getDocs, 
     // updateDoc, 
     query, 
-    where, 
+    where,
     // orderBy, 
     serverTimestamp 
 } from "firebase/firestore";
 import { SIMULATION_STATUS } from "../../constants/simulation-status.js";
+
+/**
+ * Create simulation portfolio automatically
+ */
+async function createSimulationPortfolio(userId, simulationId, simulation, database) {
+    try {
+        console.log(`🎯 Creating portfolio for user ${userId} in simulation ${simulationId}`);
+        
+        // Import what we need inside the function
+        const { doc, setDoc } = await import("firebase/firestore");
+        
+        const portfolioId = `${userId}_${simulationId}`;
+        const portfolioRef = doc(database, "portfolios", portfolioId);
+        
+        const portfolioData = {
+            userId: userId,
+            simulationId: simulationId,
+            cash: simulation.startingBalance || 10000,
+            holdings: {},
+            trades: [],
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            simulationName: simulation.name,
+            startingBalance: simulation.startingBalance || 10000,
+            currentRank: null,
+            lastRankUpdate: null
+        };
+        
+        await setDoc(portfolioRef, portfolioData);
+        console.log(`✅ Portfolio created successfully for ${userId}`);
+        
+        return portfolioData;
+    } catch (error) {
+        console.error("❌ Error creating simulation portfolio:", error);
+        throw error;
+    }
+}
 
 const SIMULATIONS_COLLECTION = "simulations";
 const SIMULATION_MEMBERS_COLLECTION = "simulationMembers";
@@ -127,36 +164,21 @@ export async function getSimulation(simulationId, db = null) {
 }
 
 /**
- * Create a new simulation
- * EXACT COPY from your services/simulation.js
+ * Create a new simulation with automatic portfolio creation
+ * ENHANCED: Now automatically creates creator's portfolio
  */
-export async function createSimulation(creatorUserId, simulationData, db = null) {
+export async function createSimulation(simulationData, creatorUserId, db = null) {
     const database = db || getFirestoreDb();
-    
+
     try {
-        // Validate required fields
-        if (!simulationData.name || !simulationData.startDate || !simulationData.endDate) {
-            throw new Error("Missing required simulation data: name, startDate, or endDate");
-        }
+        console.log("Creating simulation for user:", creatorUserId);
 
         // Generate unique invite code
-        let inviteCode;
-        let codeExists = true;
-        let attempts = 0;
-        
-        while (codeExists && attempts < 10) {
-            inviteCode = generateSimulationInviteCode();
-            const existingSimQuery = query(
-                collection(database, SIMULATIONS_COLLECTION),
-                where("inviteCode", "==", inviteCode)
-            );
-            const existingSims = await getDocs(existingSimQuery);
-            codeExists = !existingSims.empty;
-            attempts++;
-        }
+        const inviteCode = generateSimulationInviteCode();
 
-        if (codeExists) {
-            throw new Error("Unable to generate unique invite code. Please try again.");
+        // Validate required fields
+        if (!simulationData.name || simulationData.name.trim() === "") {
+            throw new Error("Simulation name is required. Please try again.");
         }
 
         // Parse dates correctly
@@ -171,7 +193,7 @@ export async function createSimulation(creatorUserId, simulationData, db = null)
         const simulation = {
             name: simulationData.name,
             description: simulationData.description || "",
-            createdBy: creatorUserId,  // ✅ CORRECT FIELD NAME
+            createdBy: creatorUserId,
             startDate: startDate,
             endDate: endDate,
             startingBalance: simulationData.startingBalance || 10000,
@@ -202,13 +224,18 @@ export async function createSimulation(creatorUserId, simulationData, db = null)
             email: userInfo.email
         });
 
+        // 🚀 NEW: Create portfolio for the creator automatically
+        const simulationWithId = { ...simulation, id: simulationId };
+        await createSimulationPortfolio(creatorUserId, simulationId, simulationWithId, database);
+
         console.log(`Simulation created: ${simulationId} with status: ${initialStatus} and invite code: ${inviteCode}`);
+        console.log(`✅ Portfolio automatically created for creator ${creatorUserId}`);
         
         return {
             success: true,
             simulationId: simulationId,
             inviteCode: inviteCode,
-            simulation: { ...simulation, id: simulationId }
+            simulation: simulationWithId
         };
 
     } catch (error) {
