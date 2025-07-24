@@ -19,7 +19,6 @@ import { SIMULATION_STATUS } from "../constants/simulation-status.js";
 
 //Utilities
 import { formatCurrencyWithCommas, formatPortfolioChange } from "../utils/currency-utils.js";
-import { logger } from "../utils/logger.js";
 
 // Templates
 import { getSimulationLoadingTemplate } from "../templates/simulation/ui-messages.js";
@@ -211,7 +210,7 @@ export default class SimulationView {
         this.currentUser = this.authService.getCurrentUser();
         
         if (!this.currentUser) {
-            logger.debug("No user signed in for simulation view.");
+            console.log("No user signed in for simulation view.");
             return;
         }
 
@@ -239,7 +238,7 @@ export default class SimulationView {
             try {
                 const statusRefresh = await this.simulationService.refreshSimulationStatus(this.simulationId);
                 if (statusRefresh.updated) {
-                    logger.debug("Status was updated during load:", statusRefresh);
+                    console.log("Status was updated during load:", statusRefresh);
                     // Reload simulation with fresh status
                     this.currentSimulation = await this.simulationService.getSimulation(this.simulationId);
                 }
@@ -278,7 +277,7 @@ export default class SimulationView {
             this.updateManageMembersButtonVisibility();
             
         } catch (error) {
-            logger.error("❌ Error loading simulation:", error);
+            console.error("❌ Error loading simulation:", error);
             this.showError();
         }
 
@@ -290,9 +289,9 @@ export default class SimulationView {
                 if (element) {
                     element.classList.remove("hidden");
                     element.style.display = "block";
-                    logger.debug(`Showing ${id}:`, element);
+                    console.log(`Showing ${id}:`, element);
                 } else {
-                    logger.debug(`Element ${id} not found`);
+                    console.log(`Element ${id} not found`);
                 }
             });
         }, 1000); // Wait 1 second after page loads
@@ -305,7 +304,7 @@ export default class SimulationView {
 
     async loadLeaderboard() {
         try {
-            logger.debug("Loading leaderboard...");
+            console.log("Loading leaderboard...");
             this.leaderboardData = await this.leaderboardService.getLeaderboard(
                 this.simulationId, 
                 false, // Don't force refresh on initial load
@@ -315,16 +314,16 @@ export default class SimulationView {
             // Update user rank in header
             this.updateUserRankDisplay();
             
-            logger.debug("Leaderboard loaded:", this.leaderboardData);
+            console.log("Leaderboard loaded:", this.leaderboardData);
         } catch (error) {
-            logger.error("Error loading leaderboard:", error);
+            console.error("Error loading leaderboard:", error);
             // Don't fail the entire view if leaderboard fails
         }
     }
 
     async refreshLeaderboard() {
         try {
-            logger.debug("Refreshing leaderboard...");
+            console.log("Refreshing leaderboard...");
             this.leaderboardData = await this.leaderboardService.getLeaderboard(
                 this.simulationId, 
                 true, // Force refresh
@@ -335,9 +334,9 @@ export default class SimulationView {
             this.updateUserRankDisplay();
             this.renderLeaderboardComponents();
             
-            logger.debug("Leaderboard refreshed successfully");
+            console.log("Leaderboard refreshed successfully");
         } catch (error) {
-            logger.error("Error refreshing leaderboard:", error);
+            console.error("Error refreshing leaderboard:", error);
             throw error; // Re-throw so UI can handle error state
         }
     }
@@ -403,7 +402,7 @@ export default class SimulationView {
                 this.leaderboardData.rankings,
                 this.currentUser?.uid,
                 (userId, userName) => {
-                    logger.debug(`View details for user: ${userName}`);
+                    console.log(`View details for user: ${userName}`);
                 }
             );
         }
@@ -457,7 +456,7 @@ export default class SimulationView {
      * Method 1: Add the missing refreshSimulation method
      */
     async refreshSimulation() {
-        logger.debug("Refreshing simulation data...");
+        console.log("Refreshing simulation data...");
         
         try {
             // Reload simulation members
@@ -470,9 +469,9 @@ export default class SimulationView {
                 await this.activityManager.loadSimulationActivities();
             }
             
-            logger.debug("Simulation data refreshed");
+            console.log("Simulation data refreshed");
         } catch (error) {
-            logger.error("Error refreshing simulation:", error);
+            console.error("Error refreshing simulation:", error);
         }
     }
 
@@ -500,17 +499,17 @@ export default class SimulationView {
             }
         }, REFRESH_INTERVALS.LEADERBOARD);
 
-        logger.debug("Auto-refresh started");
+        console.log("Auto-refresh started");
     }
 
     stopAutoRefresh() {
         if (this.refreshInterval) {
-            logger.debug("Stopping simulation data auto-refresh");
+            console.log("Stopping simulation data auto-refresh");
             clearInterval(this.refreshInterval);
             this.refreshInterval = null;
         }
         if (this.leaderboardRefreshInterval) {
-            logger.debug("Stopping leaderboard auto-refresh");
+            console.log("Stopping leaderboard auto-refresh");
             clearInterval(this.leaderboardRefreshInterval);
             this.leaderboardRefreshInterval = null;
         }
@@ -518,7 +517,7 @@ export default class SimulationView {
 
     // Clean up when view is destroyed
     destroy() {
-        logger.debug("Destroying simulation view");
+        console.log("Destroying simulation view");
         this.isDestroyed = true;
         this.stopAutoRefresh();
         
@@ -570,11 +569,11 @@ export default class SimulationView {
     }
 
     async handleMemberManagement() {
-        logger.debug("Member management button clicked");
+        console.log("Member management button clicked");
         
         // ENHANCED: Pre-check permissions on the client side
         if (!this.memberManager || !this.memberManager.isCurrentUserCreator()) {
-            logger.debug("User is not creator, denying access");
+            console.log("User is not creator, denying access");
             this.showTemporaryMessage("Only the simulation creator or system administrators can manage members.", "error");
             return;
         }
@@ -717,7 +716,7 @@ export default class SimulationView {
 
     handleTradeNavigation() {
         if (!this.simulationId) {
-            logger.error("No simulation ID available for trading");
+            console.error("No simulation ID available for trading");
             return;
         }
 
@@ -783,11 +782,11 @@ export default class SimulationView {
     }
 
     async handleSimulationSettings() {
-        logger.debug("Simulation settings button clicked");
+        console.log("Simulation settings button clicked");
         
         // ENHANCED: Pre-check permissions on the client side
         if (!this.memberManager || !this.memberManager.isCurrentUserCreator()) {
-            logger.debug("User is not creator, denying access to settings");
+            console.log("User is not creator, denying access to settings");
             this.showTemporaryMessage("Only the simulation creator or system administrators can access settings.", "error");
             return;
         }
@@ -861,7 +860,7 @@ export default class SimulationView {
             }
 
         } catch (error) {
-            logger.error("Error archiving simulation:", error);
+            console.error("Error archiving simulation:", error);
             this.showTemporaryMessage(`Failed to archive simulation: ${error.message}`, "error");
         } finally {
             const archiveBtn = document.getElementById("archive-now-btn");
@@ -908,7 +907,7 @@ export default class SimulationView {
 
     async forceReloadSimulationData() {
         try {
-            logger.debug("Force reloading simulation data...");
+            console.log("Force reloading simulation data...");
             
             // Clear any caches if they exist
             if (this.simulationService.clearCache) {
@@ -916,14 +915,14 @@ export default class SimulationView {
             }
             
             // Force refresh simulation status first
-            logger.debug("Refreshing simulation status...");
+            console.log("Refreshing simulation status...");
             const statusRefresh = await this.simulationService.refreshSimulationStatus(this.simulationId);
-            logger.debug("Status refresh result:", statusRefresh);
+            console.log("Status refresh result:", statusRefresh);
             
             // Reload simulation with fresh data
-            logger.debug("Reloading simulation details...");
+            console.log("Reloading simulation details...");
             this.currentSimulation = await this.simulationService.getSimulation(this.simulationId);
-            logger.debug("Current simulation after reload:", {
+            console.log("Current simulation after reload:", {
                 id: this.currentSimulation.id,
                 status: this.currentSimulation.status,
                 endedEarly: this.currentSimulation.endedEarly,
@@ -931,7 +930,7 @@ export default class SimulationView {
             });
             
             // Reload all data components
-            logger.debug("Reloading all data components...");
+            console.log("Reloading all data components...");
             await Promise.all([
                 this.loadSimulationMembers(),
                 this.loadSimulationActivities(),
@@ -940,19 +939,19 @@ export default class SimulationView {
             ]);
             
             // Update the display
-            logger.debug("Updating display...");
+            console.log("Updating display...");
             this.displaySimulation();
             
             // Check if archive prompt should be shown
             if (this.currentSimulation.status === SIMULATION_STATUS.ENDED && !this.currentSimulation.archived) {
-                logger.debug("Showing archive prompt...");
+                console.log("Showing archive prompt...");
                 this.showArchivePrompt();
             }
             
-            logger.debug("Force reload completed successfully");
+            console.log("Force reload completed successfully");
             
         } catch (error) {
-            logger.error("Error during force reload:", error);
+            console.error("Error during force reload:", error);
             this.showTemporaryMessage("Warning: Some data may not have refreshed properly", "error");
         }
     }
@@ -995,7 +994,7 @@ export default class SimulationView {
             }
             
         } catch (error) {
-            logger.error("Error switching simulation:", error);
+            console.error("Error switching simulation:", error);
             this.showTemporaryMessage(`Failed to switch simulation: ${error.message}`, "error");
             
             // Reset dropdown to current simulation
@@ -1022,7 +1021,7 @@ export default class SimulationView {
             this.showTemporaryMessage("Data refreshed successfully!", "success");
             
         } catch (error) {
-            logger.error("Error refreshing simulation:", error);
+            console.error("Error refreshing simulation:", error);
             this.showTemporaryMessage(`Refresh failed: ${error.message}`, "error");
         }
     }
@@ -1033,24 +1032,24 @@ export default class SimulationView {
             const userSimulations = await this.simulationService.getUserSimulations(this.currentUser.uid);
             this.populateSimulationDropdown(userSimulations);
         } catch (error) {
-            logger.error("Error loading user simulations:", error);
+            console.error("Error loading user simulations:", error);
         }
     }
 
     populateSimulationDropdown(userSimulations = []) {
-        logger.debug("=== POPULATE DROPDOWN DEBUG ===");
-        logger.debug("Current simulation:", this.currentSimulation);
-        logger.debug("Current simulation name:", this.currentSimulation?.name);
-        logger.debug("User simulations array:", userSimulations);
+        console.log("=== POPULATE DROPDOWN DEBUG ===");
+        console.log("Current simulation:", this.currentSimulation);
+        console.log("Current simulation name:", this.currentSimulation?.name);
+        console.log("User simulations array:", userSimulations);
         
         // The trade page uses #portfolio-selector, not #simulation-dropdown
         const dropdown = document.querySelector("#portfolio-selector");
         if (!dropdown) {
-            logger.debug("❌ Portfolio selector dropdown element not found!");
+            console.log("❌ Portfolio selector dropdown element not found!");
             return;
         }
 
-        logger.debug("✅ Found portfolio selector dropdown");
+        console.log("✅ Found portfolio selector dropdown");
 
         // Clear existing options except the first one
         dropdown.innerHTML = "<option value=\"\">Select a portfolio...</option>";
@@ -1063,7 +1062,7 @@ export default class SimulationView {
 
         // Add simulation portfolio options using the updated names
         userSimulations.forEach(sim => {
-            logger.debug("✅ Adding simulation to dropdown:", sim.name, "ID:", sim.id);
+            console.log("✅ Adding simulation to dropdown:", sim.name, "ID:", sim.id);
             const option = document.createElement("option");
             option.value = sim.id;
             option.textContent = sim.name; // This should now have the updated name
@@ -1076,12 +1075,12 @@ export default class SimulationView {
             dropdown.appendChild(option);
         });
 
-        logger.debug("📋 Final dropdown options:");
+        console.log("📋 Final dropdown options:");
         Array.from(dropdown.options).forEach((option, index) => {
-            logger.debug(`  ${index}: value="${option.value}", text="${option.textContent}"`);
+            console.log(`  ${index}: value="${option.value}", text="${option.textContent}"`);
         });
 
-        logger.debug("Portfolio selector populated with", userSimulations.length, "simulations");
+        console.log("Portfolio selector populated with", userSimulations.length, "simulations");
     }
 
     // And add this method to your SimulationView class:
@@ -1099,7 +1098,7 @@ export default class SimulationView {
      * Method 2: Fixed refreshPortfolioValues (without forceRefreshLeaderboard)
      */
     async refreshPortfolioValues() {
-        logger.debug("Refreshing portfolio values...");
+        console.log("Refreshing portfolio values...");
         
         try {
             // 1. Refresh the portfolio manager data
@@ -1121,10 +1120,10 @@ export default class SimulationView {
             // 3. Update the stats cards with fresh data
             await this.updatePortfolioStatsCards();
             
-            logger.debug("Portfolio values refreshed successfully");
+            console.log("Portfolio values refreshed successfully");
             
         } catch (error) {
-            logger.error("Error refreshing portfolio values:", error);
+            console.error("Error refreshing portfolio values:", error);
         }
     }
 
@@ -1181,7 +1180,7 @@ export default class SimulationView {
             }
             
         } catch (error) {
-            logger.error("Error updating stats cards:", error);
+            console.error("Error updating stats cards:", error);
         }
     }
 

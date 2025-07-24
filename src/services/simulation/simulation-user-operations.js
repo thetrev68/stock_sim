@@ -17,7 +17,6 @@ import {
 } from "./simulation-core.js";
 import { addMemberToSimulation } from "./simulation-members.js";
 import { sortByCreatedDate } from "../../utils/date-utils.js";
-import { logger } from "../../utils/logger.js";
 
 const SIMULATIONS_COLLECTION = "simulations";
 const SIMULATION_MEMBERS_COLLECTION = "simulationMembers";
@@ -35,7 +34,7 @@ async function updateSimulationStatusIfNeeded(simulationId, currentStoredStatus,
     if (simSnap.exists()) {
         const simData = simSnap.data();
         if (simData.endedEarly || simData.adminEndedEarly) {
-            logger.debug(`Simulation ${simulationId} was manually ended - skipping auto status update`);
+            console.log(`Simulation ${simulationId} was manually ended - skipping auto status update`);
             return false;
         }
     }
@@ -49,10 +48,10 @@ async function updateSimulationStatusIfNeeded(simulationId, currentStoredStatus,
                 statusUpdatedAt: serverTimestamp()
             });
             
-            logger.debug(`Auto-updated simulation ${simulationId} status: ${currentStoredStatus} → ${calculatedStatus}`);
+            console.log(`Auto-updated simulation ${simulationId} status: ${currentStoredStatus} → ${calculatedStatus}`);
             return true;
         } catch (error) {
-            logger.error("Error auto-updating simulation status:", error);
+            console.error("Error auto-updating simulation status:", error);
             return false;
         }
     }
@@ -106,7 +105,7 @@ export async function joinSimulationByCode(inviteCode, userId, userInfo, db = nu
         };
 
     } catch (error) {
-        logger.error("Error joining simulation:", error);
+        console.error("Error joining simulation:", error);
         throw error;
     }
 }
@@ -149,7 +148,7 @@ export async function getUserSimulations(userId, db = null) {
                 // Update status in background if needed (don't await to avoid blocking)
                 if (simData.status !== realTimeStatus) {
                     updateSimulationStatusIfNeeded(simId, simData.status, realTimeStatus, database)
-                        .catch(error => logger.error("Background status update failed:", error));
+                        .catch(error => console.error("Background status update failed:", error));
                 }
                 
                 simulations.push({
@@ -168,7 +167,7 @@ export async function getUserSimulations(userId, db = null) {
         return simulations;
 
     } catch (error) {
-        logger.error("Error getting user simulations:", error);
+        console.error("Error getting user simulations:", error);
         throw error;
     }
 }

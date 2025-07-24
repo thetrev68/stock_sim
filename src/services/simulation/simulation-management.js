@@ -25,7 +25,6 @@ import {
     calculateProgressPercent,
     sumByProperty
 } from "../../utils/math-utils.js";
-import { logger } from "../../utils/logger.js";
 
 const SIMULATIONS_COLLECTION = "simulations";
 const SIMULATION_MEMBERS_COLLECTION = "simulationMembers";
@@ -40,7 +39,7 @@ const getDb = (db) => db || getFirestoreDb();
  * Standardized error handler.
  */
 const handleError = (context, error) => {
-    logger.error(`Error ${context}:`, error);
+    console.error(`Error ${context}:`, error);
     throw error;
 };
 
@@ -48,13 +47,13 @@ const handleError = (context, error) => {
  * ENHANCED: Fetches a simulation and verifies creator OR admin permissions
  */
 async function getVerifiedSimulation(simulationId, userId, database) {
-    logger.debug("Checking permissions for:", { simulationId, userId });
+    console.log("Checking permissions for:", { simulationId, userId });
     
     const simRef = doc(database, SIMULATIONS_COLLECTION, simulationId);
     const simSnap = await getDoc(simRef);
 
     if (!simSnap.exists()) {
-        logger.error("Simulation not found:", simulationId);
+        console.error("Simulation not found:", simulationId);
         throw new Error("Simulation not found");
     }
 
@@ -63,14 +62,14 @@ async function getVerifiedSimulation(simulationId, userId, database) {
     // ENHANCED: Check both creator and admin permissions
     const permissions = await permissionService.getSimulationPermissions(userId, simulation);
     
-    logger.debug("Permission check result:", {
+    console.log("Permission check result:", {
         userId,
         simulationCreator: simulation.createdBy,
         permissions
     });
 
     if (!permissions.canManage) {
-        logger.error("Permission denied:", {
+        console.error("Permission denied:", {
             simulationCreator: simulation.createdBy,
             requestingUser: userId,
             isCreator: permissions.isCreator,
@@ -79,7 +78,7 @@ async function getVerifiedSimulation(simulationId, userId, database) {
         throw new Error("You don't have permission to manage this simulation. Only the creator or system administrators can perform this action.");
     }
 
-    logger.debug(`Permission granted for user ${userId} (${permissions.accessReason})`);
+    console.log(`Permission granted for user ${userId} (${permissions.accessReason})`);
     return { simRef, simulation, permissions };
 }
 
@@ -90,7 +89,7 @@ export async function getMemberStatistics(simulationId, userId, db = null) {
     const database = getDb(db);
 
     try {
-        logger.debug("Getting member statistics for:", { simulationId, userId });
+        console.log("Getting member statistics for:", { simulationId, userId });
         
         // ENHANCED: Support both creator and admin access
         const { simulation, permissions } = await getVerifiedSimulation(simulationId, userId, database);
@@ -119,11 +118,11 @@ export async function getMemberStatistics(simulationId, userId, db = null) {
             });
         });
 
-        logger.debug(`Member statistics loaded successfully by ${permissions.accessReason}:`, memberStats.length, "members");
+        console.log(`Member statistics loaded successfully by ${permissions.accessReason}:`, memberStats.length, "members");
         return memberStats;
 
     } catch (error) {
-        logger.error("Error in getMemberStatistics:", error);
+        console.error("Error in getMemberStatistics:", error);
         throw new Error(`Failed to load member management: ${error.message}`);
     }
 }
@@ -135,7 +134,7 @@ export async function updateSimulationSettings(simulationId, userId, settings, d
     const database = getDb(db);
 
     try {
-        logger.debug("Updating simulation settings:", { simulationId, userId, settings });
+        console.log("Updating simulation settings:", { simulationId, userId, settings });
         
         // ENHANCED: Support both creator and admin access
         const { simRef, simulation, permissions } = await getVerifiedSimulation(simulationId, userId, database);
@@ -154,10 +153,10 @@ export async function updateSimulationSettings(simulationId, userId, settings, d
             updateData.name = settings.name.trim();
             nameChanged = true;
 
-            logger.debug("🔍 NAME CHANGE DETECTED:");
-            logger.debug("  Old name:", simulation.name);
-            logger.debug("  New name:", settings.name.trim());
-            logger.debug("  nameChanged flag:", nameChanged);
+            console.log("🔍 NAME CHANGE DETECTED:");
+            console.log("  Old name:", simulation.name);
+            console.log("  New name:", settings.name.trim());
+            console.log("  nameChanged flag:", nameChanged);
         }
 
         if (settings.description !== undefined) {
@@ -185,19 +184,19 @@ export async function updateSimulationSettings(simulationId, userId, settings, d
             
             // If name changed, update it everywhere
             if (nameChanged) {
-                logger.debug(`🔄 About to update name everywhere: "${oldName}" → "${settings.name.trim()}"`);
-                logger.debug("Calling updateSimulationNameEverywhere...");
+                console.log(`🔄 About to update name everywhere: "${oldName}" → "${settings.name.trim()}"`);
+                console.log("Calling updateSimulationNameEverywhere...");
                 await updateSimulationNameEverywhere(simulationId, settings.name.trim(), database);
-                logger.debug("✅ updateSimulationNameEverywhere completed");
+                console.log("✅ updateSimulationNameEverywhere completed");
             }
             
-            logger.debug(`Simulation ${simulationId} settings updated by ${userId} (${permissions.accessReason})`);
+            console.log(`Simulation ${simulationId} settings updated by ${userId} (${permissions.accessReason})`);
             return { success: true, changes, updatedBy: permissions.accessReason, nameChanged };
         } else {
             return { success: true, changes: [], updatedBy: permissions.accessReason, nameChanged: false };
         }
     } catch (error) {
-        logger.error("Error updating simulation settings:", error);
+        console.error("Error updating simulation settings:", error);
         throw new Error(`Failed to update settings: ${error.message}`);
     }
 }
@@ -209,7 +208,7 @@ export async function endSimulationEarly(simulationId, userId, reason = "", db =
     const database = getDb(db);
 
     try {
-        logger.debug(`Attempting to end simulation ${simulationId} early by ${userId}`);
+        console.log(`Attempting to end simulation ${simulationId} early by ${userId}`);
         
         // ENHANCED: Support both creator and admin access
         const { simRef, simulation, permissions } = await getVerifiedSimulation(simulationId, userId, database);
@@ -230,7 +229,7 @@ export async function endSimulationEarly(simulationId, userId, reason = "", db =
         };
 
         await updateDoc(simRef, updateData);
-        logger.debug("Simulation status updated successfully");
+        console.log("Simulation status updated successfully");
 
         // Log admin activity (non-blocking)
         try {
@@ -249,13 +248,13 @@ export async function endSimulationEarly(simulationId, userId, reason = "", db =
                 endedByRole: permissions.accessReason
             });
         } catch (activityError) {
-            logger.error("Error logging admin activity (non-fatal):", activityError);
+            console.error("Error logging admin activity (non-fatal):", activityError);
         }
 
-        logger.debug(`Simulation ${simulationId} ended early by ${userId} (${permissions.accessReason})`);
+        console.log(`Simulation ${simulationId} ended early by ${userId} (${permissions.accessReason})`);
         return { success: true, endedBy: permissions.accessReason };
     } catch (error) {
-        logger.error("Error ending simulation early:", error);
+        console.error("Error ending simulation early:", error);
         throw error;
     }
 }
@@ -267,7 +266,7 @@ export async function removeMemberFromSimulation(simulationId, targetUserId, adm
     const database = getDb(db);
 
     try {
-        logger.debug("Removing member:", { simulationId, targetUserId, adminUserId });
+        console.log("Removing member:", { simulationId, targetUserId, adminUserId });
         
         // ENHANCED: Support both creator and admin access
         const { simulation, permissions } = await getVerifiedSimulation(simulationId, adminUserId, database);
@@ -314,11 +313,11 @@ export async function removeMemberFromSimulation(simulationId, targetUserId, adm
             updatedAt: serverTimestamp()
         });
 
-        logger.debug(`Member ${targetUserId} removed by ${adminUserId} (${permissions.accessReason})`);
+        console.log(`Member ${targetUserId} removed by ${adminUserId} (${permissions.accessReason})`);
         return { success: true, removedBy: permissions.accessReason };
 
     } catch (error) {
-        logger.error("Error removing member:", error);
+        console.error("Error removing member:", error);
         throw error;
     }
 }
@@ -343,7 +342,7 @@ export async function canUserManageSimulation(userId, simulationId, db = null) {
         return permissions.canManage;
         
     } catch (error) {
-        logger.error("Error checking user permissions:", error);
+        console.error("Error checking user permissions:", error);
         return false;
     }
 }
@@ -370,14 +369,14 @@ export async function extendSimulation(simulationId, adminUserId, newEndDate, re
         const extensionDate = new Date(parseInt(dateParts[0]), parseInt(dateParts[1]) - 1, parseInt(dateParts[2]));
 
         // DEBUG: Log the dates for comparison
-        logger.debug("=== EXTEND SIMULATION DEBUG ===");
-        logger.debug("Current end date:", currentEndDate);
-        logger.debug("New end date input:", newEndDate);
-        logger.debug("Extension date object (fixed):", extensionDate);
-        logger.debug("Current end date getTime():", currentEndDate.getTime());
-        logger.debug("Extension date getTime():", extensionDate.getTime());
-        logger.debug("Extension > Current?:", extensionDate.getTime() > currentEndDate.getTime());
-        logger.debug("================================");
+        console.log("=== EXTEND SIMULATION DEBUG ===");
+        console.log("Current end date:", currentEndDate);
+        console.log("New end date input:", newEndDate);
+        console.log("Extension date object (fixed):", extensionDate);
+        console.log("Current end date getTime():", currentEndDate.getTime());
+        console.log("Extension date getTime():", extensionDate.getTime());
+        console.log("Extension > Current?:", extensionDate.getTime() > currentEndDate.getTime());
+        console.log("================================");
 
         // Normalize both dates to start of day for comparison
         const currentEndTime = new Date(currentEndDate.getFullYear(), currentEndDate.getMonth(), currentEndDate.getDate()).getTime();
@@ -407,7 +406,7 @@ export async function extendSimulation(simulationId, adminUserId, newEndDate, re
             originalEndDate: simulation.originalEndDate || simulation.endDate
         });
 
-        logger.debug(`Simulation ${simulationId} extended to ${finalExtensionDate.toISOString()} by ${adminUserId}`);
+        console.log(`Simulation ${simulationId} extended to ${finalExtensionDate.toISOString()} by ${adminUserId}`);
         return { success: true };
     } catch (error) {
         return handleError("extending simulation", error);
@@ -544,7 +543,7 @@ export async function archiveSimulation(simulationId, adminUserId, finalLeaderbo
             archivedAt: serverTimestamp()
         });
 
-        logger.debug(`Simulation ${simulationId} archived successfully with ID: ${archiveRef.id}`);
+        console.log(`Simulation ${simulationId} archived successfully with ID: ${archiveRef.id}`);
         return { success: true, archiveId: archiveRef.id };
     } catch (error) {
         return handleError("archiving simulation", error);
@@ -671,7 +670,7 @@ export function generateSimulationExport(archivedSimulation) {
 
         return exportData;
     } catch (error) {
-        logger.error("Error generating simulation export:", error);
+        console.error("Error generating simulation export:", error);
         throw new Error("Failed to generate export data");
     }
 }
@@ -708,7 +707,7 @@ export async function refreshSimulationStatus(simulationId, db = null) {
                 statusUpdatedAt: serverTimestamp()
             });
             
-            logger.debug(`Simulation ${simulationId} status refreshed from ${simulation.status} to ${currentStatus}`);
+            console.log(`Simulation ${simulationId} status refreshed from ${simulation.status} to ${currentStatus}`);
             return { success: true, oldStatus: simulation.status, newStatus: currentStatus };
         }
         
@@ -739,7 +738,7 @@ export async function updateSimulationStatus(simulationId, newStatus, db = null)
             manualStatusOverride: true
         });
         
-        logger.debug(`Simulation ${simulationId} status manually updated to ${newStatus}`);
+        console.log(`Simulation ${simulationId} status manually updated to ${newStatus}`);
         return { success: true };
         
     } catch (error) {
@@ -755,7 +754,7 @@ export async function updateSimulationNameEverywhere(simulationId, newName, db =
     const database = getDb(db);
     
     try {
-        logger.debug(`Updating simulation name to "${newName}" across all collections...`);
+        console.log(`Updating simulation name to "${newName}" across all collections...`);
         
         // Use a batch to ensure all updates succeed or fail together
         const batch = writeBatch(database);
@@ -807,15 +806,15 @@ export async function updateSimulationNameEverywhere(simulationId, newName, db =
         // Execute all updates as a batch
         if (updateCount > 0) {
             await batch.commit();
-            logger.debug(`Successfully updated simulationName in ${updateCount} documents`);
+            console.log(`Successfully updated simulationName in ${updateCount} documents`);
         } else {
-            logger.debug("No documents found to update");
+            console.log("No documents found to update");
         }
 
         return { success: true, updatedDocuments: updateCount };
 
     } catch (error) {
-        logger.error("Error updating simulation name everywhere:", error);
+        console.error("Error updating simulation name everywhere:", error);
         throw new Error(`Failed to update simulation name across collections: ${error.message}`);
     }
 }

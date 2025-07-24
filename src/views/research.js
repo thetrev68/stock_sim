@@ -7,7 +7,6 @@ import { TIMEOUTS } from "../constants/app-config.js";
 import { ERROR_MESSAGES } from "../constants/ui-messages.js";
 
 // Utility functions
-import { logger } from "../utils/logger.js";
 
 // Component managers
 import { NewsManager } from "../components/research/NewsManager.js";
@@ -43,7 +42,7 @@ export default class ResearchView {
         const prefilledTicker = urlParams.get("ticker");
         
         if (prefilledTicker) {
-            logger.info(`Pre-filling research with ticker: ${prefilledTicker}`);
+            console.log(`Pre-filling research with ticker: ${prefilledTicker}`);
             // Set the input value
             const tickerInput = document.getElementById("research-ticker-input");
             if (tickerInput) {
@@ -62,7 +61,7 @@ export default class ResearchView {
     async loadChartJS() {
         // Check if Chart.js is already loaded
         if (typeof Chart !== "undefined") {
-            logger.info("Chart.js already loaded");
+            console.log("Chart.js already loaded");
             return;
         }
 
@@ -70,11 +69,11 @@ export default class ResearchView {
             const script = document.createElement("script");
             script.src = "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js";
             script.onload = () => {
-                logger.info("Chart.js loaded successfully");
+                console.log("Chart.js loaded successfully");
                 resolve();
             };
             script.onerror = () => {
-                logger.error("Failed to load Chart.js");
+                console.error("Failed to load Chart.js");
                 // Fallback: show static message instead of chart
                 resolve(); // Don't reject so the app continues working
             };
@@ -209,7 +208,7 @@ export default class ResearchView {
 
         try {
             // Fetch stock details
-            logger.info(`Researching stock: ${upperTicker}`);
+            console.log(`Researching stock: ${upperTicker}`);
             this.currentStockData = await this.stockService.getStockDetails(upperTicker);
             
             if (!this.currentStockData) {
@@ -223,7 +222,7 @@ export default class ResearchView {
             await this.loadStockNews(); // NEW: Add this line
 
         } catch (error) {
-            logger.error("Research error:", error);
+            console.error("Research error:", error);
             this.showError(error.message || "Failed to fetch stock data. Please try again.");
         } finally {
             this.hideLoading();
@@ -263,7 +262,7 @@ export default class ResearchView {
             const ticker = this.currentStockData.ticker;
             const tradeUrl = `/trade?ticker=${ticker}`;
             
-            logger.info(`Navigating to trade ${ticker}`);
+            console.log(`Navigating to trade ${ticker}`);
             
             if (window.app && window.app.router) {
                 window.app.router.navigate(tradeUrl);

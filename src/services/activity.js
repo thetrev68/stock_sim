@@ -11,7 +11,6 @@ import {
     serverTimestamp 
 } from "firebase/firestore";
 import { getTimeAgoCompact } from "../utils/date-utils.js";
-import { logger } from "../utils/logger.js";
 
 
 
@@ -49,7 +48,7 @@ export class ActivityService {
     // Initialize service
     initialize() {
         this.db = getFirestoreDb();
-        logger.info("ActivityService initialized");
+        console.log("ActivityService initialized");
     }
 
     /**
@@ -71,10 +70,10 @@ export class ActivityService {
             };
 
             await addDoc(collection(this.db, ACTIVITIES_COLLECTION), activity);
-            logger.info(`Logged join activity for user ${userId} in simulation ${simulationId}`);
+            console.log(`Logged join activity for user ${userId} in simulation ${simulationId}`);
             
         } catch (error) {
-            logger.error("Error logging join activity:", error);
+            console.error("Error logging join activity:", error);
         }
     }
 
@@ -103,10 +102,10 @@ export class ActivityService {
             };
 
             await addDoc(collection(this.db, ACTIVITIES_COLLECTION), activity);
-            logger.info(`Logged trade activity for user ${userId}: ${tradeData.type} ${tradeData.quantity} ${tradeData.ticker.toUpperCase()}`);
+            console.log(`Logged trade activity for user ${userId}: ${tradeData.type} ${tradeData.quantity} ${tradeData.ticker.toUpperCase()}`);
             
         } catch (error) {
-            logger.error("Error logging trade activity:", error);
+            console.error("Error logging trade activity:", error);
         }
     }
 
@@ -148,10 +147,10 @@ export class ActivityService {
             };
 
             await addDoc(collection(this.db, ACTIVITIES_COLLECTION), activity);
-            logger.info(`Logged achievement activity for user ${userId}: ${achievementData.milestone}`);
+            console.log(`Logged achievement activity for user ${userId}: ${achievementData.milestone}`);
             
         } catch (error) {
-            logger.error("Error logging achievement activity:", error);
+            console.error("Error logging achievement activity:", error);
         }
     }
 
@@ -177,10 +176,10 @@ export class ActivityService {
             };
 
             await addDoc(collection(this.db, ACTIVITIES_COLLECTION), activity);
-            logger.info(`Logged admin activity for user ${adminUserId}: ${actionData.action}`);
+            console.log(`Logged admin activity for user ${adminUserId}: ${actionData.action}`);
             
         } catch (error) {
-            logger.error("Error logging admin activity:", error);
+            console.error("Error logging admin activity:", error);
         }
     }
 
@@ -207,7 +206,7 @@ export class ActivityService {
             }));
 
         } catch (error) {
-            logger.error("Error getting simulation activities:", error);
+            console.error("Error getting simulation activities:", error);
             return [];
         }
     }
@@ -236,7 +235,7 @@ export class ActivityService {
             }));
 
         } catch (error) {
-            logger.error("Error getting user activities:", error);
+            console.error("Error getting user activities:", error);
             return [];
         }
     }
@@ -465,7 +464,7 @@ export class ActivityService {
             }
 
         } catch (error) {
-            logger.error("Error detecting achievements:", error);
+            console.error("Error detecting achievements:", error);
         }
     }
 

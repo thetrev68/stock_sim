@@ -12,7 +12,6 @@ import {
 import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
 import { getFirebaseAuth, getFirestoreDb } from "./firebase.js";
 import { ERROR_MESSAGES } from "../constants/ui-messages.js";
-import { logger } from "../utils/logger.js";
 
 const USERS_COLLECTION = "Users";
 
@@ -25,7 +24,7 @@ export class AuthService {
     // Initialize auth service
     async initialize() {
         this.auth = getFirebaseAuth();
-        logger.info("AuthService initialized");
+        console.log("AuthService initialized");
     }
 
     // Sign in with email and password
@@ -35,7 +34,7 @@ export class AuthService {
             const userCredential = await signInWithEmailAndPassword(this.auth, email, password);
             return userCredential.user;
         } catch (error) {
-            logger.error("Email sign in error:", error);
+            console.error("Email sign in error:", error);
             throw this.formatAuthError(error);
         }
     }
@@ -57,7 +56,7 @@ export class AuthService {
 
             return user;
         } catch (error) {
-            logger.error("Account creation error:", error);
+            console.error("Account creation error:", error);
             throw this.formatAuthError(error);
         }
     }
@@ -74,7 +73,7 @@ export class AuthService {
 
             return user;
         } catch (error) {
-            logger.error("Google sign in error:", error);
+            console.error("Google sign in error:", error);
             throw this.formatAuthError(error);
         }
     }
@@ -95,10 +94,10 @@ export class AuthService {
             };
 
             await setDoc(userRef, userData);
-            logger.debug("User document created successfully:", user.uid);
+            console.log("User document created successfully:", user.uid);
             
         } catch (error) {
-            logger.error("Error creating user document:", error);
+            console.error("Error creating user document:", error);
             throw error;
         }
     }
@@ -119,7 +118,7 @@ export class AuthService {
             }
             
         } catch (error) {
-            logger.error("Error ensuring user document:", error);
+            console.error("Error ensuring user document:", error);
             // Don't throw error here - auth should still work even if Firestore fails
         }
     }
@@ -130,7 +129,7 @@ export class AuthService {
             this.auth = this.auth || getFirebaseAuth();
             await signOut(this.auth);
         } catch (error) {
-            logger.error("Sign out error:", error);
+            console.error("Sign out error:", error);
             throw error;
         }
     }

@@ -1,14 +1,14 @@
-// vite.config.js - Updated with your existing Tailwind config + PWA improvements
+// vite.config.js - Updated with proper module resolution and build config
 import { defineConfig } from "vite";
-import tailwindcss from "@tailwindcss/postcss";  // Your existing import
-import autoprefixer from "autoprefixer"; // Your existing import
+import tailwindcss from "@tailwindcss/postcss";
+import autoprefixer from "autoprefixer";
 
 export default defineConfig({
   css: {
     postcss: {
       plugins: [
-        tailwindcss(), // Your existing Tailwind config
-        autoprefixer(), // Your existing autoprefixer config
+        tailwindcss(),
+        autoprefixer(),
       ],
     },
   },
@@ -21,16 +21,18 @@ export default defineConfig({
   },
   build: {
     rollupOptions: {
-      // Ensure PWA files are included in build
       input: {
         main: "index.html"
       },
-      // Copy PWA files to build output
       external: [],
+      preserveEntrySignatures: "exports-only"
     },
-    // Copy static assets including PWA files
     copyPublicDir: true,
   },
-  // Ensure PWA files are served correctly
+  resolve: {
+    alias: {
+      "@": "/src"
+    }
+  },
   publicDir: "public"
 });

@@ -5,7 +5,6 @@
 
 import { getChartUnavailableTemplate } from "../../templates/research/research-errors.js";
 import { setUIState, updateElementHTML } from "../../utils/dom-utils.js";
-import { logger } from "../../utils/logger.js";
 
 export class ChartManager {
     constructor(stockService) {
@@ -44,7 +43,7 @@ export class ChartManager {
             }
 
         } catch (error) {
-            logger.error("Chart loading error:", error);
+            console.error("Chart loading error:", error);
             this.showChartUnavailable("Chart temporarily unavailable");
         }
     }
@@ -52,13 +51,13 @@ export class ChartManager {
     async renderChart(historicalData, currentStockData) {
         const canvas = document.getElementById("price-chart");
         if (!canvas) {
-            logger.error("Chart canvas not found");
+            console.error("Chart canvas not found");
             return;
         }
 
         // Check if Chart.js is available
         if (typeof Chart === "undefined") {
-            logger.error("Chart.js not loaded");
+            console.error("Chart.js not loaded");
             this.showChartUnavailable("Chart library not available");
             return;
         }
@@ -164,10 +163,10 @@ export class ChartManager {
             };
 
             this.currentChart = new Chart(ctx, chartConfig);
-            logger.info("Chart rendered successfully");
+            console.log("Chart rendered successfully");
 
         } catch (error) {
-            logger.error("Error rendering chart:", error);
+            console.error("Error rendering chart:", error);
             this.showChartUnavailable("Unable to render chart");
         }
     }

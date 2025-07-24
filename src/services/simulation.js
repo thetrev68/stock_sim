@@ -33,6 +33,7 @@ import {
     joinSimulationByCode as coreJoinSimulationByCode,
     getUserSimulations as coreGetUserSimulations
 } from "./simulation/simulation-user-operations.js";
+// Assuming you have a logger utility
 
 export class SimulationService {
     constructor() {
@@ -42,7 +43,7 @@ export class SimulationService {
     // Initialize service
     initialize() {
         this.db = getFirestoreDb();
-        logger.info("SimulationService initialized");
+        console.log("SimulationService initialized");
     }
 
     /**

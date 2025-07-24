@@ -8,7 +8,6 @@
  */
 
 import { API_LIMITS, API_ERROR_CONFIG } from "../../constants/app-config.js";
-import { logger } from "../../utils/logger.js";
 
 export class StockApiService {
     constructor() {
@@ -47,14 +46,14 @@ export class StockApiService {
         
         // Check if API is in cooldown after failures
         if (this.apiStatus.isDown && (now - this.apiStatus.lastFailureTime) < this.apiStatus.cooldownPeriod) {
-            logger.debug("API in cooldown, using fallback data");
+            console.log("API in cooldown, using fallback data");
             return false;
         }
         
         // Check rate limiting
         this.callTimestamps = this.callTimestamps.filter(timestamp => now - timestamp < API_LIMITS.RATE_LIMIT_WINDOW);
         if (this.callTimestamps.length >= this.maxCallsPerMinute) {
-            logger.debug("Rate limit exceeded, using fallback data");
+            console.log("Rate limit exceeded, using fallback data");
             return false;
         }
         
@@ -82,7 +81,7 @@ export class StockApiService {
         if (this.callTimestamps.length >= this.maxCallsPerMinute) {
             const oldestCall = Math.min(...this.callTimestamps);
             const waitTime = API_LIMITS.RATE_LIMIT_WINDOW - (now - oldestCall) + API_LIMITS.MIN_TIME_BETWEEN_CALLS;
-            logger.debug(`Rate limit protection: waiting ${Math.round(waitTime/1000)}s...`);
+            console.log(`Rate limit protection: waiting ${Math.round(waitTime/1000)}s...`);
             await new Promise(resolve => setTimeout(resolve, waitTime));
         }
         

@@ -6,7 +6,6 @@ import { AuthService } from "./services/auth.js";
 import { HeaderComponent } from "./components/layout/Header.js";
 import { NavigationComponent } from "./components/layout/Navigation.js";
 import { initializePortfolio } from "./services/trading.js"; 
-import { logger } from "./utils/logger.js";
 import { pwaManager } from "./utils/pwa-utils.js";
 
 class App {
@@ -26,7 +25,7 @@ class App {
 
             // Initialize Firebase
             await initializeApp();
-            logger.info("Firebase initialized");
+            console.log("Firebase initialized");
 
             // Initialize auth service
             await this.authService.initialize();
@@ -46,9 +45,9 @@ class App {
             this.showApp();
 
             this.isInitialized = true;
-            logger.info("App initialized successfully");
+            console.log("App initialized successfully");
         } catch (error) {
-            logger.error("Failed to initialize app:", error);
+            console.error("Failed to initialize app:", error);
             this.showError("Failed to initialize application");
         }
     }
@@ -117,7 +116,7 @@ class App {
             this.updateNavigationActive(viewName);
             
         } catch (error) {
-            logger.error(`Failed to load view ${viewName}:`, error);
+            console.error(`Failed to load view ${viewName}:`, error);
             document.getElementById("main-content").innerHTML = `
                 <div class="bg-red-900/20 border border-red-500 rounded-lg p-6">
                     <h2 class="text-xl font-semibold text-red-400 mb-2">Error Loading View</h2>
@@ -136,7 +135,7 @@ class App {
     async handleAuthStateChange(user) {
         this.currentUser = user;
         if (user) {
-            logger.info("User signed in:", user.email);
+            console.log("User signed in:", user.email);
             this.headerComponent.updateAuthState(user);
             
             // CRITICAL: Initialize or ensure solo portfolio structure upon login
@@ -176,15 +175,15 @@ class App {
 
     async initializePWA() {
         try {
-            logger.info("Initializing PWA features...");
+            console.log("Initializing PWA features...");
             await this.pwaManager.initialize();
             
             if (this.pwaManager.isInstalled()) {
                 document.body.classList.add("pwa-mode");
-                logger.info("Running as installed PWA");
+                console.log("Running as installed PWA");
             }
         } catch (error) {
-            logger.error("PWA initialization failed:", error);
+            console.error("PWA initialization failed:", error);
         }
     }
 }

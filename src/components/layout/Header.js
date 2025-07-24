@@ -1,5 +1,4 @@
 // Header component
-import { logger } from "../../utils/logger.js";
 
 export class HeaderComponent {
     constructor() {
@@ -54,7 +53,7 @@ export class HeaderComponent {
             const authService = new AuthService();
             await authService.signOut();
         } catch (error) {
-            logger.error("Sign out error:", error);
+            console.error("Sign out error:", error);
         }
     }
 

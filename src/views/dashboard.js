@@ -22,7 +22,6 @@ import {
     copyToClipboard,
     showTemporaryMessage
 } from "../utils/dom-utils.js";
-import { logger } from "../utils/logger.js";
 
 
 export default class DashboardView {
@@ -180,11 +179,11 @@ export default class DashboardView {
     }
 
     async loadData() {
-        logger.info("Loading dashboard data...");
+        console.log("Loading dashboard data...");
         
         const user = this.authService.getCurrentUser();
         if (!user) {
-            logger.info("No user signed in for dashboard.");
+            console.log("No user signed in for dashboard.");
             return;
         }
 
@@ -194,14 +193,14 @@ export default class DashboardView {
             
             // Load user's simulations
             this.userSimulations = await this.simulationService.getUserSimulations(user.uid);
-            logger.info("Loaded simulations:", this.userSimulations);
+            console.log("Loaded simulations:", this.userSimulations);
             
             // Update UI
             this.updateSimulationStats();
             this.renderSimulations();
             
         } catch (error) {
-            logger.error("Error loading dashboard data:", error);
+            console.error("Error loading dashboard data:", error);
             this.showSimulationsError();
         }
     }
@@ -410,7 +409,7 @@ export default class DashboardView {
         if (viewBtn) {
             viewBtn.addEventListener("click", (e) => {
                 const simId = e.currentTarget.dataset.simId;
-                logger.info(`Viewing simulation: ${simId}`);
+                console.log(`Viewing simulation: ${simId}`);
                 this.navigateToSimulation(simId);
             });
         }
@@ -449,7 +448,7 @@ export default class DashboardView {
         }
         
         this.createSimModal.show((result) => {
-            logger.info("Simulation created:", result);
+            console.log("Simulation created:", result);
             // Refresh the simulations list
             this.loadData();
         });
@@ -461,7 +460,7 @@ export default class DashboardView {
         }
         
         this.joinSimModal.show((simulation) => {
-            logger.info("Joined simulation:", simulation);
+            console.log("Joined simulation:", simulation);
             // Refresh the simulations list
             this.loadData();
             
@@ -480,10 +479,10 @@ export default class DashboardView {
         }
         
         this.emailInviteModal.show(simulation, (invitationData) => {
-            logger.info("Email invitations sent:", invitationData);
+            console.log("Email invitations sent:", invitationData);
             
             // Show success notification (optional)
-            logger.info(`Invitations prepared for ${invitationData.recipients.length} recipients`);
+            console.log(`Invitations prepared for ${invitationData.recipients.length} recipients`);
             
             // Optionally refresh simulation data to show updated member counts
             this.loadData();

@@ -19,7 +19,6 @@ import {
     addClass,
     removeClass
 } from "../../utils/dom-utils.js";
-import { logger } from "../../utils/logger.js";
 import { isValidEmail } from "../../utils/validation-utils.js";
 
 export class EmailInviteModal {
@@ -244,7 +243,7 @@ export class EmailInviteModal {
                     linkInput.setSelectionRange(0, 99999);
                 }
             } catch (error) {
-                logger.error("Failed to copy link:", error);
+                console.error("Failed to copy link:", error);
                 // Fallback selection
                 linkInput.select();
                 linkInput.setSelectionRange(0, 99999);
@@ -366,7 +365,7 @@ export class EmailInviteModal {
             }
 
         } catch (error) {
-            logger.error("Error sending invites:", error);
+            console.error("Error sending invites:", error);
             this.showError(error.message);
         } finally {
             this.setLoading(false);
@@ -378,11 +377,11 @@ export class EmailInviteModal {
         await new Promise(resolve => setTimeout(resolve, 1500));
         
         // In a real implementation, this would send emails via backend
-        logger.info("Simulating email sending:", invitationData);
+        console.log("Simulating email sending:", invitationData);
         
         // For demo purposes, we'll show the message that would be sent
         const messageContent = this.generateEmailMessage(invitationData);
-        logger.info("Email message would be:", messageContent);
+        console.log("Email message would be:", messageContent);
         
         return { success: true, message: messageContent };
     }

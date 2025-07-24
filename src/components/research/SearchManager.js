@@ -7,7 +7,6 @@ import {
     getSearchResultItemTemplate, 
     getSearchEmptyStateTemplate 
 } from "../../templates/research/research-search.js";
-import { logger } from "../../utils/logger.js";
 
 export class SearchManager {
     constructor(stockService) {
@@ -38,7 +37,7 @@ export class SearchManager {
                 this.searchResults = await this.stockService.searchStocks(query);
                 this.displaySearchResults(onStockSelected);
             } catch (error) {
-                logger.error("Search error:", error);
+                console.error("Search error:", error);
                 this.hideSearchResults();
             } finally {
                 this.showSearchLoading(false);

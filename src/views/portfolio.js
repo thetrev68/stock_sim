@@ -15,7 +15,6 @@ import {
     calculateMarketValue,
     calculateCostBasis
 } from "../utils/currency-utils.js";
-import { logger } from "../utils/logger.js";
 import { calculateComprehensiveGains } from "../utils/math-utils.js";
 
 // Portfolio Templates
@@ -96,7 +95,7 @@ export default class PortfolioView {
             this.gainsData = gainsData;
             
         } catch (error) {
-            logger.error("Error calculating gains:", error);
+            console.error("Error calculating gains:", error);
             // Optionally show error state in gains section
             this.showGainsError();
         }
@@ -132,7 +131,7 @@ export default class PortfolioView {
         makeTradeButtons.forEach(button => {
             button.addEventListener("click", (e) => {
                 e.preventDefault();
-                logger.info("Navigating to trade page...");
+                console.log("Navigating to trade page...");
             });
         });
 
@@ -162,10 +161,10 @@ export default class PortfolioView {
     }
 
     async loadData() {
-        logger.info("Loading portfolio data...");
+        console.log("Loading portfolio data...");
         const user = this.authService.getCurrentUser();
         if (!user) {
-            logger.info("No user signed in for portfolio.");
+            console.log("No user signed in for portfolio.");
             return;
         }
 
@@ -188,7 +187,7 @@ export default class PortfolioView {
                 this.showDefaultState();
             }
         } catch (error) {
-            logger.error("Error loading portfolio data:", error);
+            console.error("Error loading portfolio data:", error);
             this.showErrorState();
         }
     }
@@ -250,7 +249,7 @@ export default class PortfolioView {
                     totalHoldingsValue += marketValue;
 
                     const costBasis = calculateCostBasis(holding.quantity, holding.avgPrice);
-                    const gainLossData = calculateGainLoss(marketValue, costBasis);
+                    const _gainLossData = calculateGainLoss(marketValue, costBasis);
                     // const gainLossFormatted = formatGainLoss(gainLossData.amount, gainLossData.percentage);
 
                     // Update the row with real data
@@ -262,7 +261,7 @@ export default class PortfolioView {
                         existingRow.outerHTML = updatedRow;
                     }
                 } catch (error) {
-                    logger.error(`Error loading price for ${ticker}:`, error);
+                    console.error(`Error loading price for ${ticker}:`, error);
                     // Fallback to average price if API fails
                     const marketValue = calculateMarketValue(holding.quantity, holding.avgPrice);
                     totalHoldingsValue += marketValue;
@@ -424,9 +423,9 @@ export default class PortfolioView {
             // ADDED: Recalculate gains after price refresh
             await this.calculateAndDisplayGains();
             
-            logger.info("Prices refreshed successfully");
+            console.log("Prices refreshed successfully");
         } catch (error) {
-            logger.error("Error refreshing prices:", error);
+            console.error("Error refreshing prices:", error);
         } finally {
             if (refreshText) refreshText.classList.remove("hidden");
             if (refreshLoading) refreshLoading.classList.add("hidden");

@@ -19,7 +19,6 @@ import {
     calculateWinRateFromHoldings,
     calculatePercentile 
 } from "../utils/math-utils.js";
-import { logger } from "../utils/logger.js";
 
 const LEADERBOARDS_COLLECTION = "simulationLeaderboards";
 const SIMULATION_MEMBERS_COLLECTION = "simulationMembers";
@@ -33,7 +32,7 @@ export class LeaderboardService {
 
     initialize() {
         this.db = getFirestoreDb();
-        logger.info("LeaderboardService initialized");
+        console.log("LeaderboardService initialized");
     }
 
     /**
@@ -56,7 +55,7 @@ export class LeaderboardService {
         let holdingsValue = 0;
         const holdingsBreakdown = {};
 
-        logger.info(`Calculating portfolio value - Cash: $${cash}, Holdings: ${Object.keys(holdings).length}`);
+        console.log(`Calculating portfolio value - Cash: $${cash}, Holdings: ${Object.keys(holdings).length}`);
 
         // Calculate holdings value with live prices
         for (const ticker in holdings) {
@@ -68,12 +67,12 @@ export class LeaderboardService {
                 if (currentPrice === undefined || currentPrice === null) {
                     try {
                         currentPrice = await this.stockService.getQuote(ticker);
-                        logger.info(`Fetched live price for ${ticker}: $${currentPrice}`);
+                        console.log(`Fetched live price for ${ticker}: $${currentPrice}`);
                     } catch (error) {
-                        logger.error(`Error fetching price for ${ticker}:`, error);
+                        console.error(`Error fetching price for ${ticker}:`, error);
                         // Fall back to average price if API fails
                         currentPrice = holding.avgPrice;
-                        logger.info(`Using fallback price for ${ticker}: $${currentPrice}`);
+                        console.log(`Using fallback price for ${ticker}: $${currentPrice}`);
                     }
                 }
 
@@ -100,13 +99,13 @@ export class LeaderboardService {
                     gainLossPercent
                 };
 
-                logger.info(`${ticker}: ${quantity} @ $${currentPrice} = $${value} (P&L: ${gainLoss >= 0 ? "+" : ""}$${gainLoss.toFixed(2)})`);
+                console.log(`${ticker}: ${quantity} @ $${currentPrice} = $${value} (P&L: ${gainLoss >= 0 ? "+" : ""}$${gainLoss.toFixed(2)})`);
             }
         }
 
         const totalValue = cash + holdingsValue;
         
-        logger.info(`Portfolio Total - Cash: $${cash}, Holdings: $${holdingsValue}, Total: $${totalValue}`);
+        console.log(`Portfolio Total - Cash: $${cash}, Holdings: $${holdingsValue}, Total: $${totalValue}`);
 
         return {
             totalValue,
@@ -158,7 +157,7 @@ export class LeaderboardService {
             return membersWithPortfolios;
 
         } catch (error) {
-            logger.error("Error getting simulation members with portfolios:", error);
+            console.error("Error getting simulation members with portfolios:", error);
             throw error;
         }
     }
@@ -193,7 +192,7 @@ export class LeaderboardService {
                     const price = await this.stockService.getQuote(ticker);
                     if (price !== null && price !== undefined && !isNaN(price)) {
                         prices[ticker] = price;
-                        logger.info(`Prefetched ${ticker}: $${price}`);
+                        console.log(`Prefetched ${ticker}: $${price}`);
                     } else {
                         errors.push(`Invalid price for ${ticker}`);
                     }
@@ -211,7 +210,7 @@ export class LeaderboardService {
             }
         }
         
-        logger.info(`Prefetched prices for ${Object.keys(prices).length}/${uniqueTickers.size} tickers`);
+        console.log(`Prefetched prices for ${Object.keys(prices).length}/${uniqueTickers.size} tickers`);
         if (errors.length > 0) {
             console.warn(`Price fetch errors: ${errors.join(", ")}`);
         }
@@ -270,14 +269,14 @@ export class LeaderboardService {
     async generateSimulationLeaderboard(simulationId, simulationInfo = null) {
         // Prevent concurrent updates for the same simulation
         if (this.isUpdating.get(simulationId)) {
-            logger.info(`Leaderboard update already in progress for simulation ${simulationId}`);
+            console.log(`Leaderboard update already in progress for simulation ${simulationId}`);
             return null;
         }
 
         this.isUpdating.set(simulationId, true);
 
         try {
-            logger.info(`Generating leaderboard for simulation ${simulationId}...`);
+            console.log(`Generating leaderboard for simulation ${simulationId}...`);
 
             // Get simulation info if not provided
             if (!simulationInfo) {
@@ -338,7 +337,7 @@ export class LeaderboardService {
                         previousRank: null // TODO: Track from previous leaderboard
                     });
                 } catch (error) {
-                    logger.error(`Error calculating portfolio for user ${member.userId}:`, error);
+                    console.error(`Error calculating portfolio for user ${member.userId}:`, error);
                 }
             }
 
@@ -385,11 +384,11 @@ export class LeaderboardService {
             // Store leaderboard in Firestore
             await this.saveLeaderboard(leaderboardData);
 
-            logger.info(`Leaderboard generated successfully for simulation ${simulationId} with ${totalParticipants} participants`);
+            console.log(`Leaderboard generated successfully for simulation ${simulationId} with ${totalParticipants} participants`);
             return leaderboardData;
 
         } catch (error) {
-            logger.error(`Error generating leaderboard for simulation ${simulationId}:`, error);
+            console.error(`Error generating leaderboard for simulation ${simulationId}:`, error);
             throw error;
         } finally {
             this.isUpdating.set(simulationId, false);
@@ -433,10 +432,10 @@ export class LeaderboardService {
             };
 
             await setDoc(leaderboardRef, firestoreData);
-            logger.info(`Leaderboard saved for simulation ${leaderboardData.simulationId}`);
+            console.log(`Leaderboard saved for simulation ${leaderboardData.simulationId}`);
 
         } catch (error) {
-            logger.error("Error saving leaderboard:", error);
+            console.error("Error saving leaderboard:", error);
             throw error;
         }
     }
@@ -459,7 +458,7 @@ export class LeaderboardService {
             return null;
 
         } catch (error) {
-            logger.error("Error getting cached leaderboard:", error);
+            console.error("Error getting cached leaderboard:", error);
             return null;
         }
     }
@@ -482,7 +481,7 @@ export class LeaderboardService {
                     
                     // Return cached if less than 5 minutes old
                     if (ageMinutes < 5) {
-                        logger.info(`Using cached leaderboard for simulation ${simulationId} (${ageMinutes.toFixed(1)} minutes old)`);
+                        console.log(`Using cached leaderboard for simulation ${simulationId} (${ageMinutes.toFixed(1)} minutes old)`);
                         return cached;
                     }
                 }
@@ -492,7 +491,7 @@ export class LeaderboardService {
             return await this.generateSimulationLeaderboard(simulationId, simulationInfo);
 
         } catch (error) {
-            logger.error("Error getting leaderboard:", error);
+            console.error("Error getting leaderboard:", error);
             throw error;
         }
     }
@@ -525,7 +524,7 @@ export class LeaderboardService {
             };
 
         } catch (error) {
-            logger.error("Error getting user rank:", error);
+            console.error("Error getting user rank:", error);
             return null;
         }
     }
@@ -543,7 +542,7 @@ export class LeaderboardService {
                 const leaderboard = await this.generateSimulationLeaderboard(simulationId);
                 results.push({ simulationId, success: true, leaderboard });
             } catch (error) {
-                logger.error(`Error updating leaderboard for simulation ${simulationId}:`, error);
+                console.error(`Error updating leaderboard for simulation ${simulationId}:`, error);
                 results.push({ simulationId, success: false, error: error.message });
             }
         }

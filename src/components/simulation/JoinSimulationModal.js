@@ -2,7 +2,6 @@
 import { SimulationService } from "../../services/simulation.js";
 import { AuthService } from "../../services/auth.js";
 import { capitalize } from "../../utils/string-utils.js";
-import { logger } from "../../utils/logger.js";
 import { validateInviteCode } from "../../utils/validation-utils.js";
 
 export class JoinSimulationModal {
@@ -218,7 +217,7 @@ export class JoinSimulationModal {
                 this.showError("Invalid invite code");
             }
         } catch (error) {
-            logger.error("Error previewing simulation:", error);
+            console.error("Error previewing simulation:", error);
             this.hidePreview();
             this.disableJoinButton();
             this.showError("Error loading simulation details");
@@ -308,7 +307,7 @@ export class JoinSimulationModal {
             const result = await this.simulationService.joinSimulationByCode(inviteCode, user.uid, userInfo);
             
             if (result.success) {
-                logger.info("Successfully joined simulation:", result.simulation);
+                console.log("Successfully joined simulation:", result.simulation);
                 this.showSuccess(`Successfully joined "${result.simulation.name}"!`);
                 
                 // Call callback if provided
@@ -323,7 +322,7 @@ export class JoinSimulationModal {
             }
 
         } catch (error) {
-            logger.error("Error joining simulation:", error);
+            console.error("Error joining simulation:", error);
             this.showError(error.message);
         } finally {
             this.setLoading(false);
