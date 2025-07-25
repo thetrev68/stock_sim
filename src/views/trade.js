@@ -354,7 +354,7 @@ export default class TradeView {
         if (sellBtn) sellBtn.disabled = false;
     }
 
-    updatePortfolioSummary() {
+    async updatePortfolioSummary() {
         if (!this.currentPortfolio || !this.viewContainer) return;
 
         const portfolioCashEl = this.viewContainer.querySelector("#portfolio-cash");
@@ -362,15 +362,24 @@ export default class TradeView {
             portfolioCashEl.textContent = formatCurrencyWithCommas(this.currentPortfolio.cash);
         }
         
-        // Calculate total holdings value
+        // Calculate total holdings value with LIVE PRICES
         let totalHoldingsValue = 0;
         const holdings = this.currentPortfolio.holdings || {}; 
+        
         for (const ticker in holdings) {
             if (Object.prototype.hasOwnProperty.call(holdings, ticker)) {
                 const holding = holdings[ticker];
-                const mockPrices = this.stockService.mockPrices || {};
-                const currentPrice = mockPrices[ticker.toUpperCase()] || holding.avgPrice; 
-                totalHoldingsValue += holding.quantity * currentPrice;
+                
+                try {
+                    // ✅ Use live prices instead of mock prices
+                    const currentPrice = await this.stockService.getQuote(ticker);
+                    const finalPrice = currentPrice !== null ? currentPrice : holding.avgPrice;
+                    totalHoldingsValue += holding.quantity * finalPrice;
+                } catch (error) {
+                    console.error(`Error getting live price for ${ticker}:`, error);
+                    // Fallback to average price if API fails
+                    totalHoldingsValue += holding.quantity * holding.avgPrice;
+                }
             }
         }
 
