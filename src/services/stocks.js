@@ -158,20 +158,4 @@ export class StockService {
     async getHistoricalData(ticker, resolution = "D", days = 30) {
         return await this.quotesService.getHistoricalData(ticker, resolution, days);
     }
-
-    getFallbackStockDetails(ticker) {
-        return this.quotesService.getFallbackStockDetails(ticker);
-    }
-
-    getFallbackPrice(ticker) {
-        return this.quotesService.getFallbackPrice(ticker);
-    }
-
-    generateMockHistoricalData(ticker, days) {
-        return this.quotesService.generateMockHistoricalData(ticker, days);
-    }
-
-    getMockSearchResults(query) {
-        return this.quotesService.getMockSearchResults(query);
-    }
 }

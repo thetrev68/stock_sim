@@ -5,81 +5,15 @@
  * Extracted from services/stocks.js
  */
 
-import { roundToDecimals } from "../../utils/currency-utils";
+// import { roundToDecimals } from "../../utils/currency-utils";
+import { MultiApiHistoricalService } from "./multi-api-historical.js";
 
 export class StockQuotesService {
     constructor(apiService, cacheService) {
         this.apiService = apiService;
         this.cacheService = cacheService;
-        
-        // Mock prices (keep existing)
-        this.mockPrices = {
-            "AAPL": 170.50,
-            "GOOG": 1500.25,
-            "MSFT": 420.00,
-            "TSLA": 180.75,
-            "F": 12.45,
-            "AMZN": 185.30,
-            "NVDA": 1000.00,
-            "SMCI": 800.00,
-            "AMD": 160.00,
-            "NFLX": 600.00,
-            "KO": 62.50,
-            "META": 450.00,
-            "GOOGL": 1495.00,
-            "INTC": 45.00,
-            "CRM": 280.00
-        };
 
-        // Mock profiles (keep existing)
-        this.mockProfiles = {
-            "MSFT": {
-                name: "Microsoft Corporation",
-                country: "US",
-                currency: "USD",
-                exchange: "NASDAQ",
-                ipo: "1986-03-13",
-                marketCapitalization: 2800000,
-                shareOutstanding: 7430000,
-                ticker: "MSFT",
-                weburl: "https://www.microsoft.com/",
-                logo: "https://static2.finnhub.io/file/publicdatany/finnhubimage/stock_logo/MSFT.png",
-                finnhubIndustry: "Technology"
-            }
-        };
-    }
-
-    getFallbackStockDetails(ticker) {
-        const mockPrice = this.mockPrices[ticker];
-        const mockProfile = this.mockProfiles[ticker];
-        
-        if (!mockPrice) {
-            return null;
-        }
-
-        const previousClose = mockPrice * (0.98 + Math.random() * 0.04);
-        const priceChange = mockPrice - previousClose;
-        
-        return {
-            ticker: ticker,
-            companyName: mockProfile?.name || `${ticker} Inc.`,
-            currentPrice: mockPrice,
-            previousClose,
-            dayHigh: mockPrice * 1.02,
-            dayLow: mockPrice * 0.98,
-            priceChange: Math.round(priceChange * 100) / 100,
-            priceChangePercent: parseFloat((priceChange / previousClose * 100).toFixed(2)),
-            openPrice: previousClose,
-            volume: Math.floor(Math.random() * 10000000),
-            marketCap: mockProfile?.marketCapitalization || null,
-            exchange: mockProfile?.exchange || "NASDAQ",
-            currency: mockProfile?.currency || "USD",
-            sector: mockProfile?.finnhubIndustry || "Technology",
-            website: mockProfile?.weburl || null,
-            logo: mockProfile?.logo || null,
-            companyProfile: mockProfile,
-            lastUpdated: new Date().toISOString()
-        };
+        this.multiApiHistorical = new MultiApiHistoricalService(apiService, cacheService);
     }
 
     async getQuote(ticker) {
@@ -93,7 +27,7 @@ export class StockQuotesService {
         }
 
         if (!this.apiService.shouldUseAPI()) {
-            return this.getFallbackPrice(upperTicker);
+            throw new Error(`Price data temporarily unavailable for ${upperTicker}`);
         }
 
         try {
@@ -121,12 +55,12 @@ export class StockQuotesService {
             } else {
                 // API returned but no valid price data
                 console.warn(`No valid price data for ${upperTicker} from API`);
-                return this.getFallbackPrice(upperTicker);
+                throw new Error(`No valid price data available for ${upperTicker}`);
             }
             
         } catch (error) {
             console.error(`Error fetching price for ${upperTicker}:`, error.message);
-            return this.getFallbackPrice(upperTicker);
+            throw new Error(`Price data temporarily unavailable for ${upperTicker}`);
         }
     }
 
@@ -134,9 +68,9 @@ export class StockQuotesService {
         const upperTicker = ticker.toUpperCase();
         
         try {
-            // Use cached or fallback data if API is down
+            // Check if API should be used
             if (!this.apiService.shouldUseAPI()) {
-                return this.getFallbackStockDetails(upperTicker);
+                throw new Error(`Stock details temporarily unavailable for ${upperTicker}`);
             }
 
             // Get both quote and profile in parallel
@@ -146,7 +80,7 @@ export class StockQuotesService {
             ]);
 
             if (!quoteData) {
-                return this.getFallbackStockDetails(upperTicker);
+                throw new Error(`Quote data unavailable for ${upperTicker}`);
             }
 
             // Combine quote and profile data
@@ -173,32 +107,16 @@ export class StockQuotesService {
 
         } catch (error) {
             console.error(`Error fetching stock details for ${upperTicker}:`, error.message);
-            return this.getFallbackStockDetails(upperTicker);
+            throw new Error(`Stock details temporarily unavailable for ${upperTicker}`);
         }
     }
 
     async getQuoteData(ticker) {
         const upperTicker = ticker.toUpperCase();
         
+        // Remove the mock data section and replace with:
         if (!this.apiService.shouldUseAPI()) {
-            // Return mock quote data
-            const mockPrice = this.mockPrices[upperTicker];
-            if (mockPrice) {
-                const previousClose = mockPrice * (0.98 + Math.random() * 0.04);
-                const priceChange = mockPrice - previousClose;
-                
-                return {
-                    currentPrice: mockPrice,
-                    previousClose,
-                    dayHigh: mockPrice * 1.02,
-                    dayLow: mockPrice * 0.98,
-                    openPrice: previousClose,
-                    priceChange: Math.round(priceChange * 100) / 100,
-                    priceChangePercent: parseFloat((priceChange / previousClose * 100).toFixed(2)),
-                    volume: Math.floor(Math.random() * 10000000)
-                };
-            }
-            return null;
+            throw new Error(`Quote data temporarily unavailable for ${ticker}`);
         }
         
         try {
@@ -391,115 +309,12 @@ export class StockQuotesService {
         );
     }
 
-    async getHistoricalData(ticker, _resolution = "D", days = 30) {
-        const upperTicker = ticker.toUpperCase();
-        
-        try {
-            await this.apiService.enforceRateLimit();
-            
-            // Calculate date range
-            const endDate = new Date();
-            const startDate = new Date();
-            startDate.setDate(startDate.getDate() - days);
-            
-            const startDateStr = startDate.toISOString().split("T")[0];
-            const endDateStr = endDate.toISOString().split("T")[0];
-            
-            // Build Tiingo URL
-            const tiingoUrl = `https://api.tiingo.com/tiingo/daily/${upperTicker}/prices?startDate=${startDateStr}&endDate=${endDateStr}&token=${this.apiService.tiingoApiKey}`;
-            
-            // Use AllOrigins CORS proxy
-            const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(tiingoUrl)}`;
-            
-            console.log(`Fetching historical data via CORS proxy for ${upperTicker} (${days} days)...`);
-            
-            const response = await fetch(proxyUrl);
-            
-            if (!response.ok) {
-                throw new Error(`Proxy error: ${response.status} ${response.statusText}`);
-            }
-            
-            const proxyData = await response.json();
-            
-            // Check if proxy succeeded
-            if (!proxyData.contents) {
-                throw new Error("Proxy returned no data");
-            }
-            
-            // Parse the actual Tiingo data
-            const data = JSON.parse(proxyData.contents);
-            
-            if (data && Array.isArray(data) && data.length > 0) {
-                console.log(`Successfully fetched ${data.length} data points for ${upperTicker}`);
-                
-                // Convert Tiingo format to your chart format
-                const timestamps = data.map(d => new Date(d.date).getTime() / 1000);
-                const closes = data.map(d => d.adjClose || d.close);
-                const opens = data.map(d => d.adjOpen || d.open);
-                const highs = data.map(d => d.adjHigh || d.high);
-                const lows = data.map(d => d.adjLow || d.low);
-                const volumes = data.map(d => d.volume || 0);
-                
-                // Reset API status on success
-                this.apiService.apiStatus.isDown = false;
-                
-                return { timestamps, closes, opens, highs, lows, volumes };
-            } else {
-                console.warn(`No historical data returned for ${upperTicker}`);
-                return this.generateMockHistoricalData(upperTicker, days);
-            }
-            
-        } catch (error) {
-            console.error(`Error fetching historical data for ${upperTicker}:`, error);
-            this.apiService.handleAPIError(error, "tiingo-proxy");
-            
-            // Fallback to mock data
-            return this.generateMockHistoricalData(upperTicker, days);
-        }
+    async getHistoricalData(ticker, resolution = "D", days = 30) {
+        // Use the multi-API service instead of single Tiingo approach
+        return await this.multiApiHistorical.getHistoricalData(ticker, resolution, days);
     }
 
-    generateMockHistoricalData(ticker, days) {
-        const currentPrice = this.mockPrices[ticker] || 100;
-        const timestamps = [];
-        const closes = [];
-        const opens = [];
-        const highs = [];
-        const lows = [];
-        const volumes = [];
-        
-        let price = currentPrice * 0.9; // Start 10% lower
-        const now = Date.now();
-        
-        for (let i = days; i >= 0; i--) {
-            const timestamp = Math.floor((now - (i * 24 * 60 * 60 * 1000)) / 1000);
-            const change = (Math.random() - 0.5) * 0.1; // ±5% daily change
-            
-            const open = price;
-            const close = price * (1 + change);
-            const high = Math.max(open, close) * (1 + Math.random() * 0.02);
-            const low = Math.min(open, close) * (1 - Math.random() * 0.02);
-            const volume = Math.floor(Math.random() * 10000000);
-            
-            timestamps.push(timestamp);
-            opens.push(roundToDecimals(open));
-            closes.push(roundToDecimals(close));
-            highs.push(roundToDecimals(high));
-            lows.push(roundToDecimals(low));
-            volumes.push(volume);
-            
-            price = close;
-        }
-        
-        return { timestamps, closes, opens, highs, lows, volumes };
-    }
+    
 
-    getFallbackPrice(ticker) {
-        const mockPrice = this.mockPrices[ticker];
-        if (mockPrice) {
-            console.log(`Using fallback mock price for ${ticker}: ${mockPrice}`);
-            return mockPrice;
-        }
-        console.warn(`No fallback price available for ${ticker}`);
-        return null;
-    }
+    
 }

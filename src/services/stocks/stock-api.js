@@ -11,21 +11,30 @@ import { API_LIMITS, API_ERROR_CONFIG } from "../../constants/app-config.js";
 
 export class StockApiService {
     constructor() {
-        // Your Finnhub API key (current data)
+        // Primary APIs (current)
         this.apiKey = "d1n5qs9r01qlvnp5lkugd1n5qs9r01qlvnp5lkv0";
         this.baseUrl = "https://finnhub.io/api/v1";
-
-        // Your Tiingo API key (historical data)
         this.tiingoApiKey = "5630214e66cda21e12a6a1bcee38baa31eee76f3";
         this.tiingoBaseUrl = "https://api.tiingo.com/tiingo";
 
+        // Fallback APIs (ADD THESE)
+        this.alphaVantageApiKey = "FUBGE11HDHIW3Q2R"; // Get from alphavantage.co
+        this.alphaVantageBaseUrl = "https://www.alphavantage.co/query";
+        
+        this.polygonApiKey = "N7prgzMP4gh00AKRVAAahn1s43zAf4zv"; // Get from polygon.io
+        this.polygonBaseUrl = "https://api.polygon.io";
+
+        // API status tracking for each service
+        this.apiStatus = {
+            finnhub: { isDown: false, lastFailureTime: 0 },
+            tiingo: { isDown: false, lastFailureTime: 0 },
+            alphaVantage: { isDown: false, lastFailureTime: 0 },
+            polygon: { isDown: false, lastFailureTime: 0 }
+        };
+
         // NEW: Add this line - automatically detects development environment
         this.useMockDataFallback = false; // Set to false for production
-        
-        // window.location.hostname === "localhost" || 
-        // window.location.hostname === "127.0.0.1" ||
-        // window.location.hostname.includes("localhost");
-        
+
         // Enhanced rate limiting
         this.lastApiCall = 0;
         this.minTimeBetweenCalls = API_LIMITS.MIN_TIME_BETWEEN_CALLS; // 2 seconds
@@ -60,14 +69,14 @@ export class StockApiService {
         return true;
     }
 
-    handleAPIError(error, endpoint) {
-        console.error(`API Error at ${endpoint}:`, error.message);
+    // Enhanced error handling for specific APIs
+    handleAPIError(error, endpoint, apiName) {
+        console.error(`${apiName} API Error at ${endpoint}:`, error.message);
         
-        // If it's a 403 or 429, mark API as down temporarily
         if (error.message.includes("403") || error.message.includes("429")) {
-            this.apiStatus.isDown = true;
-            this.apiStatus.lastFailureTime = Date.now();
-            console.warn("API marked as down due to rate limiting. Using fallback data for 5 minutes.");
+            this.apiStatus[apiName].isDown = true;
+            this.apiStatus[apiName].lastFailureTime = Date.now();
+            console.warn(`${apiName} API marked as down. Will try fallback APIs.`);
         }
     }
 
@@ -95,5 +104,41 @@ export class StockApiService {
         // Track this call
         this.callTimestamps.push(Date.now());
         this.lastApiCall = Date.now();
+    }
+
+    // Add method to check which APIs are available
+    getAvailableAPI(apiType) {
+        const now = Date.now();
+        const cooldownPeriod = 5 * 60 * 1000; // 5 minutes
+
+        if (apiType === "quotes") {
+            // Try Finnhub first, then Alpha Vantage
+            if (!this.apiStatus.finnhub.isDown || 
+                (now - this.apiStatus.finnhub.lastFailureTime) > cooldownPeriod) {
+                return "finnhub";
+            }
+            if (!this.apiStatus.alphaVantage.isDown || 
+                (now - this.apiStatus.alphaVantage.lastFailureTime) > cooldownPeriod) {
+                return "alphaVantage";
+            }
+        }
+
+        if (apiType === "historical") {
+            // Try Tiingo first, then Alpha Vantage, then Polygon
+            if (!this.apiStatus.tiingo.isDown || 
+                (now - this.apiStatus.tiingo.lastFailureTime) > cooldownPeriod) {
+                return "tiingo";
+            }
+            if (!this.apiStatus.alphaVantage.isDown || 
+                (now - this.apiStatus.alphaVantage.lastFailureTime) > cooldownPeriod) {
+                return "alphaVantage";
+            }
+            if (!this.apiStatus.polygon.isDown || 
+                (now - this.apiStatus.polygon.lastFailureTime) > cooldownPeriod) {
+                return "polygon";
+            }
+        }
+
+        return null; // All APIs are down
     }
 }

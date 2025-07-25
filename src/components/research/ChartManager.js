@@ -6,6 +6,7 @@
 import { getChartUnavailableTemplate } from "../../templates/research/research-errors.js";
 import { setUIState, updateElementHTML } from "../../utils/dom-utils.js";
 
+
 export class ChartManager {
     constructor(stockService) {
         this.stockService = stockService;
@@ -34,17 +35,20 @@ export class ChartManager {
                 period
             );
 
+            // REMOVE MOCK DATA FALLBACK - just check for real data
             if (historicalData && historicalData.timestamps && historicalData.closes && historicalData.closes.length > 0) {
                 await this.renderChart(historicalData, currentStockData);
                 this.showChart();
             } else {
-                console.warn("No historical data available");
-                this.showChartUnavailable("No historical data available");
+                // Instead of falling back to mock data, show unavailable message
+                console.warn("No historical data available for", currentStockData.ticker);
+                this.showChartUnavailable(`Historical data temporarily unavailable for ${currentStockData.ticker}`);
             }
 
         } catch (error) {
             console.error("Chart loading error:", error);
-            this.showChartUnavailable("Chart temporarily unavailable");
+            // Show the error message from the API instead of generic message
+            this.showChartUnavailable(error.message || "Historical data temporarily unavailable");
         }
     }
 
@@ -224,12 +228,26 @@ export class ChartManager {
     }
 
     showChartUnavailable(message = "Chart temporarily unavailable") {
-        setUIState({
-            loadingId: "chart-loading",
-            contentId: "chart-container", 
-            errorId: "chart-error"
-        }, "error");
-        
-        updateElementHTML("chart-error", getChartUnavailableTemplate(message));
-    }
-}
+    setUIState({
+        loadingId: "chart-loading",
+        contentId: "chart-container", 
+        errorId: "chart-error"
+    }, "error");
+    
+    // Use your existing error template but add retry functionality
+    updateElementHTML("chart-error", getChartUnavailableTemplate(message));
+    
+    // Add retry button functionality
+    setTimeout(() => {
+        const retryBtn = document.getElementById("retry-chart");
+        if (retryBtn) {
+            retryBtn.addEventListener("click", () => {
+                // Get current stock data and retry
+                const _researchView = this;
+                if (this.currentStockData) {
+                    this.loadPriceChart(this.currentStockData);
+                }
+            });
+        }
+    }, 100);
+}}
