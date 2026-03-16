@@ -6,7 +6,7 @@ import { getFirestore } from "firebase/firestore";
 
 // Firebase config with your actual values
 const firebaseConfig = {
-  apiKey: "AIzaSyCNEC7CE4Wk1wiELBGBNkfsepL77VahecM",
+  apiKey: "x",
   authDomain: "stock-sim-e5cbf.firebaseapp.com",
   projectId: "stock-sim-e5cbf",
   storageBucket: "stock-sim-e5cbf.firebasestorage.app",
